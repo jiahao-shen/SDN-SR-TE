@@ -7,6 +7,7 @@ import operator
 
 NETWORK_SIZE = 21  # 网络节点个数
 PROBABILITY = 0.2  # 概率P
+DESTINATION_NUMBER = 8  # 目标节点个数
 NODE_COLOR = '#5BE7C4'  # 普通节点颜色
 SOURCE_NODE_COLOR = '#FF2E63'  # 源节点颜色
 DESTINATION_NODE_COLOR = '#FFE869'  # 目标节点颜色
@@ -85,6 +86,7 @@ def generate_steiner_tree(G, pos, destination_nodes):
 
     draw_graphics(steiner_tree, pos, destination_nodes, steiner_tree_edge_labels, 'Steiner Tree')
 
+    print(nx.number_of_edges(steiner_tree))
     return steiner_tree
 
 
@@ -160,4 +162,4 @@ def draw_graphics(graph, pos, destination_nodes, graph_edge_labels, title):
         nx.draw_networkx_edge_labels(graph, pos, graph_edge_labels)  # 给边标注权值
     plt.axis('off')  # 座标轴关闭
     plt.savefig("%s.png" % title)  # 保存图片
-    plt.show()  # 显示
+    plt.show()
