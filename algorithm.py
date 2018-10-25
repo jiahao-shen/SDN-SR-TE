@@ -3,10 +3,10 @@ import networkx.algorithms.approximation
 import matplotlib.pyplot as plt
 import random
 import math
+import operator
 
 NETWORK_SIZE = 21  # 网络节点个数
 PROBABILITY = 0.2  # 概率P
-DESTINATION_NUMBER = 8  # 目标节点个数
 NODE_COLOR = '#5BE7C4'  # 普通节点颜色
 SOURCE_NODE_COLOR = '#FF2E63'  # 源节点颜色
 DESTINATION_NODE_COLOR = '#FFE869'  # 目标节点颜色
@@ -38,7 +38,7 @@ def generate_network_topology():
 
 
 def generate_shortest_path_tree(G, pos, destination_nodes):
-    """Return Shortest Path Tree
+    """Return Shortest Path Tree(SPT)
     :param G:
     :param pos:
     :param destination_nodes:
@@ -65,7 +65,7 @@ def generate_shortest_path_tree(G, pos, destination_nodes):
 
 
 def generate_steiner_tree(G, pos, destination_nodes):
-    """Generate Steiner Tree
+    """Generate Steiner Tree(ST)
     :param G:
     :param pos:
     :param destination_nodes:
@@ -89,6 +89,12 @@ def generate_steiner_tree(G, pos, destination_nodes):
 
 
 def generate_widest_shortest_path_tree(G, pos, destination_nodes):
+    """Return Widest Shortest Path Tree(WSPT)
+    :param G:
+    :param pos:
+    :param destination_nodes:
+    :return:
+    """
     widest_shortest_path_tree = nx.Graph()
     widest_shortest_path_tree.add_nodes_from(G)
 
@@ -107,7 +113,7 @@ def generate_widest_shortest_path_tree(G, pos, destination_nodes):
             if minimum_weight > max_minimum_weight:  # 如果该路径的最小权值大于当前的最大最小权值
                 max_minimum_weight = minimum_weight  # 更新最大最小权值
                 widest_shortest_path = shortest_path  # 更新最宽最短路
-        print(widest_shortest_path, max_minimum_weight)
+        print(widest_shortest_path, 'max_minimum_weight:', max_minimum_weight)
         nx.add_path(widest_shortest_path_tree, widest_shortest_path)
 
     for edge in widest_shortest_path_tree.edges:
@@ -119,6 +125,21 @@ def generate_widest_shortest_path_tree(G, pos, destination_nodes):
     draw_graphics(widest_shortest_path_tree, pos, destination_nodes, widest_shortest_path_tree_labels, 'Widest '
                                                                                                        'Shortest Path '
                                                                                                        'Tree')
+
+    return widest_shortest_path_tree
+
+
+def generate_widest_steiner_tree(G, pos, destination_nodes):
+    """Return Widest Steiner Tree(WST)
+    :param G:
+    :param pos:
+    :param destination_nodes:
+    :return:
+    """
+    pass
+    # g_weight_edges = sorted(nx.get_edge_attributes(G, 'weight').items(), key=operator.itemgetter(1))
+    # widest_steiner_tree = nx.Graph(G)
+    # widest_steiner_tree = nx.algorithms.approximation.steiner_tree(G, destination_nodes + [0], weight=None)
 
 
 def draw_graphics(graph, pos, destination_nodes, graph_edge_labels, title):
@@ -139,4 +160,4 @@ def draw_graphics(graph, pos, destination_nodes, graph_edge_labels, title):
         nx.draw_networkx_edge_labels(graph, pos, graph_edge_labels)  # 给边标注权值
     plt.axis('off')  # 座标轴关闭
     plt.savefig("%s.png" % title)  # 保存图片
-    plt.show()
+    plt.show()  # 显示
