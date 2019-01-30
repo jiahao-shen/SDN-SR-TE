@@ -1,5 +1,7 @@
 .DS_Store
-.vscode
-.idea
+.vscode/*
+.idea/*
 __pycache__/
 *.png
+test.*
+.history/

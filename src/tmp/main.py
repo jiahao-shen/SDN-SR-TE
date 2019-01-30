@@ -1,6 +1,5 @@
 #! /usr/local/bin/python3.7
-# -*- coding: utf-8
-import algorithm
+from src.tmp import algorithm
 import warnings
 warnings.filterwarnings('ignore')
 
