@@ -33,11 +33,13 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     return G
 
 
-def generate_flow_requests(G, flow_groups=1, flow_entries=5):
+def generate_flow_requests(G, flow_groups=1, flow_entries=5, lower=10, upper=100):
     """According the graph G, generate flow requests
     :param G: The topology graph
     :param flow_groups: The number of flow groups, default 1
     :param flow_entries: The number of flow entries in each group, default 5
+    :param lower: The minimum size of flow, default 10MB
+    :param upper: The maximum size of flow, default 100MB
     :return: flows
     """
     # Initialize flows
@@ -56,16 +58,24 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5):
         # Remove srs_node in nodes
         nodes.pop(src_node)
         # Randomly generate destination nodes from G, no repeating
-        dst_nodes = random.sample(nodes, flow_entries)
+        dst_nodes = {}
         # Add in flows
+        for dst_node in random.sample(nodes, flow_entries):
+            dst_nodes[dst_node] = {}
+            # Randomly generate flow size
+            dst_nodes[dst_node]['size'] = random.randint(lower, upper)
+            # Set the flow path to None
+            dst_nodes[dst_node]['path'] = None
+
         flows[src_node] = dst_nodes
 
     return flows
 
 
-def draw_topology(G):
+def draw_topology(G, title="Test"):
     plt.figure(figsize=(15, 15))
-    nx.draw(G)
+    nx.draw(G, with_labels=True)
+    plt.savefig("/Users/sam/Code/RoutingAlgorithm/img/%s.png" % title)
     plt.show()
 
 
