@@ -10,21 +10,20 @@ from algorithm.shortest_path_tree import *
 from algorithm.steiner_tree import *
 from network.utils import *
 
-NETWORK_SIZE = 100
-TIMES = 10
-BETA = 0.5
-ALPHA = 0.5
-
 
 def main():
-    lab_1()
+    # lab_1()
     # lab_2()
     # lab_3()
-    # lab_4()
+    lab_4()
 
 
 def lab_1():
     # Number of branch nodes vs multicast group size
+    NETWORK_SIZE = 100
+    TIMES = 4
+    BETA = 0.3
+    ALPHA = 0.3
     print('Figure 1')
 
     spt = {}
@@ -36,7 +35,6 @@ def lab_1():
         st[multi_group_size] = 0
         wspt[multi_group_size] = 0
 
-    # 10 times experiments
     for t in range(TIMES):
 
         print('Times', t)
@@ -44,8 +42,6 @@ def lab_1():
         g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
 
         for multi_group_size in range(10, 60, 10):
-            # Generate flows by random
-            # 10 requests, each group size for [10, 60) step 10
             flows = generate_flow_requests(g, 10, multi_group_size)
 
             graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
@@ -69,6 +65,10 @@ def lab_1():
 
 def lab_2():
     # Average rejection rate vs number of requests
+    NETWORK_SIZE = 100
+    TIMES = 4
+    BETA = 0.2
+    ALPHA = 0.2
     print('Figure 2')
 
     spt = {}
@@ -110,6 +110,10 @@ def lab_2():
 
 def lab_3():
     # Average network throughput vs number of requests
+    NETWORK_SIZE = 100
+    TIMES = 4
+    BETA = 0.2
+    ALPHA = 0.2
     print('Figure 3')
 
     spt = {}
@@ -151,6 +155,9 @@ def lab_3():
 
 def lab_4():
     # Average network throughput vs different network size
+    TIMES = 4
+    BETA = 0.15
+    ALPHA = 0.15
     print('Figure 4')
 
     spt = {}
@@ -167,9 +174,10 @@ def lab_4():
         print('Times', t)
 
         for network_size in range(100, 500, 100):
+            print(network_size)
             g, pos = generate_topology(network_size, BETA, ALPHA)
 
-            flows = generate_flow_requests(g, 50, 50)
+            flows = generate_flow_requests(g, 10, network_size // 4)
 
             graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
             spt[network_size] += compute_throughput(allocated_flows)
@@ -191,7 +199,7 @@ def lab_4():
 
 
 def test():
-    g, pos = generate_topology(NETWORK_SIZE)
+    g, pos = generate_topology(100)
     flows = generate_flow_requests(g, 30, 30, 400, 600)
 
     graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
