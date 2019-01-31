@@ -96,6 +96,47 @@ def draw_topology(G, position, title="Test"):
     plt.show()
 
 
+def check_path_valid(G, path, flow_size):
+    """Check whether the path can add into the graph
+    :param G: The origin graph
+    :param path: The computed path
+    :param flow_size: Size of Flow
+    :return: Boolean
+    """
+    # Traverse the edges in path
+    for i in range(len(path) - 1):
+        # If the residual bandwidth(link_capacity - used_bandwidth) less than flow_size
+        # Then drop this flow
+        if G[path[i]][path[i + 1]]['used_bandwidth'] + flow_size > G[path[i]][path[i + 1]]['link_capacity']:
+            return False
+
+    return True
+
+
+def add_path_to_graph(G, path, flow_size):
+    """Add the path into the graph
+    :param G: The origin graph
+    :param path: The computed path
+    :param flow_size: Size of flow
+    :return:
+    """
+    # Traverse the edges in path
+    for i in range(len(path) - 1):
+        # The link capacity of each edge minus the size of current flow
+        G[path[i]][path[i + 1]]['used_bandwidth'] += flow_size
+
+
+def output(flows):
+    """Output flows
+    :param flows:
+    :return:
+    """
+    for src_node in flows:
+        for dst_node in flows[src_node]:
+            print(src_node, '->', dst_node, ':', flows[src_node][dst_node]['path'], ',size =',
+                  flows[src_node][dst_node]['size'])
+
+
 def test():
     # Test function
     g, pos = generate_topology()
