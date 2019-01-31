@@ -10,11 +10,11 @@
 
 def compute_network_performance(G, allocated_flows, allocated_graph):
     """Compute performance of the network
-    Including number of branch nodes, average rejection rate and average network throughput
+    Including number of branch nodes, average rejection rate, average network throughput and link utilization
     :param G:
     :param allocated_flows:
     :param allocated_graph:
-    :return: num_branch_nodes, average_rejection_rate, throughput
+    :return: num_branch_nodes, average_rejection_rate, throughput, link_utilization
     """
     # Compute the number of branch nodes
     num_branch_nodes = 0
@@ -38,11 +38,21 @@ def compute_network_performance(G, allocated_flows, allocated_graph):
                 throughput += allocated_flows[src_node][dst_node]['size']
 
     # Compute the average rejection rate
-    average_rejection_rate = num_allocated_flows / num_total_flows
-    print('Average Rejection Rate:', average_rejection_rate)
+    average_rejection_rate = 1 - (num_allocated_flows / num_total_flows)
+    print('Average Rejection Rate:', average_rejection_rate * 100, "%")
     print('Average Network Throughput:', throughput)
 
-    return num_branch_nodes, average_rejection_rate, throughput
+    # Compute the link utilization
+    total_bandwidth = 0
+    used_bandwidth = 0
+    for edge in G.edges(data=True):
+        total_bandwidth += edge[2]['link_capacity']
+        used_bandwidth += edge[2]['used_bandwidth']
+
+    link_utilization = used_bandwidth / total_bandwidth
+    print('Link Utilization:', link_utilization * 100, "%")
+
+    return num_branch_nodes, average_rejection_rate, throughput, link_utilization
 
 
 def test():

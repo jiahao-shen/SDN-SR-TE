@@ -19,9 +19,9 @@ def check_path_valid(G, path, flow_size):
     """
     # Traverse the edges in path
     for i in range(len(path) - 1):
-        # If the link capacity is lower than the size of current flow
-        # It means the current flow should be dropped
-        if G[path[i]][path[i + 1]]['link_capacity'] < flow_size:
+        # If the residual bandwidth(link_capacity - used_bandwidth) less than flow_size
+        # Then drop this flow
+        if G[path[i]][path[i + 1]]['used_bandwidth'] + flow_size > G[path[i]][path[i + 1]]['link_capacity']:
             return False
 
     return True
@@ -37,7 +37,7 @@ def add_path_to_graph(G, path, flow_size):
     # Traverse the edges in path
     for i in range(len(path) - 1):
         # The link capacity of each edge minus the size of current flow
-        G[path[i]][path[i + 1]]['link_capacity'] -= flow_size
+        G[path[i]][path[i + 1]]['used_bandwidth'] += flow_size
 
 
 def generate_shortest_path_tree(G, flows):
@@ -52,10 +52,13 @@ def generate_shortest_path_tree(G, flows):
     allocated_graph = nx.Graph()  # Allocated Graph(Only including path, without link capacity)
     allocated_graph.add_nodes_from(G)  # Add nodes from G to allocated_graph
 
-    for src_node in flows:  # Traverse source nodes in flows
-        for dst_node in flows[src_node].keys():  # Traverse destination nodes corresponding to src_node
+    # Traverse source nodes in flows
+    for src_node in flows:
+        # Traverse destination nodes corresponding to src_node
+        for dst_node in flows[src_node].keys():
             # Compute the shortest path from src_node to dst_node, not considering weight
             shortest_path = nx.shortest_path(graph, src_node, dst_node, weight=None)
+
             # Get the size of current flow
             flow_size = flows[src_node][dst_node]['size']
 
@@ -80,7 +83,7 @@ def generate_shortest_path_tree(G, flows):
 def test():
     g, pos = generate_topology()
     draw_topology(g, pos, "Network Topology")
-    flows = generate_flow_requests(g)
+    flows = generate_flow_requests(g, 18, 18)
     allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
     draw_topology(allocated_graph, pos, 'Shortest Path Tree')
 

@@ -29,6 +29,8 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
 
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
+    # Add used bandwidth for all edges
+    nx.set_edge_attributes(G, 0, 'used_bandwidth')
     # Get the layout of graph, here i use spring_layout
     pos = nx.spring_layout(G)
 
