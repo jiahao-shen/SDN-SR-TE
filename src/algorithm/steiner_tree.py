@@ -7,7 +7,6 @@
 @blog: https://jiahaoplus.com
 """
 from network.topology import *
-from network.utils import *
 import networkx.algorithms.approximation as nxaa
 
 
@@ -43,18 +42,16 @@ def generate_steiner_tree(G, flows):
                 # Add the path into the allocated_graph
                 nx.add_path(allocated_graph, path)
 
-    output(allocated_flows)
-
-    compute_network_performance(graph, allocated_flows, allocated_graph)
-    return allocated_flows, allocated_graph
+    return graph, allocated_flows, allocated_graph
 
 
 def test():
-    g, pos = generate_topology(100)
-    draw_topology(g, pos, 'Network Topology')
-    flows = generate_flow_requests(g, 50, 10)
-    allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
-    draw_topology(allocated_graph, pos, 'Steiner Tree')
+    # g, pos = generate_topology(100)
+    # draw_topology(g, pos, 'Network Topology')
+    # flows = generate_flow_requests(g, 50, 10)
+    # allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+    # draw_topology(allocated_graph, pos, 'Steiner Tree')
+    pass
 
 
 if __name__ == '__main__':

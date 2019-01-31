@@ -7,7 +7,6 @@
 @blog: https://jiahaoplus.com
 """
 from network.topology import *
-from network.utils import *
 import math
 
 __all__ = [
@@ -45,10 +44,7 @@ def generate_shortest_path_tree(G, flows):
                 # Add the path into the allocated_graph
                 nx.add_path(allocated_graph, path)
 
-    output(allocated_flows)
-
-    compute_network_performance(graph, allocated_flows, allocated_graph)
-    return allocated_flows, allocated_graph
+    return graph, allocated_flows, allocated_graph
 
 
 def generate_widest_shortest_path_tree(G, flows):
@@ -80,10 +76,7 @@ def generate_widest_shortest_path_tree(G, flows):
                 # Add the path into the allocated_graph
                 nx.add_path(allocated_graph, path)
 
-        # output(allocated_flows)
-
-    compute_network_performance(graph, allocated_flows, allocated_graph)
-    return allocated_flows, allocated_graph
+    return graph, allocated_flows, allocated_graph
 
 
 def generate_widest_shortest_path(all_shortest_paths, graph):
@@ -117,11 +110,12 @@ def generate_widest_shortest_path(all_shortest_paths, graph):
 
 
 def test():
-    g, pos = generate_topology()
-    draw_topology(g, pos, 'Network Topology')
-    flows = generate_flow_requests(g, 19, 19)
-    allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-    draw_topology(allocated_graph, pos, 'Shortest Path Tree')
+    # g, pos = generate_topology()
+    # draw_topology(g, pos, 'Network Topology')
+    # flows = generate_flow_requests(g, 19, 19)
+    # allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+    # draw_topology(allocated_graph, pos, 'Shortest Path Tree')
+    pass
 
 
 if __name__ == '__main__':
