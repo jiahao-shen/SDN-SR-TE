@@ -37,16 +37,13 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     return G, pos
 
 
-def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size_upper=100, delay_lower=10,
-                           delay_upper=1000):
+def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size_upper=100):
     """According the graph G, generate flow requests
     :param G: The topology graph
     :param flow_groups: The number of flow groups, default 1
     :param flow_entries: The number of flow entries in each group, default 5
     :param size_lower: The minimum size of flow, default 10MB
     :param size_upper: The maximum size of flow, default 100MB
-    :param delay_upper: The minimum delay of flow, default 10ms
-    :param delay_lower: The maximum delay of flow, default 1000ms
     :return: flows
     """
     # Initialize flows
@@ -71,8 +68,6 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
             dst_nodes[dst_node] = {}
             # Randomly generate flow size
             dst_nodes[dst_node]['size'] = random.randint(size_lower, size_upper)
-            # Randomly generate delay
-            dst_nodes[dst_node]['delay'] = random.randint(delay_lower, delay_upper)
             # Set the flow path to None
             dst_nodes[dst_node]['path'] = None
         flows[src_node] = dst_nodes
@@ -122,7 +117,7 @@ def add_path_to_graph(G, path, flow_size):
     """
     # Traverse the edges in path
     for i in range(len(path) - 1):
-        # The link capacity of each edge minus the size of current flow
+        # The link used bandwidth plus the current flow size
         G[path[i]][path[i + 1]]['used_bandwidth'] += flow_size
 
 

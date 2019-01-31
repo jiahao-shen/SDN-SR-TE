@@ -12,7 +12,7 @@ import networkx.algorithms.approximation as nxaa
 
 
 def generate_steiner_tree(G, flows):
-    """According to the flows and graph, generate Steiner Tree for multicast
+    """According to the flows and graph, generate Steiner Tree(ST) for multicast
     :param G: The origin graph
     :param flows: The flow request
     :return: allocated_flows, allocated_graph
@@ -21,7 +21,7 @@ def generate_steiner_tree(G, flows):
     allocated_flows = flows.copy()  # Copy flows
 
     allocated_graph = nx.Graph()  # Steiner Trees initialization
-    allocated_graph.add_nodes_from(G)  # Add nodes from G to steiner_trees
+    allocated_graph.add_nodes_from(G)  # Add nodes from G to allocated_graph
 
     # Traverse source nodes in flows
     for src_node in flows:
@@ -37,7 +37,6 @@ def generate_steiner_tree(G, flows):
             # Check whether the flow can add into the graph
             if check_path_valid(graph, path, flow_size):
                 # Add the path into the graph
-                # Link capacity minus flow_size
                 add_path_to_graph(graph, path, flow_size)
                 # Add the path into the allocated_flows
                 allocated_flows[src_node][dst_node]['path'] = path
