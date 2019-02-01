@@ -6,10 +6,9 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
-import networkx as nx
-import matplotlib.pyplot as plt
 import warnings
 import random
+from network.utils import *
 
 warnings.filterwarnings('ignore')
 
@@ -75,63 +74,6 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
         flows[src_node] = dst_nodes
 
     return flows
-
-
-def draw_topology(G, position, title="Test"):
-    """Draw topology and save as png
-    :param G: The graph
-    :param position: The position of graph
-    :param title: The title of graph, default 'Test'
-    :return:
-    """
-    # Set the figure size
-    plt.figure(figsize=(15, 15))
-    # Draw the graph according to the position with labels
-    nx.draw(G, position, with_labels=True)
-    # Save the picture as png
-    plt.savefig("/Users/sam/Code/RoutingAlgorithm/img/%s.png" % title)
-    plt.show()
-
-
-def check_path_valid(G, path, flow_size):
-    """Check whether the path can add into the graph
-    :param G: The origin graph
-    :param path: The computed path
-    :param flow_size: Size of Flow
-    :return: Boolean
-    """
-    # Traverse the edges in path
-    for i in range(len(path) - 1):
-        # If the residual bandwidth(link_capacity - used_bandwidth) less than flow_size
-        # Then drop this flow
-        if G[path[i]][path[i + 1]]['used_bandwidth'] + flow_size > G[path[i]][path[i + 1]]['link_capacity']:
-            return False
-
-    return True
-
-
-def add_path_to_graph(G, path, flow_size):
-    """Add the path into the graph
-    :param G: The origin graph
-    :param path: The computed path
-    :param flow_size: Size of flow
-    :return:
-    """
-    # Traverse the edges in path
-    for i in range(len(path) - 1):
-        # The link used bandwidth plus the current flow size
-        G[path[i]][path[i + 1]]['used_bandwidth'] += flow_size
-
-
-def output(flows):
-    """Output flows
-    :param flows:
-    :return:
-    """
-    for src_node in flows:
-        for dst_node in flows[src_node]:
-            print(src_node, '->', dst_node, ':', flows[src_node][dst_node]['path'], ',size =',
-                  flows[src_node][dst_node]['size'])
 
 
 def test():
