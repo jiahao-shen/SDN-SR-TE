@@ -28,7 +28,6 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     # Count variables
     cnt = 0
     while not nx.is_connected(G):
-        global G
         G = nx.waxman_graph(size, beta=b, alpha=a)
         cnt += 1
         # If cnt is bigger than 10, raise exception
