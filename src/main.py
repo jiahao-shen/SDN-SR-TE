@@ -9,22 +9,72 @@
 from algorithm.shortest_path_tree import *
 from algorithm.steiner_tree import *
 from network.utils import *
+import multiprocessing as mp
 
 
 def main():
-    # lab_1()
-    # lab_2()
-    # lab_3()
-    lab_4()
+    run_task(lab_1)
+    run_task(lab_2)
+    run_task(lab_3)
+    run_task(lab_4)
 
 
-def lab_1():
+def run_task(fnc, times=4):
+    """Run different experiments
+    :param fnc: Lab name
+    :param times: The running times for each lab
+    :return:
+    """
+    # Process list
+    p = []
+    # Number of experiments
+
+    # Shared list to store datas
+    datas = mp.Manager().list()
+    # The lock for parallel computing
+    lock = mp.Manager().Lock()
+
+    # Create multiprocess to run
+    for i in range(times):
+        p.append(mp.Process(target=fnc, args=(datas, lock)))
+
+    # Start all the process
+    for item in p:
+        item.start()
+
+    # Block
+    for item in p:
+        item.join()
+
+    # The final result
+    result = {'spt': {}, 'st': {}, 'wspt': {}}
+
+    # Traverse each data
+    for data in datas:
+        # Add each data to the result
+        for name in data:
+            for index in data[name]:
+                if index in result[name].keys():
+                    result[name][index] += data[name][index]
+                else:
+                    result[name][index] = 0
+
+    # Compute the average data
+    for name in result:
+        for index in result[name]:
+            result[name][index] /= times
+
+    for name in result:
+        print(name, ":", result[name])
+
+
+def lab_1(datas, lock):
     # Number of branch nodes vs multicast group size
+    print('Figure 1')
+
     NETWORK_SIZE = 100
-    TIMES = 4
     BETA = 0.3
     ALPHA = 0.3
-    print('Figure 1')
 
     spt = {}
     st = {}
@@ -35,86 +85,32 @@ def lab_1():
         st[multi_group_size] = 0
         wspt[multi_group_size] = 0
 
-    for t in range(TIMES):
-
-        print('Times', t)
-
-        g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
-
-        for multi_group_size in range(10, 60, 10):
-            flows = generate_flow_requests(g, 10, multi_group_size)
-
-            graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
-            spt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
-
-            graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
-            st[multi_group_size] += compute_num_branch_nodes(allocated_graph)
-
-            graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-            wspt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
+    g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
 
     for multi_group_size in range(10, 60, 10):
-        spt[multi_group_size] /= TIMES
-        st[multi_group_size] /= TIMES
-        wspt[multi_group_size] /= TIMES
+        flows = generate_flow_requests(g, 10, multi_group_size)
 
-    print('SPT :', spt)
-    print('ST :', st)
-    print('WSPT :', wspt)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        spt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
+
+        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        st[multi_group_size] += compute_num_branch_nodes(allocated_graph)
+
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        wspt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
+
+    lock.acquire()
+    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    lock.release()
 
 
-def lab_2():
+def lab_2(datas, lock):
     # Average rejection rate vs number of requests
-    NETWORK_SIZE = 100
-    TIMES = 4
-    BETA = 0.2
-    ALPHA = 0.2
     print('Figure 2')
 
-    spt = {}
-    st = {}
-    wspt = {}
-
-    for num_requests in range(10, 90, 10):
-        spt[num_requests] = 0
-        st[num_requests] = 0
-        wspt[num_requests] = 0
-
-    for t in range(TIMES):
-
-        print('Times', t)
-
-        g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
-
-        for num_requests in range(10, 90, 10):
-            flows = generate_flow_requests(g, num_requests, 30)
-
-            graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
-            spt[num_requests] += compute_average_rejection_rate(allocated_flows)
-
-            graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
-            st[num_requests] += compute_average_rejection_rate(allocated_flows)
-
-            graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-            wspt[num_requests] += compute_average_rejection_rate(allocated_flows)
-
-    for num_requests in range(10, 90, 10):
-        spt[num_requests] /= TIMES
-        st[num_requests] /= TIMES
-        wspt[num_requests] /= TIMES
-
-    print('SPT :', spt)
-    print('ST :', st)
-    print('WSPT :', wspt)
-
-
-def lab_3():
-    # Average network throughput vs number of requests
     NETWORK_SIZE = 100
-    TIMES = 4
     BETA = 0.2
     ALPHA = 0.2
-    print('Figure 3')
 
     spt = {}
     st = {}
@@ -125,37 +121,63 @@ def lab_3():
         st[num_requests] = 0
         wspt[num_requests] = 0
 
-    for t in range(TIMES):
-
-        print('Times', t)
-
-        g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
-
-        for num_requests in range(10, 90, 10):
-            flows = generate_flow_requests(g, num_requests, 30)
-
-            graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
-            spt[num_requests] += compute_throughput(allocated_flows)
-
-            graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
-            st[num_requests] += compute_throughput(allocated_flows)
-
-            graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-            wspt[num_requests] += compute_throughput(allocated_flows)
+    g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
 
     for num_requests in range(10, 90, 10):
-        spt[num_requests] /= TIMES
-        st[num_requests] /= TIMES
-        wspt[num_requests] /= TIMES
+        flows = generate_flow_requests(g, num_requests, 30)
 
-    print('SPT :', spt)
-    print('ST :', st)
-    print('WSPT :', wspt)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        spt[num_requests] += compute_average_rejection_rate(allocated_flows)
+
+        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        st[num_requests] += compute_average_rejection_rate(allocated_flows)
+
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        wspt[num_requests] += compute_average_rejection_rate(allocated_flows)
+
+    lock.acquire()
+    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    lock.release()
 
 
-def lab_4():
+def lab_3(datas, lock):
+    # Average network throughput vs number of requests
+    print('Figure 3')
+
+    NETWORK_SIZE = 100
+    BETA = 0.2
+    ALPHA = 0.2
+
+    spt = {}
+    st = {}
+    wspt = {}
+
+    for num_requests in range(10, 90, 10):
+        spt[num_requests] = 0
+        st[num_requests] = 0
+        wspt[num_requests] = 0
+
+    g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
+
+    for num_requests in range(10, 90, 10):
+        flows = generate_flow_requests(g, num_requests, 30)
+
+        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        spt[num_requests] += compute_throughput(allocated_flows)
+
+        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        st[num_requests] += compute_throughput(allocated_flows)
+
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        wspt[num_requests] += compute_throughput(allocated_flows)
+
+    lock.acquire()
+    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    lock.release()
+
+
+def lab_4(datas, lock):
     # Average network throughput vs different network size
-    TIMES = 4
     BETA = 0.15
     ALPHA = 0.15
     print('Figure 4')
@@ -169,41 +191,25 @@ def lab_4():
         st[network_size] = 0
         wspt[network_size] = 0
 
-    for t in range(TIMES):
-
-        print('Times', t)
-
-        for network_size in range(100, 500, 100):
-            print(network_size)
-            g, pos = generate_topology(network_size, BETA, ALPHA)
-
-            flows = generate_flow_requests(g, 10, network_size // 4)
-
-            graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
-            spt[network_size] += compute_throughput(allocated_flows)
-
-            graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
-            st[network_size] += compute_throughput(allocated_flows)
-
-            graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-            wspt[network_size] += compute_throughput(allocated_flows)
-
     for network_size in range(100, 500, 100):
-        spt[network_size] /= TIMES
-        st[network_size] /= TIMES
-        wspt[network_size] /= TIMES
+        print(network_size)
 
-    print('SPT :', spt)
-    print('ST :', st)
-    print('WSPT :', wspt)
+        g, pos = generate_topology(network_size, BETA, ALPHA)
 
+        flows = generate_flow_requests(g, 10, network_size // 4)
 
-def test():
-    g, pos = generate_topology(100)
-    flows = generate_flow_requests(g, 30, 30, 400, 600)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        spt[network_size] += compute_throughput(allocated_flows)
 
-    graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-    print(compute_average_rejection_rate(allocated_flows))
+        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        st[network_size] += compute_throughput(allocated_flows)
+
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        wspt[network_size] += compute_throughput(allocated_flows)
+
+    lock.acquire()
+    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    lock.release()
 
 
 if __name__ == '__main__':
