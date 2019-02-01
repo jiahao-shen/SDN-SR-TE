@@ -30,8 +30,8 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     while not nx.is_connected(G):
         G = nx.waxman_graph(size, beta=b, alpha=a)
         cnt += 1
-        # If cnt is bigger than 10, raise exception
-        if cnt >= 10:
+        # If cnt is bigger than 100, raise exception
+        if cnt >= 100:
             raise RuntimeError('The parameter alpha and beta is not appropriate, please use other values')
 
     # Add link capacity for all edges

@@ -192,7 +192,6 @@ def lab_4(datas, lock):
         wspt[network_size] = 0
 
     for network_size in range(100, 500, 100):
-        print(network_size)
 
         g, pos = generate_topology(network_size, BETA, ALPHA)
 
