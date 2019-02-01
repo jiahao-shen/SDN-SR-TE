@@ -13,9 +13,13 @@ import multiprocessing as mp
 
 
 def main():
-    run_task(lab_1)
-    run_task(lab_2)
-    run_task(lab_3)
+    # print('Lab 1')
+    # run_task(lab_1)
+    # print('Lab 2')
+    # run_task(lab_2)
+    # print('Lab 3')
+    # run_task(lab_3)
+    print('Lab 4')
     run_task(lab_4)
 
 
@@ -47,7 +51,7 @@ def run_task(fnc, times=4):
         item.join()
 
     # The final result
-    result = {'spt': {}, 'st': {}, 'wspt': {}}
+    result = {'SPT': {}, 'ST': {}, 'WSPT': {}}
 
     # Traverse each data
     for data in datas:
@@ -64,14 +68,24 @@ def run_task(fnc, times=4):
         for index in result[name]:
             result[name][index] /= times
 
+    # Output the result
+    print('', end='\t')
+    for index in result['SPT']:
+        print(index, end='\t')
+
+    print()
+
     for name in result:
-        print(name, ":", result[name])
+        print(name, end='\t')
+        for index in result[name]:
+            print(result[name][index], end='\t')
+        print()
+
+    print('----------------------------')
 
 
 def lab_1(datas, lock):
     # Number of branch nodes vs multicast group size
-    print('Figure 1')
-
     NETWORK_SIZE = 100
     BETA = 0.3
     ALPHA = 0.3
@@ -100,14 +114,12 @@ def lab_1(datas, lock):
         wspt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
 
     lock.acquire()
-    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
     lock.release()
 
 
 def lab_2(datas, lock):
     # Average rejection rate vs number of requests
-    print('Figure 2')
-
     NETWORK_SIZE = 100
     BETA = 0.2
     ALPHA = 0.2
@@ -136,14 +148,12 @@ def lab_2(datas, lock):
         wspt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
     lock.acquire()
-    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
     lock.release()
 
 
 def lab_3(datas, lock):
     # Average network throughput vs number of requests
-    print('Figure 3')
-
     NETWORK_SIZE = 100
     BETA = 0.2
     ALPHA = 0.2
@@ -172,15 +182,14 @@ def lab_3(datas, lock):
         wspt[num_requests] += compute_throughput(allocated_flows)
 
     lock.acquire()
-    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
     lock.release()
 
 
 def lab_4(datas, lock):
     # Average network throughput vs different network size
-    BETA = 0.3
-    ALPHA = 0.3
-    print('Figure 4')
+    BETA = 0.25
+    ALPHA = 0.25
 
     spt = {}
     st = {}
@@ -192,10 +201,9 @@ def lab_4(datas, lock):
         wspt[network_size] = 0
 
     for network_size in range(100, 500, 100):
-
         g, pos = generate_topology(network_size, BETA, ALPHA)
 
-        flows = generate_flow_requests(g, 10, network_size // 4)
+        flows = generate_flow_requests(g, 20, network_size // 4)
 
         graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
         spt[network_size] += compute_throughput(allocated_flows)
@@ -207,7 +215,7 @@ def lab_4(datas, lock):
         wspt[network_size] += compute_throughput(allocated_flows)
 
     lock.acquire()
-    datas.append({'spt': spt, 'st': st, 'wspt': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
     lock.release()
 
 
