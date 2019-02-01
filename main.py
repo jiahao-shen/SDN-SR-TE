@@ -178,8 +178,8 @@ def lab_3(datas, lock):
 
 def lab_4(datas, lock):
     # Average network throughput vs different network size
-    BETA = 0.15
-    ALPHA = 0.15
+    BETA = 0.3
+    ALPHA = 0.3
     print('Figure 4')
 
     spt = {}

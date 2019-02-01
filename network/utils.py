@@ -135,7 +135,7 @@ def add_path_to_graph(G, path, flow_size):
         G[path[i]][path[i + 1]]['used_bandwidth'] += flow_size
 
 
-def output(flows):
+def output_flows(flows):
     """Output flows
     :param flows:
     :return:

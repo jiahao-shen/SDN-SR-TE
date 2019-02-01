@@ -25,8 +25,15 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     # References: B. M. Waxman, "Routing of multipoint connections",
     # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp. 1617-1622, December 1988.
     G = nx.waxman_graph(size, beta=b, alpha=a)
+    # Count variables
+    cnt = 0
     while not nx.is_connected(G):
+        global G
         G = nx.waxman_graph(size, beta=b, alpha=a)
+        cnt += 1
+        # If cnt is bigger than 10, raise exception
+        if cnt >= 10:
+            raise RuntimeError('The parameter alpha and beta is not appropriate, please use other values')
 
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
