@@ -19,8 +19,8 @@ def main():
     run_task(lab_2)
     print('Lab 3')
     run_task(lab_3)
-    print('Lab 4')
-    run_task(lab_4)
+    # print('Lab 4')
+    # run_task(lab_4)
 
 
 def run_task(fnc, times=4):
@@ -30,7 +30,7 @@ def run_task(fnc, times=4):
     :return:
     """
     # Process list
-    p = []
+    processes = []
     # Number of experiments
 
     # Shared list to store datas
@@ -40,15 +40,15 @@ def run_task(fnc, times=4):
 
     # Create multiprocess to run
     for i in range(times):
-        p.append(mp.Process(target=fnc, args=(datas, lock)))
+        processes.append(mp.Process(target=fnc, args=(datas, lock)))
 
     # Start all the process
-    for item in p:
-        item.start()
+    for process in processes:
+        process.start()
 
     # Block
-    for item in p:
-        item.join()
+    for process in processes:
+        process.join()
 
     # The final result
     result = {'SPT': {}, 'ST': {}, 'WSPT': {}}

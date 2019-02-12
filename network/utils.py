@@ -101,7 +101,7 @@ def draw_topology(G, position, title="Test"):
     # Draw the graph according to the position with labels
     nx.draw(G, position, with_labels=True)
     # Save the picture as png
-    plt.savefig("/Users/sam/Code/RoutingAlgorithm/img/%s.png" % title)
+    # plt.savefig("/Users/sam/Code/RoutingAlgorithm/img/%s.png" % title)
     plt.show()
 
 
