@@ -15,10 +15,10 @@ warnings.filterwarnings('ignore')
 
 def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     """Generate a topology using Waxman method
-    :param size: The number of nodes in topology
+    :param size: The number of nodes in topology, default 20
     :param b: Beta (0, 1] float in Waxman method, default 0.7
     :param a: Alpha (0, 1] float in Waxman method, default 0.7
-    :param link_capacity: The link capacity in topology, here we consider all of them are same, equal to 1GB(1MB)
+    :param link_capacity: The link capacity in topology, here we consider all of them are same, equal to 1GB(1000MB)
     :return: G, position
     """
     # Generate network topology using Waxman method
@@ -27,18 +27,20 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
     G = nx.waxman_graph(size, beta=b, alpha=a)
     # Count variables
     cnt = 0
+    # If the graph is not connected
     while not nx.is_connected(G):
+        # Generate the graph again
         G = nx.waxman_graph(size, beta=b, alpha=a)
         cnt += 1
         # If cnt is bigger than 100, raise exception
         if cnt >= 100:
-            raise RuntimeError('The parameter alpha and beta is not appropriate, please use other values')
+            raise RuntimeError('The parameter alpha and beta is not appropriate, please change other values')
 
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
     # Add used bandwidth for all edges
     nx.set_edge_attributes(G, 0, 'used_bandwidth')
-    # Get the layout of graph, here i use spring_layout
+    # Get the layout of graph, here we use spring_layout
     pos = nx.spring_layout(G)
 
     return G, pos
@@ -58,7 +60,7 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
 
     # If flow groups or flow entries are more than nodes of G, raise exception
     if flow_groups > len(G) or flow_entries > len(G):
-        raise RuntimeError('flow_groups and flow_entries cannot be more than len(G)')
+        raise RuntimeError('Flow_groups and flow_entries cannot be more than len(G)')
 
     # Randomly generate source nodes from G, no repeating
     src_nodes = random.sample(range(len(G)), flow_groups)
@@ -73,10 +75,11 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
         # Add in flows
         for dst_node in random.sample(nodes, flow_entries):
             dst_nodes[dst_node] = {}
-            # Randomly generate flow size
+            # Randomly generate flow size [size_lower, size_upper]
             dst_nodes[dst_node]['size'] = random.randint(size_lower, size_upper)
             # Set the flow path to None
             dst_nodes[dst_node]['path'] = None
+
         flows[src_node] = dst_nodes
 
     return flows

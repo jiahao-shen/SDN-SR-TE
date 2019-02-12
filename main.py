@@ -13,12 +13,12 @@ import multiprocessing as mp
 
 
 def main():
-    # print('Lab 1')
-    # run_task(lab_1)
-    # print('Lab 2')
-    # run_task(lab_2)
-    # print('Lab 3')
-    # run_task(lab_3)
+    print('Lab 1')
+    run_task(lab_1)
+    print('Lab 2')
+    run_task(lab_2)
+    print('Lab 3')
+    run_task(lab_3)
     print('Lab 4')
     run_task(lab_4)
 
@@ -104,13 +104,13 @@ def lab_1(datas, lock):
     for multi_group_size in range(10, 60, 10):
         flows = generate_flow_requests(g, 10, multi_group_size)
 
-        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_trees(g, flows)
         spt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
 
-        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_steiner_trees(g, flows)
         st[multi_group_size] += compute_num_branch_nodes(allocated_graph)
 
-        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
 
     lock.acquire()
@@ -138,13 +138,13 @@ def lab_2(datas, lock):
     for num_requests in range(10, 90, 10):
         flows = generate_flow_requests(g, num_requests, 30)
 
-        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_trees(g, flows)
         spt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
-        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_steiner_trees(g, flows)
         st[num_requests] += compute_average_rejection_rate(allocated_flows)
 
-        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
     lock.acquire()
@@ -172,13 +172,13 @@ def lab_3(datas, lock):
     for num_requests in range(10, 90, 10):
         flows = generate_flow_requests(g, num_requests, 30)
 
-        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_trees(g, flows)
         spt[num_requests] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_steiner_trees(g, flows)
         st[num_requests] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[num_requests] += compute_throughput(allocated_flows)
 
     lock.acquire()
@@ -205,13 +205,13 @@ def lab_4(datas, lock):
 
         flows = generate_flow_requests(g, 20, network_size // 4)
 
-        graph, allocated_flows, allocated_graph = generate_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_shortest_path_trees(g, flows)
         spt[network_size] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_steiner_trees(g, flows)
         st[network_size] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
+        graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[network_size] += compute_throughput(allocated_flows)
 
     lock.acquire()
