@@ -79,17 +79,17 @@ def compute_link_utilization(G):
     :return:
     """
     total_bandwidth = 0
-    used_bandwidth = 0
+    total_residual_bandwidth = 0
     for edge in G.edges(data=True):
         total_bandwidth += edge[2]['link_capacity']
-        used_bandwidth += edge[2]['used_bandwidth']
+        total_residual_bandwidth += edge[2]['residual_bandwidth']
 
-    link_utilization = used_bandwidth / total_bandwidth
+    link_utilization = 1 - total_residual_bandwidth / total_bandwidth
     # print('Link Utilization:', link_utilization * 100, "%")
     return link_utilization
 
 
-def draw_topology(G, position, title="Test"):
+def draw_topology(G, position, edge_attribute='residual_bandwidth', title="Test"):
     """Draw topology and save as png
     :param G: The graph
     :param position: The position of graph
@@ -98,8 +98,10 @@ def draw_topology(G, position, title="Test"):
     """
     # Set the figure size
     plt.figure(figsize=(15, 15))
+    plt.title(title)
     # Draw the graph according to the position with labels
     nx.draw(G, position, with_labels=True)
+    nx.draw_networkx_edge_labels(G, position, edge_labels=nx.get_edge_attributes(G, edge_attribute))
     # Save the picture as png
     # plt.savefig("/Users/sam/Code/RoutingAlgorithm/img/%s.png" % title)
     plt.show()
@@ -114,9 +116,9 @@ def check_path_valid(G, path, flow_size):
     """
     # Traverse the edges in path
     for i in range(len(path) - 1):
-        # If the residual bandwidth(link_capacity - used_bandwidth) less than flow_size
+        # If the residual bandwidth less than flow_size
         # Then drop this flow
-        if G[path[i]][path[i + 1]]['used_bandwidth'] + flow_size > G[path[i]][path[i + 1]]['link_capacity']:
+        if G[path[i]][path[i + 1]]['residual_bandwidth'] < flow_size:
             return False
 
     return True
@@ -131,8 +133,8 @@ def add_path_to_graph(G, path, flow_size):
     """
     # Traverse the edges in path
     for i in range(len(path) - 1):
-        # The link used bandwidth plus the current flow size
-        G[path[i]][path[i + 1]]['used_bandwidth'] += flow_size
+        # The link residual bandwidth minus the current flow size
+        G[path[i]][path[i + 1]]['residual_bandwidth'] -= flow_size
 
 
 def output_flows(flows):

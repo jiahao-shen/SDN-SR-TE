@@ -12,7 +12,8 @@ import math
 
 __all__ = [
     'generate_shortest_path_trees',
-    'generate_widest_shortest_path_trees'
+    'generate_widest_shortest_path_trees',
+    'generate_widest_shortest_path'
 ]
 
 
@@ -30,10 +31,12 @@ def generate_shortest_path_trees(G, flows):
 
     # Traverse source nodes in flows
     for src_node in flows:
+        # Compute all shortest path from src_node to other nodes
+        all_shortest_path = nx.shortest_path(graph, src_node, weight=None)
         # Traverse destination nodes corresponding to src_node
         for dst_node in flows[src_node].keys():
-            # Compute the shortest path from src_node to dst_node, not considering weight
-            shortest_path = nx.shortest_path(graph, src_node, dst_node, weight=None)
+            # Get the shortest path from src_node to dst_node
+            shortest_path = all_shortest_path[dst_node]
             # Get the size of current flow
             flow_size = flows[src_node][dst_node]['size']
             # Check whether the flow can add into the graph
@@ -62,10 +65,12 @@ def generate_widest_shortest_path_trees(G, flows):
 
     # Traverse source nodes in flows
     for src_node in flows:
+        # Compute all widest shortest path from src_node to other nodes
+        all_widest_shortest_path = generate_widest_shortest_path(graph, src_node)
         # Traverse destination nodes corresponding to src_node
         for dst_node in flows[src_node].keys():
-            # Get the widest shortest path in all shortest paths from src_node to dst_node, not considering weight
-            widest_shortest_path = generate_widest_shortest_path(graph, src_node, dst_node)
+            # Get the widest shortest path from src_node to dst_node
+            widest_shortest_path = all_widest_shortest_path[dst_node]
             # Get the size of current flow
             flow_size = flows[src_node][dst_node]['size']
             # Check whether the flow can add into the graph
@@ -80,42 +85,11 @@ def generate_widest_shortest_path_trees(G, flows):
     return graph, allocated_flows, widest_shortest_path_trees
 
 
-# def generate_widest_shortest_path(all_shortest_paths, graph):
-#     """Compute the widest path in all shortest paths
-#     :param all_shortest_paths: All shortest paths
-#     :param graph: The origin graph
-#     :return: widest_shortest_path
-#     """
-#     # Initialization
-#     widest_shortest_path = None
-#     # Initialization
-#     max_minimum_residual_bandwidth = -math.inf
-#
-#     # Traverse all shortest paths
-#     for path in all_shortest_paths:
-#         minimum_residual_bandwidth = math.inf
-#         # Traverse current path edges
-#         for i in range(len(path) - 1):
-#             # Get the residual bandwidth for current edge
-#             residual_bandwidth = graph[path[i]][path[i + 1]]['link_capacity'] - graph[path[i]][path[i + 1]][
-#                 'used_bandwidth']
-#             # Get the minimum residual bandwidth
-#             minimum_residual_bandwidth = min(minimum_residual_bandwidth, residual_bandwidth)
-#
-#         # If find the wider minimum residual bandwidth
-#         if minimum_residual_bandwidth > max_minimum_residual_bandwidth:
-#             max_minimum_residual_bandwidth = minimum_residual_bandwidth
-#             widest_shortest_path = path
-#
-#     return widest_shortest_path
-
-
-def generate_widest_shortest_path(G, source, destination):
-    """Compute the widest shortest path from source to destination in G
+def generate_widest_shortest_path(G, source):
+    """Compute the widest shortest path from source to other nodes in G
     Using Extension Dijkstra Algorithm
     :param G: The origin graph
     :param source: The source node
-    :param destination: The destination node
     :return: widest_shortest_path
     """
     # The array to store whether the node has been visited
@@ -133,15 +107,11 @@ def generate_widest_shortest_path(G, source, destination):
 
     # The open_list initialize
     open_list = Queue()
-    # Put the source node into queue
     open_list.put(source)
 
     while not open_list.empty():
         # Get the top node of open_list
         node = open_list.get()
-        # If the node is destination node, then break the loop
-        if node == destination:
-            break
         # Traverse all the neighbor nodes for node
         for item in G.neighbors(node):  # For current node item
             # If the item hasn't been visited
@@ -150,10 +120,8 @@ def generate_widest_shortest_path(G, source, destination):
                 distance[item] = distance[node] + 1
                 # Update the visited array
                 visited[item] = True
-                # Compute the residual bandwidth of edge[node][item]
-                residual_bandwidth = G[node][item]['link_capacity'] - G[node][item]['used_bandwidth']
                 # Compute the minimum bandwidth from source to item
-                minimum_bandwidth[item] = min(minimum_bandwidth[node], residual_bandwidth)
+                minimum_bandwidth[item] = min(minimum_bandwidth[node], G[node][item]['residual_bandwidth'])
                 # Record the father node of item
                 father_node[item] = node
                 # Put the item node into open_list
@@ -162,12 +130,10 @@ def generate_widest_shortest_path(G, source, destination):
             else:
                 # The the new path length equals the old path length
                 if distance[node] + 1 == distance[item]:
-                    # Compute the residual bandwidth of edge[node][item]
-                    residual_bandwidth = G[node][item]['link_capacity'] - G[node][item]['used_bandwidth']
                     # If the minimum bandwidth of new path is bigger than the old path
-                    if min(minimum_bandwidth[node], residual_bandwidth) > minimum_bandwidth[item]:
+                    if min(minimum_bandwidth[node], G[node][item]['residual_bandwidth']) > minimum_bandwidth[item]:
                         # Update the minimum bandwidth for item
-                        minimum_bandwidth[item] = min(minimum_bandwidth[node], residual_bandwidth)
+                        minimum_bandwidth[item] = min(minimum_bandwidth[node], G[node][item]['residual_bandwidth'])
                         # Update the father node of item
                         father_node[item] = node
                 # If the new path length is less than the old path length
@@ -177,17 +143,26 @@ def generate_widest_shortest_path(G, source, destination):
                     # Update the father node of item
                     father_node[item] = node
 
-    # The final path
-    widest_shortest_path = []
+    # The dict to store all widest shortest path from source to other nodes
+    all_widest_shortest_path = {}
+    # Create all nodes set
+    destinations = set(range(len(G)))
+    # Remove the source node
+    destinations.remove(source)
+    # Traverse all other nodes
+    for dst_node in destinations:
+        # Initialize the path to dst_node
+        path = []
+        # Get the path from source to dst_node
+        node = dst_node
+        while node is not None:
+            path.append(node)
+            node = father_node[node]
+        path.reverse()
+        # Store the path for dst_node
+        all_widest_shortest_path[dst_node] = path
 
-    # Reverse traversal
-    node = destination
-    while node is not None:
-        widest_shortest_path.append(node)
-        node = father_node[node]
-    widest_shortest_path.reverse()
-
-    return widest_shortest_path
+    return all_widest_shortest_path
 
 
 def test():

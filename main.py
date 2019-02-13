@@ -19,8 +19,8 @@ def main():
     run_task(lab_2)
     print('Lab 3')
     run_task(lab_3)
-    # print('Lab 4')
-    # run_task(lab_4)
+    print('Lab 4')
+    run_task(lab_4)
 
 
 def run_task(fnc, times=4):
@@ -51,7 +51,7 @@ def run_task(fnc, times=4):
         process.join()
 
     # The final result
-    result = {'SPT': {}, 'ST': {}, 'WSPT': {}}
+    result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}}
 
     # Traverse each data
     for data in datas:
@@ -93,11 +93,13 @@ def lab_1(datas, lock):
     spt = {}
     st = {}
     wspt = {}
+    wst = {}
 
     for multi_group_size in range(10, 60, 10):
         spt[multi_group_size] = 0
         st[multi_group_size] = 0
         wspt[multi_group_size] = 0
+        wst[multi_group_size] = 0
 
     g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
 
@@ -113,8 +115,11 @@ def lab_1(datas, lock):
         graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[multi_group_size] += compute_num_branch_nodes(allocated_graph)
 
+        graph, allocated_flows, allocated_graph = generate_widest_steiner_trees(g, flows)
+        wst[multi_group_size] += compute_num_branch_nodes(allocated_graph)
+
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst})
     lock.release()
 
 
@@ -127,11 +132,13 @@ def lab_2(datas, lock):
     spt = {}
     st = {}
     wspt = {}
+    wst = {}
 
     for num_requests in range(10, 90, 10):
         spt[num_requests] = 0
         st[num_requests] = 0
         wspt[num_requests] = 0
+        wst[num_requests] = 0
 
     g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
 
@@ -147,8 +154,11 @@ def lab_2(datas, lock):
         graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
+        graph, allocated_flows, allocated_graph = generate_widest_steiner_trees(g, flows)
+        wst[num_requests] += compute_average_rejection_rate(allocated_flows)
+
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst})
     lock.release()
 
 
@@ -161,11 +171,13 @@ def lab_3(datas, lock):
     spt = {}
     st = {}
     wspt = {}
+    wst = {}
 
     for num_requests in range(10, 90, 10):
         spt[num_requests] = 0
         st[num_requests] = 0
         wspt[num_requests] = 0
+        wst[num_requests] = 0
 
     g, pos = generate_topology(NETWORK_SIZE, BETA, ALPHA)
 
@@ -181,8 +193,11 @@ def lab_3(datas, lock):
         graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[num_requests] += compute_throughput(allocated_flows)
 
+        graph, allocated_flows, allocated_graph = generate_widest_steiner_trees(g, flows)
+        wst[num_requests] += compute_throughput(allocated_flows)
+
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst})
     lock.release()
 
 
@@ -194,11 +209,13 @@ def lab_4(datas, lock):
     spt = {}
     st = {}
     wspt = {}
+    wst = {}
 
     for network_size in range(100, 500, 100):
         spt[network_size] = 0
         st[network_size] = 0
         wspt[network_size] = 0
+        wst[network_size] = 0
 
     for network_size in range(100, 500, 100):
         g, pos = generate_topology(network_size, BETA, ALPHA)
@@ -214,8 +231,11 @@ def lab_4(datas, lock):
         graph, allocated_flows, allocated_graph = generate_widest_shortest_path_trees(g, flows)
         wspt[network_size] += compute_throughput(allocated_flows)
 
+        graph, allocated_flows, allocated_graph = generate_widest_steiner_trees(g, flows)
+        wst[network_size] += compute_throughput(allocated_flows)
+
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt})
+    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst})
     lock.release()
 
 

@@ -38,8 +38,8 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
 
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
-    # Add used bandwidth for all edges
-    nx.set_edge_attributes(G, 0, 'used_bandwidth')
+    # Add residual bandwidth for all edges
+    nx.set_edge_attributes(G, link_capacity, 'residual_bandwidth')
     # Get the layout of graph, here we use spring_layout
     pos = nx.spring_layout(G)
 
@@ -67,9 +67,9 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
 
     # Traverse the source nodes in flows
     for src_node in src_nodes:
-        nodes = list(range(len(G)))
+        nodes = set(range(len(G)))
         # Remove srs_node in nodes
-        nodes.pop(src_node)
+        nodes.remove(src_node)
         # Randomly generate destination nodes from G, no repeating
         dst_nodes = {}
         # Add in flows
