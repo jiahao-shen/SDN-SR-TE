@@ -29,30 +29,35 @@ def generate_steiner_trees(G, flows):
     graph = G.copy()  # Copy G
     allocated_flows = flows.copy()  # Copy flows
 
-    allocated_graph = nx.Graph()  # Steiner Trees initialization
-    allocated_graph.add_nodes_from(G)  # Add nodes from G to allocated_graph
+    steiner_trees = []  # Initialize
 
-    # Traverse source nodes in flows
-    for src_node in flows:
-        # Generate the steiner tree(src_node, dst_nodes), not considering weight
-        steiner_tree = nx.Graph(nxaa.steiner_tree(graph, list(flows[src_node].keys()) + [src_node], weight=None))
+    # Traverse the flows
+    for f in allocated_flows:
+        # Generate the terminal nodes for steiner tree(destination nodes list + source node)
+        terminal_nodes = list(f['dst'].keys()) + [f['src']]
+        # Generate the temp steiner tree for terminal nodes
+        tmp_tree = nx.Graph(nxaa.steiner_tree(graph, terminal_nodes, weight=None))
+        # Steiner Tree for current multicast initialization
+        steiner_tree = nx.Graph()
+        # Traverse all destination nodes
+        for dst_node in f['dst']:
+            # Compute the shortest path from source to destination, not considering weight
+            path = nx.shortest_path(tmp_tree, f['src'], dst_node, weight=None)
+            # Check the current path whether valid
+            if check_path_valid(graph, path, f['size']):
+                # Record path for pair(source, destination)
+                f['dst'][dst_node] = path
+                # Add the path into steiner tree
+                nx.add_path(steiner_tree, path)
+                # Update the residual entries of nodes in graph
+                update_node_entries(graph, path)
 
-        # Traverse the destination nodes corresponding to src_node
-        for dst_node in flows[src_node].keys():
-            # Find the path for current flow in steiner tree
-            path = nx.shortest_path(steiner_tree, src_node, dst_node, weight=None)
-            # Get the size of current flow
-            flow_size = flows[src_node][dst_node]['size']
-            # Check whether the flow can add into the graph
-            if check_path_valid(graph, path, flow_size):
-                # Add the path into the graph
-                add_path_to_graph(graph, path, flow_size)
-                # Add the path into the allocated_flows
-                allocated_flows[src_node][dst_node]['path'] = path
-                # Add the path into the allocated_graph
-                nx.add_path(allocated_graph, path)
+        # Update the residual bandwidth of edges in the steiner tree
+        update_edge_bandwidth(graph, steiner_tree, f['size'])
 
-    return graph, allocated_flows, allocated_graph
+        steiner_trees.append(steiner_tree)
+
+    return graph, allocated_flows, steiner_trees
 
 
 def generate_widest_steiner_trees(G, flows):
@@ -64,29 +69,35 @@ def generate_widest_steiner_trees(G, flows):
     graph = G.copy()  # Copy G
     allocated_flows = flows.copy()  # Copy flows
 
-    allocated_graph = nx.Graph()  # Steiner Trees initialization
-    allocated_graph.add_nodes_from(G)  # Add nodes from G to allocated_graph
+    widest_steiner_trees = []  # Initialize
 
-    # Traverse source nodes in flows
-    for src_node in flows:
-        # Generate the steiner tree(src_node, dst_nodes), not considering weight
-        steiner_tree = generate_widest_steiner_tree(graph, list(flows[src_node].keys()) + [src_node])
-        # Traverse the destination nodes corresponding to src_node
-        for dst_node in flows[src_node].keys():
-            # Find the path for current flow in steiner tree
-            path = nx.shortest_path(steiner_tree, src_node, dst_node, weight=None)
-            # Get the size of current flow
-            flow_size = flows[src_node][dst_node]['size']
-            # Check whether the flow can add into the graph
-            if check_path_valid(graph, path, flow_size):
-                # Add the path into the graph
-                add_path_to_graph(graph, path, flow_size)
-                # Add the path into the allocated_flows
-                allocated_flows[src_node][dst_node]['path'] = path
-                # Add the path into the allocated_graph
-                nx.add_path(allocated_graph, path)
+    # Traverse the flows
+    for f in allocated_flows:
+        # Generate the terminal nodes for steiner tree(destination nodes list + source node)
+        terminal_nodes = list(f['dst'].keys()) + [f['src']]
+        # Generate the temp steiner tree for terminal nodes
+        tmp_tree = nx.Graph(generate_widest_steiner_tree(graph, terminal_nodes))
+        # Steiner Tree for current multicast initialization
+        widest_steiner_tree = nx.Graph()
+        # Traverse all destination nodes
+        for dst_node in f['dst']:
+            # Compute the shortest path from source to destination, not considering weight
+            path = nx.shortest_path(tmp_tree, f['src'], dst_node, weight=None)
+            # Check the current path whether valid
+            if check_path_valid(graph, path, f['size']):
+                # Record path for pair(source, destination)
+                f['dst'][dst_node] = path
+                # Add the path into steiner tree
+                nx.add_path(widest_steiner_tree, path)
+                # Update the residual entries of nodes in graph
+                update_node_entries(graph, path)
 
-    return graph, allocated_flows, allocated_graph
+        # Update the residual bandwidth of edges in the steiner tree
+        update_edge_bandwidth(graph, widest_steiner_tree, f['size'])
+
+        widest_steiner_trees.append(widest_steiner_tree)
+
+    return graph, allocated_flows, widest_steiner_trees
 
 
 def generate_widest_steiner_tree(G, terminal_nodes):
@@ -106,7 +117,7 @@ def generate_widest_steiner_tree(G, terminal_nodes):
     # Generate the subgraph of G for edges
     widest_steiner_tree = G.edge_subgraph(edges)
 
-    return nx.Graph(widest_steiner_tree)  # Transform to the nx.Graph
+    return widest_steiner_tree
 
 
 def generate_widest_metric_closure(G):
@@ -137,12 +148,31 @@ def generate_widest_metric_closure(G):
 
 
 def test():
-    # g, pos = generate_topology(100)
-    # draw_topology(g, pos, 'Network Topology')
-    # flows = generate_flow_requests(g, 50, 10)
-    # allocated_flows, allocated_graph = generate_steiner_tree(g, flows)
-    # draw_topology(allocated_graph, pos, 'Steiner Tree')
-    pass
+    """Test Steiner Tree and Widest Steiner Tree
+    :return:
+    """
+    G, pos = generate_topology()
+    flows = generate_flow_requests(G, flow_groups=3)
+
+    draw_topology(G, pos, title='Topology')
+
+    # ST
+    graph, allocated_flows, multicast_trees = generate_steiner_trees(G, flows)
+
+    draw_topology(graph, pos, title='Allocated Graph')
+    output_flows(allocated_flows)
+
+    for tree in multicast_trees:
+        draw_topology(tree, pos, title='Tree')
+
+    # WST
+    graph, allocated_flows, multicast_trees = generate_widest_steiner_trees(G, flows)
+
+    draw_topology(graph, pos, title='Allocated Graph')
+    output_flows(allocated_flows)
+
+    for tree in multicast_trees:
+        draw_topology(tree, pos, title='Tree')
 
 
 if __name__ == '__main__':

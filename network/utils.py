@@ -11,29 +11,31 @@ import networkx as nx
 import math
 
 
-def compute_network_performance(G, allocated_flows, allocated_graph):
+def compute_network_performance(G, allocated_flows, multicast_trees):
     """Compute performance of the network
     Including number of branch nodes, average rejection rate, average network throughput and link utilization
     :param G:
     :param allocated_flows:
-    :param allocated_graph:
+    :param multicast_trees:
     :return: num_branch_nodes, average_rejection_rate, throughput, link_utilization
     """
-    return compute_num_branch_nodes(allocated_graph), compute_average_rejection_rate(
+    return compute_num_branch_nodes(multicast_trees), compute_average_rejection_rate(
         allocated_flows), compute_throughput(allocated_flows), compute_link_utilization(G)
 
 
-def compute_num_branch_nodes(allocated_graph):
+def compute_num_branch_nodes(multicast_trees):
     """Compute the number of branch nodes
-    :param allocated_graph:
+    :param multicast_trees: The list of multicast tree
     :return:
     """
     num_branch_nodes = 0
-    for node in allocated_graph.nodes:
-        # If the degrees of node bigger than two, it is a branch node
-        if allocated_graph.degree(node) > 2:
-            num_branch_nodes += 1
-    # print('Number of branch nodes:', num_branch_nodes)
+
+    for tree in multicast_trees:
+        for node in tree.nodes:
+            # If the degrees of node bigger than two, it is a branch node
+            if tree.degree(node) > 2:
+                num_branch_nodes += 1
+        # print('Number of branch nodes:', num_branch_nodes)
     return num_branch_nodes
 
 
@@ -44,12 +46,13 @@ def compute_average_rejection_rate(allocated_flows):
     """
     num_total_flows = 0
     num_allocated_flows = 0
-    for src_node in allocated_flows:
-        for dst_node in allocated_flows[src_node]:
+
+    for f in allocated_flows:
+        for dst_node in f['dst']:
             # Compute the number of total flows
             num_total_flows += 1
             # If current flow is allocated
-            if allocated_flows[src_node][dst_node]['path'] is not None:
+            if f['dst'][dst_node] is not None:
                 num_allocated_flows += 1
 
     # Compute the average rejection rate
@@ -64,12 +67,12 @@ def compute_throughput(allocated_flows):
     :return:
     """
     throughput = 0
-    for src_node in allocated_flows:
-        for dst_node in allocated_flows[src_node]:
+    for f in allocated_flows:
+        for dst_node in f['dst']:
             # If current flow is allocated
-            if allocated_flows[src_node][dst_node]['path'] is not None:
+            if f['dst'][dst_node] is not None:
                 # Sum the flow size
-                throughput += allocated_flows[src_node][dst_node]['size']
+                throughput += f['size']
     # print('Average Network Throughput:', throughput)
     return throughput
 
@@ -124,21 +127,6 @@ def check_path_valid(G, path, flow_size):
     return True
 
 
-def add_path_to_graph(G, path, flow_size):
-    """Add the path into the graph
-    :param G: The origin graph
-    :param path: The computed path
-    :param flow_size: Size of flow
-    :return:
-    """
-    # Traverse the edges in path
-    for i in range(len(path) - 1):
-        # The link residual bandwidth minus the current flow size
-        G[path[i]][path[i + 1]]['residual_bandwidth'] -= flow_size
-        # The residual flow entries of current node minus 1(except the destination node)
-        G.node[path[i]]['residual_flow_entries'] -= 1
-
-
 def update_node_entries(G, path):
     """Update the residual node entries during the path
     :param G: The origin graph
@@ -153,9 +141,9 @@ def update_node_entries(G, path):
 
 def update_edge_bandwidth(G, tree, flow_size):
     """Update the residual bandwidth of edges in the tree
-    :param G:
-    :param tree:
-    :param flow_size:
+    :param G: The origin graph
+    :param tree: The multicast tree
+    :param flow_size: The size of current flow
     :return:
     """
     for edge in tree.edges():
