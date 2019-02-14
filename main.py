@@ -8,7 +8,7 @@
 """
 from algorithm.shortest_path_tree import *
 from algorithm.steiner_tree import *
-from network.utils import *
+from network.topology import *
 import multiprocessing as mp
 
 

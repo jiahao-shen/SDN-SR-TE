@@ -95,17 +95,24 @@ def generate_widest_steiner_tree(G, terminal_nodes):
     :param terminal_nodes: The list of terminal nodes for which minimum steiner trees is to be found
     :return: widest_steiner_tree
     """
+    # Generate the widest metric closure
     M = generate_widest_metric_closure(G)
+    # Generate the subgraph of M for terminal nodes
     H = M.subgraph(terminal_nodes)
+    # Generate the minimum spanning edges with 'distance' as weight
     mst_edges = nx.minimum_spanning_edges(H, weight='distance', data=True)
+    # For the minimum spanning edges, add the widest shortest path according to the widest metric closure
     edges = chain.from_iterable(pairwise(d['path']) for u, v, d in mst_edges)
+    # Generate the subgraph of G for edges
     widest_steiner_tree = G.edge_subgraph(edges)
 
-    return nx.Graph(widest_steiner_tree)
+    return nx.Graph(widest_steiner_tree)  # Transform to the nx.Graph
 
 
 def generate_widest_metric_closure(G):
     """Generate the Widest Metric Closure according to G
+    The widest metric closure of a graph G is the complete graph in which each edge
+    is weighted by the widest shortest path distance between the nodes in G
     :param G: The origin graph
     :return: widest_metric_closure
     """

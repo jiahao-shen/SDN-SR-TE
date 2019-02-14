@@ -8,6 +8,7 @@
 """
 from network.topology import *
 from queue import Queue
+import multiprocessing as mp
 import math
 
 __all__ = [
@@ -86,11 +87,11 @@ def generate_widest_shortest_path_trees(G, flows):
 
 
 def generate_widest_shortest_path(G, source):
-    """Compute the widest shortest path from source to other nodes in G
+    """Compute all widest shortest path from source to other nodes in G
     Using Extension Dijkstra Algorithm
     :param G: The origin graph
     :param source: The source node
-    :return: widest_shortest_path
+    :return: all_widest_shortest_path
     """
     # The array to store whether the node has been visited
     visited = [False for _ in range(len(G))]
@@ -128,7 +129,7 @@ def generate_widest_shortest_path(G, source):
                 open_list.put(item)
             # If the item has been visited
             else:
-                # The the new path length equals the old path length
+                # If the new path length equals the old path length
                 if distance[node] + 1 == distance[item]:
                     # If the minimum bandwidth of new path is bigger than the old path
                     if min(minimum_bandwidth[node], G[node][item]['residual_bandwidth']) > minimum_bandwidth[item]:
@@ -142,6 +143,8 @@ def generate_widest_shortest_path(G, source):
                     distance[item] = distance[node] + 1
                     # Update the father node of item
                     father_node[item] = node
+                    # Update the minimum bandwidth of item
+                    minimum_bandwidth[item] = min(minimum_bandwidth[node], G[node][item]['residual_bandwidth'])
 
     # The dict to store all widest shortest path from source to other nodes
     all_widest_shortest_path = {}
@@ -165,14 +168,41 @@ def generate_widest_shortest_path(G, source):
     return all_widest_shortest_path
 
 
-def test():
-    # g, pos = generate_topology()
-    # draw_topology(g, pos, 'Network Topology')
-    # flows = generate_flow_requests(g, 19, 19)
-    # allocated_flows, allocated_graph = generate_widest_shortest_path_tree(g, flows)
-    # draw_topology(allocated_graph, pos, 'Shortest Path Tree')
-    pass
+def test_1():
+    """Test the widest shortest path algorithm
+    Start 4 processes, each process runs 1 << 12 times, each time randomly generates a network topology, then randomly
+    generates one pair (source, destination), then compute the widest shortest path and all shortest paths from source
+    to destination.
+    Then, compare the minimum bandwidth of each path. If the minimum bandwidth of other paths is bigger than the widest
+    shortest path, then raise error.
+    :return:
+    """
+    def task():
+        for _ in range(1 << 12):
+            G, pos = generate_topology()
+            src, dst = random.sample(range(20), 2)
+
+            all_widest_shortest_path = generate_widest_shortest_path(G, src)
+            widest_shortest_path = all_widest_shortest_path[dst]
+            all_shortest_path = nx.all_shortest_paths(G, src, dst, weight=None)
+
+            for path in all_shortest_path:
+                if compute_path_minimum_bandwidth(G, widest_shortest_path) < compute_path_minimum_bandwidth(G, path):
+                    raise RuntimeError('Widest Shortest Path Error')
+
+        print('Success')
+
+    p = []
+
+    for _ in range(4):
+        p.append(mp.Process(target=task))
+
+    for item in p:
+        item.start()
+
+    for item in p:
+        item.join()
 
 
 if __name__ == '__main__':
-    test()
+    test_1()

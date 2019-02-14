@@ -8,6 +8,7 @@
 """
 import matplotlib.pyplot as plt
 import networkx as nx
+import math
 
 
 def compute_network_performance(G, allocated_flows, allocated_graph):
@@ -93,6 +94,7 @@ def draw_topology(G, position, edge_attribute='residual_bandwidth', title="Test"
     """Draw topology and save as png
     :param G: The graph
     :param position: The position of graph
+    :param edge_attribute: The edge attribute correspond the edge label, default 'residual_bandwidth'
     :param title: The title of graph, default 'Test'
     :return:
     """
@@ -102,8 +104,6 @@ def draw_topology(G, position, edge_attribute='residual_bandwidth', title="Test"
     # Draw the graph according to the position with labels
     nx.draw(G, position, with_labels=True)
     nx.draw_networkx_edge_labels(G, position, edge_labels=nx.get_edge_attributes(G, edge_attribute))
-    # Save the picture as png
-    # plt.savefig("/Users/sam/Code/RoutingAlgorithm/img/%s.png" % title)
     plt.show()
 
 
@@ -146,6 +146,19 @@ def output_flows(flows):
         for dst_node in flows[src_node]:
             print(src_node, '->', dst_node, ':', flows[src_node][dst_node]['path'], ',size =',
                   flows[src_node][dst_node]['size'])
+
+
+def compute_path_minimum_bandwidth(G, path):
+    """Compute the minimum bandwidth during the path
+    :param G: The origin path
+    :param path: The path in G
+    :return: minimum_bandwidth
+    """
+    minimum_bandwidth = math.inf
+    for i in range(len(path) - 1):
+        minimum_bandwidth = min(minimum_bandwidth, G[path[i]][path[i + 1]]['residual_bandwidth'])
+
+    return minimum_bandwidth
 
 
 def test():
