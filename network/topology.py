@@ -13,12 +13,13 @@ from network.utils import *
 warnings.filterwarnings('ignore')
 
 
-def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
+def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000, flow_limit=100):
     """Generate a topology using Waxman method
     :param size: The number of nodes in topology, default 20
     :param b: Beta (0, 1] float in Waxman method, default 0.7
     :param a: Alpha (0, 1] float in Waxman method, default 0.7
     :param link_capacity: The link capacity in topology, here we consider all of them are same, equal to 1GB(1000MB)
+    :param flow_limit: The maximum number of flow entries, default 100
     :return: G, position
     """
     # Generate network topology using Waxman method
@@ -36,10 +37,18 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
         if cnt >= 100:
             raise RuntimeError('The parameter alpha and beta is not appropriate, please change other values')
 
+    # Add edge attributes
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
     # Add residual bandwidth for all edges
     nx.set_edge_attributes(G, link_capacity, 'residual_bandwidth')
+
+    # Add node attributes
+    # Add flow limit for all nodes
+    nx.set_node_attributes(G, flow_limit, 'flow_limit')
+    # Add residual flow entries for all nodes
+    nx.set_node_attributes(G, flow_limit, 'residual_flow_entries')
+
     # Get the layout of graph, here we use spring_layout
     pos = nx.spring_layout(G)
 
@@ -47,7 +56,7 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000):
 
 
 def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size_upper=100):
-    """According the graph G, generate flow requests
+    """According the graph G, generate flow requests for multicast
     :param G: The topology graph
     :param flow_groups: The number of flow groups, default 1
     :param flow_entries: The number of flow entries in each group, default 5
@@ -56,7 +65,7 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
     :return: flows
     """
     # Initialize flows
-    flows = {}
+    flows = []
 
     # If flow groups or flow entries are more than nodes of G, raise exception
     if flow_groups > len(G) or flow_entries > len(G):
@@ -67,20 +76,26 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
 
     # Traverse the source nodes in flows
     for src_node in src_nodes:
+        # Initialize flow
+        f = {}
+        # Generate the destination nodes from G
         nodes = set(range(len(G)))
-        # Remove srs_node in nodes
+        # Remove the source from nodes
         nodes.remove(src_node)
-        # Randomly generate destination nodes from G, no repeating
+        # Destination nodes initialize
         dst_nodes = {}
-        # Add in flows
+        # Traverse the destination nodes
         for dst_node in random.sample(nodes, flow_entries):
-            dst_nodes[dst_node] = {}
-            # Randomly generate flow size [size_lower, size_upper]
-            dst_nodes[dst_node]['size'] = random.randint(size_lower, size_upper)
-            # Set the flow path to None
-            dst_nodes[dst_node]['path'] = None
-
-        flows[src_node] = dst_nodes
+            # Set the path to None
+            dst_nodes[dst_node] = None
+        # Randomly generate flow size
+        size = random.randint(size_lower, size_upper)
+        # Set the src, dst and size
+        f['src'] = src_node
+        f['dst'] = dst_nodes
+        f['size'] = size
+        # Append the flow to flows
+        flows.append(f)
 
     return flows
 
@@ -89,7 +104,9 @@ def test():
     # Test function
     g, pos = generate_topology()
     draw_topology(g, pos)
-    generate_flow_requests(g)
+    flows = generate_flow_requests(g, flow_groups=4, flow_entries=10)
+    for item in flows:
+        print(item)
 
 
 if __name__ == '__main__':

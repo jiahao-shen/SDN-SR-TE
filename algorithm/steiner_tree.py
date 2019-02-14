@@ -24,13 +24,13 @@ def generate_steiner_trees(G, flows):
     """According to the flows and graph, generate Steiner Tree(ST) for multicast
     :param G: The origin graph
     :param flows: The flow request
-    :return: allocated_flows, allocated_graph
+    :return: graph, allocated_flows, allocated_graph
     """
     graph = G.copy()  # Copy G
     allocated_flows = flows.copy()  # Copy flows
 
-    steiner_trees = nx.Graph()  # Steiner Trees initialization
-    steiner_trees.add_nodes_from(G)  # Add nodes from G to allocated_graph
+    allocated_graph = nx.Graph()  # Steiner Trees initialization
+    allocated_graph.add_nodes_from(G)  # Add nodes from G to allocated_graph
 
     # Traverse source nodes in flows
     for src_node in flows:
@@ -50,22 +50,22 @@ def generate_steiner_trees(G, flows):
                 # Add the path into the allocated_flows
                 allocated_flows[src_node][dst_node]['path'] = path
                 # Add the path into the allocated_graph
-                nx.add_path(steiner_trees, path)
+                nx.add_path(allocated_graph, path)
 
-    return graph, allocated_flows, steiner_trees
+    return graph, allocated_flows, allocated_graph
 
 
 def generate_widest_steiner_trees(G, flows):
     """According to the flows and graph, generate Widest Steiner Tree(WST) for multicast
     :param G: The origin graph
     :param flows: The flow request
-    :return: allocated_flows, allocated_graph
+    :return: graph, allocated_flows, allocated_graph
     """
     graph = G.copy()  # Copy G
     allocated_flows = flows.copy()  # Copy flows
 
-    widest_steiner_trees = nx.Graph()  # Steiner Trees initialization
-    widest_steiner_trees.add_nodes_from(G)  # Add nodes from G to allocated_graph
+    allocated_graph = nx.Graph()  # Steiner Trees initialization
+    allocated_graph.add_nodes_from(G)  # Add nodes from G to allocated_graph
 
     # Traverse source nodes in flows
     for src_node in flows:
@@ -84,9 +84,9 @@ def generate_widest_steiner_trees(G, flows):
                 # Add the path into the allocated_flows
                 allocated_flows[src_node][dst_node]['path'] = path
                 # Add the path into the allocated_graph
-                nx.add_path(widest_steiner_trees, path)
+                nx.add_path(allocated_graph, path)
 
-    return graph, allocated_flows, widest_steiner_trees
+    return graph, allocated_flows, allocated_graph
 
 
 def generate_widest_steiner_tree(G, terminal_nodes):

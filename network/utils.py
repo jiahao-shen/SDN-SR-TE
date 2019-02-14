@@ -116,9 +116,9 @@ def check_path_valid(G, path, flow_size):
     """
     # Traverse the edges in path
     for i in range(len(path) - 1):
-        # If the residual bandwidth less than flow_size
+        # If the residual bandwidth less than flow_size Or the residual flow entries during the path node equal to 0
         # Then drop this flow
-        if G[path[i]][path[i + 1]]['residual_bandwidth'] < flow_size:
+        if G[path[i]][path[i + 1]]['residual_bandwidth'] < flow_size or G.node[path[i]]['residual_flow_entries'] == 0:
             return False
 
     return True
@@ -135,6 +135,31 @@ def add_path_to_graph(G, path, flow_size):
     for i in range(len(path) - 1):
         # The link residual bandwidth minus the current flow size
         G[path[i]][path[i + 1]]['residual_bandwidth'] -= flow_size
+        # The residual flow entries of current node minus 1(except the destination node)
+        G.node[path[i]]['residual_flow_entries'] -= 1
+
+
+def update_node_entries(G, path):
+    """Update the residual node entries during the path
+    :param G: The origin graph
+    :param path: The generated path
+    :return:
+    """
+    # Traverse each node during the path except the last node(destination)
+    for i in range(len(path) - 1):
+        # Update the residual flow entries
+        G.node[path[i]]['residual_flow_entries'] -= 1
+
+
+def update_edge_bandwidth(G, tree, flow_size):
+    """Update the residual bandwidth of edges in the tree
+    :param G:
+    :param tree:
+    :param flow_size:
+    :return:
+    """
+    for edge in tree.edges():
+        G[edge[0]][edge[1]]['residual_bandwidth'] -= flow_size
 
 
 def output_flows(flows):
@@ -142,10 +167,10 @@ def output_flows(flows):
     :param flows:
     :return:
     """
-    for src_node in flows:
-        for dst_node in flows[src_node]:
-            print(src_node, '->', dst_node, ':', flows[src_node][dst_node]['path'], ',size =',
-                  flows[src_node][dst_node]['size'])
+    for f in flows:
+        src_node = f['src']
+        for dst_node in f['dst']:
+            print(src_node, '->', dst_node, ':', f['dst'][dst_node], ',', 'size =', f['size'])
 
 
 def compute_path_minimum_bandwidth(G, path):
