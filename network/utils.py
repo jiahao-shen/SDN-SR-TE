@@ -29,13 +29,14 @@ def compute_num_branch_nodes(multicast_trees):
     :return:
     """
     num_branch_nodes = 0
-
+    # Traverse all multicast trees
     for tree in multicast_trees:
         for node in tree.nodes:
             # If the degrees of node bigger than two, it is a branch node
             if tree.degree(node) > 2:
                 num_branch_nodes += 1
-        # print('Number of branch nodes:', num_branch_nodes)
+
+    # print('Number of branch nodes:', num_branch_nodes)
     return num_branch_nodes
 
 
@@ -46,7 +47,7 @@ def compute_average_rejection_rate(allocated_flows):
     """
     num_total_flows = 0
     num_allocated_flows = 0
-
+    # Traverse all allocated flows
     for f in allocated_flows:
         for dst_node in f['dst']:
             # Compute the number of total flows
@@ -67,6 +68,7 @@ def compute_throughput(allocated_flows):
     :return:
     """
     throughput = 0
+    # Traverse all allocated flows
     for f in allocated_flows:
         for dst_node in f['dst']:
             # If current flow is allocated
@@ -84,6 +86,7 @@ def compute_link_utilization(G):
     """
     total_bandwidth = 0
     total_residual_bandwidth = 0
+    # Traverse all edges in G
     for edge in G.edges(data=True):
         total_bandwidth += edge[2]['link_capacity']
         total_residual_bandwidth += edge[2]['residual_bandwidth']
@@ -139,14 +142,14 @@ def update_node_entries(G, path):
         G.node[path[i]]['residual_flow_entries'] -= 1
 
 
-def update_edge_bandwidth(G, tree, flow_size):
+def update_edge_bandwidth(G, multicast_tree, flow_size):
     """Update the residual bandwidth of edges in the tree
     :param G: The origin graph
-    :param tree: The multicast tree
+    :param multicast_tree: The multicast tree
     :param flow_size: The size of current flow
     :return:
     """
-    for edge in tree.edges():
+    for edge in multicast_tree.edges:
         G[edge[0]][edge[1]]['residual_bandwidth'] -= flow_size
 
 

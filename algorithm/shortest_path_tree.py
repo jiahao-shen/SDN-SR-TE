@@ -103,13 +103,19 @@ def generate_widest_shortest_path(G, source):
     :return: all_widest_shortest_path
     """
     # The array to store whether the node has been visited
-    visited = [False for _ in range(len(G))]
+    visited = {}
     # The array to store the distance from source to the other nodes
-    distance = [math.inf for _ in range(len(G))]
+    distance = {}
     # The array to store the minimum bandwidth on the path from source to the other nodes
-    minimum_bandwidth = [math.inf for _ in range(len(G))]
+    minimum_bandwidth = {}
     # The array to store the father node in path for all nodes
-    father_node = [None for _ in range(len(G))]
+    father_node = {}
+
+    for node in G.nodes:
+        visited[node] = False
+        distance[node] = math.inf
+        minimum_bandwidth[node] = math.inf
+        father_node[node] = None
 
     # The source node initialize
     visited[source] = True
@@ -158,7 +164,7 @@ def generate_widest_shortest_path(G, source):
     # The dict to store all widest shortest path from source to other nodes
     all_widest_shortest_path = {}
     # Create all nodes set
-    destinations = set(range(len(G)))
+    destinations = set(G.nodes)
     # Remove the source node
     destinations.remove(source)
     # Traverse all other nodes
@@ -186,9 +192,8 @@ def test_1():
     shortest path, then raise error.
     :return:
     """
-
     def task():
-        for _ in range(1 << 12):
+        for _ in range(1 << 10):
             G, pos = generate_topology()
             src, dst = random.sample(range(20), 2)
 

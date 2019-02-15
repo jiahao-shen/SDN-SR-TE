@@ -35,14 +35,16 @@ def generate_steiner_trees(G, flows):
     for f in allocated_flows:
         # Generate the terminal nodes for steiner tree(destination nodes list + source node)
         terminal_nodes = list(f['dst'].keys()) + [f['src']]
-        # Generate the temp steiner tree for terminal nodes
-        tmp_tree = nx.Graph(nxaa.steiner_tree(graph, terminal_nodes, weight=None))
+        # Generate temp steiner tree for terminal nodes
+        # Then compute all paths from source to other nodes in temp steiner tree
+        all_paths = nx.shortest_path(nx.Graph(nxaa.steiner_tree(graph, terminal_nodes, weight=None)), f['src'],
+                                     weight=None)
         # Steiner Tree for current multicast initialization
         steiner_tree = nx.Graph()
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Compute the shortest path from source to destination, not considering weight
-            path = nx.shortest_path(tmp_tree, f['src'], dst_node, weight=None)
+            path = all_paths[dst_node]
             # Check the current path whether valid
             if check_path_valid(graph, path, f['size']):
                 # Record path for pair(source, destination)
@@ -75,14 +77,16 @@ def generate_widest_steiner_trees(G, flows):
     for f in allocated_flows:
         # Generate the terminal nodes for steiner tree(destination nodes list + source node)
         terminal_nodes = list(f['dst'].keys()) + [f['src']]
-        # Generate the temp steiner tree for terminal nodes
-        tmp_tree = nx.Graph(generate_widest_steiner_tree(graph, terminal_nodes))
+        # Generate the temp widest steiner tree for terminal nodes
+        # Then compute all paths from source to other nodes in temp widest steiner tree
+        all_paths = nx.shortest_path(nx.Graph(generate_widest_steiner_tree(graph, terminal_nodes)), f['src'],
+                                     weight=None)
         # Steiner Tree for current multicast initialization
         widest_steiner_tree = nx.Graph()
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Compute the shortest path from source to destination, not considering weight
-            path = nx.shortest_path(tmp_tree, f['src'], dst_node, weight=None)
+            path = all_paths[dst_node]
             # Check the current path whether valid
             if check_path_valid(graph, path, f['size']):
                 # Record path for pair(source, destination)
@@ -130,11 +134,11 @@ def generate_widest_metric_closure(G):
     # Initialize the widest_metric_closure
     widest_metric_closure = nx.Graph()
     # Traverse all nodes in G as src_node
-    for src_node in range(len(G)):
+    for src_node in G.nodes:
         # Compute all widest shortest path from src_node to other nodes
         all_widest_shortest_path = generate_widest_shortest_path(G, src_node)
         # Destination nodes without src_node
-        destinations = set(range(len(G)))
+        destinations = set(G.nodes)
         destinations.remove(src_node)
         # Traverse the destination
         for dst_node in destinations:

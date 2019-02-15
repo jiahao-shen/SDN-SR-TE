@@ -13,11 +13,11 @@ from network.utils import *
 warnings.filterwarnings('ignore')
 
 
-def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000, flow_limit=100):
+def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000, flow_limit=100):
     """Generate a topology using Waxman method
     :param size: The number of nodes in topology, default 20
-    :param b: Beta (0, 1] float in Waxman method, default 0.7
     :param a: Alpha (0, 1] float in Waxman method, default 0.7
+    :param b: Beta (0, 1] float in Waxman method, default 0.7
     :param link_capacity: The link capacity in topology, here we consider all of them are same, equal to 1GB(1000MB)
     :param flow_limit: The maximum number of flow entries, default 100
     :return: G, position
@@ -25,13 +25,13 @@ def generate_topology(size=20, b=0.7, a=0.7, link_capacity=1000, flow_limit=100)
     # Generate network topology using Waxman method
     # References: B. M. Waxman, "Routing of multipoint connections",
     # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp. 1617-1622, December 1988.
-    G = nx.waxman_graph(size, beta=b, alpha=a)
+    G = nx.waxman_graph(size, alpha=a, beta=b)
     # Count variables
     cnt = 0
     # If the graph is not connected
     while not nx.is_connected(G):
         # Generate the graph again
-        G = nx.waxman_graph(size, beta=b, alpha=a)
+        G = nx.waxman_graph(size, alpha=a, beta=b)
         cnt += 1
         # If cnt is bigger than 100, raise exception
         if cnt >= 100:
@@ -71,15 +71,13 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
     if flow_groups > len(G) or flow_entries > len(G):
         raise RuntimeError('Flow_groups and flow_entries cannot be more than len(G)')
 
-    # Randomly generate source nodes from G, no repeating
-    src_nodes = random.sample(range(len(G)), flow_groups)
-
+    # Randomly generate several source nodes
     # Traverse the source nodes in flows
-    for src_node in src_nodes:
+    for src_node in random.sample(G.nodes, flow_groups):
         # Initialize flow
         f = {}
         # Generate the destination nodes from G
-        nodes = set(range(len(G)))
+        nodes = set(G.nodes)
         # Remove the source from nodes
         nodes.remove(src_node)
         # Destination nodes initialize
