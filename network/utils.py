@@ -125,12 +125,15 @@ def check_path_valid(G, path, flow_size):
     :param flow_size: Size of Flow
     :return: Boolean
     """
-    # Traverse the edges in path
-    for i in range(len(path) - 1):
-        # If the residual bandwidth less than flow_size Or the residual flow entries during the path node equal to 0
-        # Then drop this flow
-        if G[path[i]][path[i + 1]]['residual_bandwidth'] < flow_size or G.node[path[i]]['residual_flow_entries'] == 0:
-            return False
+    try:
+        # Traverse the edges in path
+        for i in range(len(path) - 1):
+            # If the residual bandwidth less than flow_size Or the residual flow entries during the path node equal to 0
+            # Then drop this flow
+            if G[path[i]][path[i + 1]]['residual_bandwidth'] < flow_size or G.node[path[i]]['residual_flow_entries'] == 0:
+                return False
+    except TypeError:
+        print(type(path))
 
     return True
 
@@ -180,6 +183,18 @@ def compute_path_minimum_bandwidth(G, path):
         minimum_bandwidth = min(minimum_bandwidth, G[path[i]][path[i + 1]]['residual_bandwidth'])
 
     return minimum_bandwidth
+
+
+def output_graph(graph):
+    """Output the nodes and edges of graph with data
+    :param graph:
+    :return:
+    """
+    for n in graph.nodes(data=True):
+        print(n)
+
+    for e in graph.edges(data=True):
+        print(e)
 
 
 def test():
