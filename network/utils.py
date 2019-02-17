@@ -96,11 +96,12 @@ def compute_link_utilization(G):
     return link_utilization
 
 
-def draw_topology(G, position, edge_attribute='residual_bandwidth', title="Test"):
+def draw_topology(G, position, node_attribute=None, edge_attribute=None, title="Test"):
     """Draw topology and save as png
     :param G: The graph
     :param position: The position of graph
-    :param edge_attribute: The edge attribute correspond the edge label, default 'residual_bandwidth'
+    :param node_attribute: The node attribute correspond the node label, default None
+    :param edge_attribute: The edge attribute correspond the edge label, default None
     :param title: The title of graph, default 'Test'
     :return:
     """
@@ -109,7 +110,11 @@ def draw_topology(G, position, edge_attribute='residual_bandwidth', title="Test"
     plt.title(title)
     # Draw the graph according to the position with labels
     nx.draw(G, position, with_labels=True)
+    # Show the node labels
+    nx.draw_networkx_labels(G, position, labels=nx.get_node_attributes(G, node_attribute))
+    # Show the edge labels
     nx.draw_networkx_edge_labels(G, position, edge_labels=nx.get_edge_attributes(G, edge_attribute))
+    # Figure show
     plt.show()
 
 

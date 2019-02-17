@@ -41,7 +41,7 @@ def generate_shortest_path_trees(G, flows):
             shortest_path = all_shortest_paths[dst_node]
             # Check the current path whether valid
             if check_path_valid(graph, shortest_path, f['size']):
-                # Record  the shortest path for pair(source, destination)
+                # Record the shortest path for pair(source, destination)
                 f['dst'][dst_node] = shortest_path
                 # Add the shortest path into shortest path tree
                 nx.add_path(shortest_path_tree, shortest_path)
