@@ -66,13 +66,10 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=
         # Traverse the destination nodes in d_sorted
         for dst_node in d_sorted:
             # Path initialize
-            path = None
-            # If the graph is empty
-            if len(G) == 0:
-                # Path equals the shortest path
-                path = d[dst_node][0]
+            # If the G is empty, set the first path
+            path = d[dst_node][0]
             # If the graph is not empty
-            else:
+            if len(G) != 0:
                 # Initialize the minimum cost
                 minimum_cost = math.inf
                 # Traverse the k shortest paths for dst_node
@@ -176,20 +173,31 @@ def generate_weighted_graph(G, nodes_betweenness_centrality, edges_betweenness_c
     :param beta: The parameter of nodes for weight
     :return: weighted G
     """
+    # Traverse the edges
     for edge in G.edges(data=True):
-        congestion_index = edge[2]['link_capacity'] * 100
+        # Set the congestion to inf
+        congestion_index = math.inf
+        # If the residual bandwidth not equals 0, then compute the congestion
         if edge[2]['residual_bandwidth'] != 0:
             congestion_index = edge[2]['link_capacity'] / edge[2]['residual_bandwidth'] - 1
+        # Get the current edge betweenness centrality
         betweenness_centrality = edges_betweenness_centrality[(edge[0], edge[1])]
+        # Compute the weight according to the equation 3
         weight = alpha * congestion_index + (1 - alpha) * betweenness_centrality
+        # Set the edge weight
         edge[2]['weight'] = weight
-
+    # Traverse the nodes
     for node in G.nodes(data=True):
-        congestion_index = node[1]['flow_limit'] * 100
+        # Set the congestion to inf
+        congestion_index = math.inf
+        # If the residual bandwidth not equals 0, then compute the congestion
         if node[1]['residual_flow_entries'] != 0:
             congestion_index = node[1]['flow_limit'] / node[1]['residual_flow_entries'] - 1
+        # Get the current node betweenness centrality
         betweenness_centrality = nodes_betweenness_centrality[node[0]]
+        # Compute the weight according to the equation 4
         weight = beta * congestion_index + (1 - beta) * betweenness_centrality
+        # Set the node weight
         node[1]['weight'] = weight
 
     return G
