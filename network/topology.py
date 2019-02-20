@@ -13,18 +13,21 @@ from network.utils import *
 warnings.filterwarnings('ignore')
 
 
-def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000, flow_limit=100):
+def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
+                      flow_limit=100):
     """Generate a topology using Waxman method
     :param size: The number of nodes in topology, default 20
     :param a: Alpha (0, 1] float in Waxman method, default 0.7
     :param b: Beta (0, 1] float in Waxman method, default 0.7
-    :param link_capacity: The link capacity in topology, here we consider all of them are same, equal to 1GB(1000MB)
+    :param link_capacity: The link capacity in topology, here we consider all
+     of them are same, equal to 1GB(1000MB)
     :param flow_limit: The maximum number of flow entries, default 100
     :return: G, position
     """
     # Generate network topology using Waxman method
     # References: B. M. Waxman, "Routing of multipoint connections",
-    # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp. 1617-1622, December 1988.
+    # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp.
+    # 1617-1622, December 1988.
     G = nx.waxman_graph(size, alpha=a, beta=b)
     # Count variables
     cnt = 0
@@ -35,7 +38,8 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000, flow_limit=100)
         cnt += 1
         # If cnt is bigger than 100, raise exception
         if cnt >= 100:
-            raise RuntimeError('The parameter alpha and beta is not appropriate, please change other values')
+            raise RuntimeError('The parameter alpha and beta is not '
+                               'appropriate, please change other values')
 
     # Add edge attributes
     # Add link capacity for all edges
@@ -55,7 +59,8 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000, flow_limit=100)
     return G, pos
 
 
-def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size_upper=100):
+def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
+                           size_upper=100):
     """According the graph G, generate flow requests for multicast
     :param G: The topology graph
     :param flow_groups: The number of flow groups, default 1
@@ -69,7 +74,8 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10, size
 
     # If flow groups or flow entries are more than nodes of G, raise exception
     if flow_groups > len(G) or flow_entries > len(G):
-        raise RuntimeError('Flow_groups and flow_entries cannot be more than len(G)')
+        raise RuntimeError('Flow_groups and flow_entries cannot '
+                           'be more than len(G)')
 
     # Randomly generate several source nodes
     # Traverse the source nodes in flows

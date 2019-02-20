@@ -109,24 +109,30 @@ def lab_1(datas, lock):
     for multi_group_size in range(10, 60, 10):
         flows = generate_flow_requests(g, 10, multi_group_size)
 
-        graph, allocated_flows, multicast_trees = generate_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_shortest_path_trees(g, flows)
         spt[multi_group_size] += compute_num_branch_nodes(multicast_trees)
 
-        graph, allocated_flows, multicast_trees = generate_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_steiner_trees(g, flows)
         st[multi_group_size] += compute_num_branch_nodes(multicast_trees)
 
-        graph, allocated_flows, multicast_trees = generate_widest_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_shortest_path_trees(g, flows)
         wspt[multi_group_size] += compute_num_branch_nodes(multicast_trees)
 
-        graph, allocated_flows, multicast_trees = generate_widest_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_steiner_trees(g, flows)
         wst[multi_group_size] += compute_num_branch_nodes(multicast_trees)
 
-        graph, allocated_flows, multicast_trees = generate_bandwidth_efficient_branch_aware_segment_routing_trees(g,
-                                                                                                                  flows)
-        bbsrt[multi_group_size] += compute_num_branch_nodes(multicast_trees)
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         g, flows)
+        # bbsrt[multi_group_size] += compute_num_branch_nodes(multicast_trees)
 
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
+    datas.append(
+        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
     lock.release()
 
 
@@ -152,26 +158,33 @@ def lab_2(datas, lock):
     g, pos = generate_topology(NETWORK_SIZE, ALPHA, BETA)
 
     for num_requests in range(10, 90, 10):
-        flows = generate_flow_requests(g, num_requests, 30, size_lower=100, size_upper=200)
+        flows = generate_flow_requests(g, num_requests, 30, size_lower=100,
+                                       size_upper=200)
 
-        graph, allocated_flows, multicast_trees = generate_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_shortest_path_trees(g, flows)
         spt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_steiner_trees(g, flows)
         st[num_requests] += compute_average_rejection_rate(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_widest_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_shortest_path_trees(g, flows)
         wspt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_widest_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_steiner_trees(g, flows)
         wst[num_requests] += compute_average_rejection_rate(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_bandwidth_efficient_branch_aware_segment_routing_trees(g,
-                                                                                                                  flows)
-        bbsrt[num_requests] += compute_average_rejection_rate(allocated_flows)
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         g, flows)
+        # bbsrt[num_requests] += compute_average_rejection_rate(allocated_flows)
 
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
+    datas.append(
+        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
     lock.release()
 
 
@@ -197,26 +210,33 @@ def lab_3(datas, lock):
     g, pos = generate_topology(NETWORK_SIZE, ALPHA, BETA)
 
     for num_requests in range(10, 90, 10):
-        flows = generate_flow_requests(g, num_requests, 30, size_lower=100, size_upper=200)
+        flows = generate_flow_requests(g, num_requests, 30, size_lower=100,
+                                       size_upper=200)
 
-        graph, allocated_flows, multicast_trees = generate_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_shortest_path_trees(g, flows)
         spt[num_requests] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_steiner_trees(g, flows)
         st[num_requests] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_widest_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_shortest_path_trees(g, flows)
         wspt[num_requests] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_widest_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = generate_widest_steiner_trees(
+            g, flows)
         wst[num_requests] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_bandwidth_efficient_branch_aware_segment_routing_trees(g,
-                                                                                                                  flows)
-        bbsrt[num_requests] += compute_throughput(allocated_flows)
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         g, flows)
+        # bbsrt[num_requests] += compute_throughput(allocated_flows)
 
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
+    datas.append(
+        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
     lock.release()
 
 
@@ -241,26 +261,33 @@ def lab_4(datas, lock):
     for network_size in range(100, 500, 100):
         g, pos = generate_topology(network_size, ALPHA, BETA)
 
-        flows = generate_flow_requests(g, network_size // 4, network_size // 4, size_lower=100, size_upper=200)
+        flows = generate_flow_requests(g, network_size // 4, network_size // 4,
+                                       size_lower=100, size_upper=200)
 
-        graph, allocated_flows, multicast_trees = generate_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_shortest_path_trees(g, flows)
         spt[network_size] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_steiner_trees(g, flows)
         st[network_size] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_widest_shortest_path_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_shortest_path_trees(g, flows)
         wspt[network_size] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_widest_steiner_trees(g, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_steiner_trees(g, flows)
         wst[network_size] += compute_throughput(allocated_flows)
 
-        graph, allocated_flows, multicast_trees = generate_bandwidth_efficient_branch_aware_segment_routing_trees(g,
-                                                                                                                  flows)
-        bbsrt[network_size] += compute_throughput(allocated_flows)
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         g, flows)
+        # bbsrt[network_size] += compute_throughput(allocated_flows)
 
     lock.acquire()
-    datas.append({'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
+    datas.append(
+        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
     lock.release()
 
 

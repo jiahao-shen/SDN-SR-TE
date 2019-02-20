@@ -19,7 +19,7 @@ __all__ = [
 
 
 def generate_shortest_path_trees(G, flows):
-    """According to the flows and graph, generate Shortest Path Tree(SPT) for multicast
+    """According to flows and graph, generate Shortest Path Tree(SPT)
     :param G: The origin graph
     :param flows: The flow request
     :return: graph, allocated_flows, shortest_path_trees
@@ -31,33 +31,38 @@ def generate_shortest_path_trees(G, flows):
 
     # Traverse the flows
     for f in allocated_flows:
-        # Compute all shortest paths from current multicast source node to others, not considering weight
+        # Compute all shortest paths from current multicast source node to
+        # others, not considering weight
         all_shortest_paths = nx.shortest_path(graph, f['src'], weight=None)
         # Shortest path tree for current multicast initialization
         shortest_path_tree = nx.Graph()
+        # Add nodes from graph with source=False
+        shortest_path_tree.add_nodes_from(graph, source=False)
+        # Set the 'source' attribute of source node to True
+        shortest_path_tree.nodes[f['src']]['source'] = True
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Get the shortest path from source to destination
             shortest_path = all_shortest_paths[dst_node]
             # Check the current path whether valid
-            if check_path_valid(graph, shortest_path, f['size']):
+            if check_path_valid(graph, shortest_path_tree, shortest_path,
+                                f['size']):
                 # Record the shortest path for pair(source, destination)
                 f['dst'][dst_node] = shortest_path
                 # Add the shortest path into shortest path tree
-                nx.add_path(shortest_path_tree, shortest_path)
-                # Update the residual entries of nodes in graph
-                update_node_entries(graph, shortest_path)
-
+                shortest_path_tree.add_path(shortest_path)
+        # Update the residual flow entries of nodes in the shortest path tree
+        update_node_entries(graph, shortest_path_tree)
         # Update the residual bandwidth of edges in the shortest path tree
         update_edge_bandwidth(graph, shortest_path_tree, f['size'])
-
+        # Add multicast tree in forest
         shortest_path_trees.append(shortest_path_tree)
 
     return graph, allocated_flows, shortest_path_trees
 
 
 def generate_widest_shortest_path_trees(G, flows):
-    """According to the flows and graph, generate Widest Shortest Path Tree(WSPT) for multicast
+    """According to flows and graph, generate Widest Shortest Path Tree(WSPT)
     :param G: The origin graph
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
@@ -69,27 +74,34 @@ def generate_widest_shortest_path_trees(G, flows):
 
     # Traverse the flows
     for f in allocated_flows:
-        # Compute all widest shortest paths from current multicast source node to others
+        # Compute all widest shortest paths from current multicast
+        # source node to others
         # Considering residual bandwidth of edge as width
-        all_widest_shortest_paths = generate_widest_shortest_path(graph, f['src'])
+        all_widest_shortest_paths = generate_widest_shortest_path(graph,
+                                                                  f['src'])
         # Widest Shortest Path Tree for current multicast initialization
         widest_shortest_path_tree = nx.Graph()
+        # Add nodes from graph with source=False
+        widest_shortest_path_tree.add_nodes_from(graph, source=False)
+        # Set the 'source' attribute of source node to True
+        widest_shortest_path_tree.nodes[f['src']]['source'] = True
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Get the widest shortest path from source to destination
             widest_shortest_path = all_widest_shortest_paths[dst_node]
             # Check the current path whether valid
-            if check_path_valid(graph, widest_shortest_path, f['size']):
+            if check_path_valid(graph, widest_shortest_path_tree,
+                                widest_shortest_path, f['size']):
                 # Record the widest shortest path for pair(source, destination)
                 f['dst'][dst_node] = widest_shortest_path
                 # Add the widest shortest path into widest shortest path tree
-                nx.add_path(widest_shortest_path_tree, widest_shortest_path)
-                # Update the residual entries of nodes in graph
-                update_node_entries(graph, widest_shortest_path)
-
-        # Update the residual bandwidth of edges in the widest shortest path tree
+                widest_shortest_path_tree.add_path(widest_shortest_path)
+        # Update the residual entries of nodes in graph
+        update_node_entries(graph, widest_shortest_path_tree)
+        # Update the residual bandwidth of edges in the widest
+        # shortest path tree
         update_edge_bandwidth(graph, widest_shortest_path_tree, f['size'])
-
+        # Add multicast tree in forest
         widest_shortest_path_trees.append(widest_shortest_path_tree)
 
     return graph, allocated_flows, widest_shortest_path_trees
@@ -106,7 +118,8 @@ def generate_widest_shortest_path(G, source):
     visited = {}
     # The array to store the distance from source to the other nodes
     distance = {}
-    # The array to store the minimum bandwidth on the path from source to the other nodes
+    # The array to store the minimum bandwidth during path from source to
+    # the other nodes
     minimum_bandwidth = {}
     # The array to store the father node in path for all nodes
     father_node = {}
@@ -137,7 +150,9 @@ def generate_widest_shortest_path(G, source):
                 # Update the visited array
                 visited[item] = True
                 # Compute the minimum bandwidth from source to item
-                minimum_bandwidth[item] = min(minimum_bandwidth[node], G[node][item]['residual_bandwidth'])
+                minimum_bandwidth[item] = min(minimum_bandwidth[node],
+                                              G[node][item][
+                                                  'residual_bandwidth'])
                 # Record the father node of item
                 father_node[item] = node
                 # Put the item node into open_list
@@ -146,10 +161,16 @@ def generate_widest_shortest_path(G, source):
             else:
                 # If the new path length equals the old path length
                 if distance[node] + 1 == distance[item]:
-                    # If the minimum bandwidth of new path is bigger than the old path
-                    if min(minimum_bandwidth[node], G[node][item]['residual_bandwidth']) > minimum_bandwidth[item]:
+                    # If the minimum bandwidth of new path is bigger
+                    # than the old path
+                    if min(minimum_bandwidth[node],
+                           G[node][item]['residual_bandwidth']) > \
+                            minimum_bandwidth[item]:
                         # Update the minimum bandwidth for item
-                        minimum_bandwidth[item] = min(minimum_bandwidth[node], G[node][item]['residual_bandwidth'])
+                        minimum_bandwidth[item] = min(minimum_bandwidth[node],
+                                                      G[node][item][
+                                                          'residual_bandwidth']
+                                                      )
                         # Update the father node of item
                         father_node[item] = node
                 # If the new path length is less than the old path length
@@ -159,7 +180,9 @@ def generate_widest_shortest_path(G, source):
                     # Update the father node of item
                     father_node[item] = node
                     # Update the minimum bandwidth of item
-                    minimum_bandwidth[item] = min(minimum_bandwidth[node], G[node][item]['residual_bandwidth'])
+                    minimum_bandwidth[item] = min(minimum_bandwidth[node],
+                                                  G[node][item][
+                                                      'residual_bandwidth'])
 
     # The dict to store all widest shortest path from source to other nodes
     all_widest_shortest_path = {}
@@ -185,13 +208,15 @@ def generate_widest_shortest_path(G, source):
 
 def test_1():
     """Test Widest Shortest Path algorithm
-    Start 4 processes, each process runs 1 << 12 times, each time randomly generates a network topology, then randomly
-    generates one pair (source, destination), then compute the widest shortest path and all shortest paths from source
-    to destination.
-    Then, compare the minimum bandwidth of each path. If the minimum bandwidth of other paths is bigger than the widest
-    shortest path, then raise error.
+    Start 4 processes, each process runs 1 << 12 times, each time randomly
+    generates a network topology, then randomly generates one pair
+    (source, destination), then compute the widest shortest path and all
+    shortest paths from source to destination.
+    Then, compare the minimum bandwidth of each path. If the minimum bandwidth
+    of other paths is bigger than the widest shortest path, then raise error.
     :return:
     """
+
     def task():
         for _ in range(1 << 10):
             G, pos = generate_topology()
@@ -202,7 +227,8 @@ def test_1():
             all_shortest_path = nx.all_shortest_paths(G, src, dst, weight=None)
 
             for path in all_shortest_path:
-                if compute_path_minimum_bandwidth(G, widest_shortest_path) < compute_path_minimum_bandwidth(G, path):
+                if compute_path_minimum_bandwidth(G, widest_shortest_path) < \
+                        compute_path_minimum_bandwidth(G, path):
                     raise RuntimeError('Widest Shortest Path Error')
 
         print('Success')
@@ -229,7 +255,8 @@ def test_2():
     draw_topology(G, pos, title='Topology')
 
     # SPT
-    graph, allocated_flows, multicast_trees = generate_shortest_path_trees(G, flows)
+    graph, allocated_flows, multicast_trees = \
+        generate_shortest_path_trees(G, flows)
 
     draw_topology(graph, pos, title='Allocated Graph')
     output_flows(allocated_flows)
@@ -238,7 +265,8 @@ def test_2():
         draw_topology(tree, pos, title='Tree')
 
     # WSPT
-    graph, allocated_flows, multicast_trees = generate_widest_shortest_path_trees(G, flows)
+    graph, allocated_flows, multicast_trees = \
+        generate_widest_shortest_path_trees(G, flows)
 
     draw_topology(graph, pos, title='Allocated Graph')
     output_flows(allocated_flows)
@@ -247,6 +275,22 @@ def test_2():
         draw_topology(tree, pos, title='Tree')
 
 
+def test_3():
+    G, pos = generate_topology(a=0.4, b=0.4)
+    flows = generate_flow_requests(G)
+
+    output_flows(flows)
+
+    draw_topology(G, pos, title='Topology')
+    graph, allocated_flows, trees = generate_shortest_path_trees(G, flows)
+
+    for t in trees:
+        draw_topology(t, pos, title='Trees')
+
+    print(compute_num_branch_nodes(trees))
+
+
 if __name__ == '__main__':
     test_1()
     test_2()
+    test_3()

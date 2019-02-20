@@ -16,11 +16,18 @@ __all__ = [
 ]
 
 
-def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=5, alpha=0.5, beta=0.5, w1=1, w2=1):
-    """According to the flows and graph, generate Bandwidth-efficient Branch-aware Segment Routing Tree(BBSRT)
+def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
+                                                                    k=5,
+                                                                    alpha=0.5,
+                                                                    beta=0.5,
+                                                                    w1=1,
+                                                                    w2=1):
+    """According to the flows and graph, generate Bandwidth-efficient
+    Branch-aware Segment Routing Tree(BBSRT)
     Sheu, J.-P., & Chen, Y.-C. (2017).
-    A scalable and bandwidth-efficient multicast algorithm based on segment routing in software-defined networking.
-    In 2017 IEEE International Conference on Communications (ICC) (pp. 1–6). IEEE.
+    A scalable and bandwidth-efficient multicast algorithm based on segment
+    routing in software-defined networking.
+    In 2017 IEEE International Conference on Communications (ICC) (pp. 1–6).
     https://doi.org/10.1109/ICC.2017.7997197
     :param G: The origin graph
     :param flows: The flow request
@@ -29,7 +36,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=
     :param beta: The parameter in equation 4 in paper, default 0.5
     :param w1: The parameter in equation for extra cost, default 1
     :param w2: The parameter in equation for extra cost, default 1
-    :return: graph, allocated_flows, band_efficient_branch_aware_segment_routing_trees
+    :return: graph, allocated_flows,
+    band_efficient_branch_aware_segment_routing_trees
     """
     graph = G.copy()  # Copy G
     allocated_flows = flows.copy()  # Copy flows
@@ -41,14 +49,18 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=
     band_efficient_branch_aware_segment_routing_trees = []  # Initialize
 
     # The node betweenness centrality
-    nodes_betweenness_centrality = nx.betweenness_centrality(graph, weight=None)
+    nodes_betweenness_centrality = nx.betweenness_centrality(graph,
+                                                             weight=None)
     # The edge betweenness centrality
-    edges_betweenness_centrality = nx.edge_betweenness_centrality(graph, weight=None)
+    edges_betweenness_centrality = nx.edge_betweenness_centrality(graph,
+                                                                  weight=None)
 
     # Traverse the flows
     for f in allocated_flows:
         # Add weight for nodes and edges
-        graph = generate_weighted_graph(graph, nodes_betweenness_centrality, edges_betweenness_centrality, alpha, beta)
+        graph = generate_weighted_graph(graph, nodes_betweenness_centrality,
+                                        edges_betweenness_centrality, alpha,
+                                        beta)
         # Dict to store k shortest paths for (source, destinations)
         d = {}
         # Sorted Dict to store cost of the shortest path
@@ -58,9 +70,11 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Compute the k shortest path from source to dst_node
-            d[dst_node] = generate_k_shortest_paths(graph, f['src'], dst_node, k, weight='weight')
+            d[dst_node] = generate_k_shortest_paths(graph, f['src'], dst_node,
+                                                    k, weight='weight')
             # Store the shortest path cost in d_sorted
-            d_sorted[dst_node] = compute_path_cost(graph, d[dst_node][0], weight='weight')
+            d_sorted[dst_node] = compute_path_cost(graph, d[dst_node][0],
+                                                   weight='weight')
         # Sort the dict by value
         d_sorted = OrderedDict(sorted(d_sorted.items(), key=lambda x: x[1]))
         # Traverse the destination nodes in d_sorted
@@ -75,7 +89,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=
                 # Traverse the k shortest paths for dst_node
                 for p in d[dst_node]:
                     # Compute the extra cost
-                    extra_cost = compute_extra_cost(graph, multicast_tree, f['src'], p, w1, w2)
+                    extra_cost = compute_extra_cost(graph, multicast_tree,
+                                                    f['src'], p, w1, w2)
                     # If extra cost is smaller than minimum cost
                     if extra_cost < minimum_cost:
                         # Update minimum cost
@@ -93,7 +108,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows, k=
         # Update the residual bandwidth of edges in the multicast tree
         update_edge_bandwidth(graph, multicast_tree, f['size'])
 
-        band_efficient_branch_aware_segment_routing_trees.append(multicast_tree)
+        band_efficient_branch_aware_segment_routing_trees.append(
+            multicast_tree)
 
     return graph, allocated_flows, band_efficient_branch_aware_segment_routing_trees
 
@@ -114,7 +130,7 @@ def compute_extra_cost(G, multicast_tree, source, path, w1, w2):
     new_degree = dict(tmp_tree.degree)  # The new degree after path added
 
     # Compute the branch node and flag(whether new branch node)
-    branch_node, flag = compute_branch_node(source, old_degree, new_degree)
+    branch_node, flag = compute_intersection_node(source, old_degree, new_degree)
     # The final result
     extra_cost = 0
     # If there is no branch node
@@ -135,36 +151,8 @@ def compute_extra_cost(G, multicast_tree, source, path, w1, w2):
     return extra_cost
 
 
-def compute_branch_node(source, old_degrees, new_degrees):
-    """According to the degrees, check whether generate new branch node
-    :param source: The source node of multicast tree
-    :param old_degrees: The degree of graph before path added into
-    :param new_degrees: The degree of graph after path added into
-    :return: node, Boolean
-    """
-    for node in old_degrees:
-        # If the current node isn't source node
-        if node != source:
-            # Is new branch node
-            if new_degrees[node] > old_degrees[node] == 2:
-                return node, True
-            # Not new branch node
-            elif new_degrees[node] > old_degrees[node] > 2:
-                return node, False
-        # If the current node is source node
-        else:
-            # Is new branch node
-            if new_degrees[node] > old_degrees[node] == 1:
-                return node, True
-            # Not new branch node
-            elif new_degrees[node] > old_degrees[node] > 1:
-                return node, False
-
-    # No branch node
-    return None, False
-
-
-def generate_weighted_graph(G, nodes_betweenness_centrality, edges_betweenness_centrality, alpha, beta):
+def generate_weighted_graph(G, nodes_betweenness_centrality,
+                            edges_betweenness_centrality, alpha, beta):
     """Generate the weighted graph according to the paper
     :param G: The origin graph
     :param nodes_betweenness_centrality:
@@ -179,11 +167,14 @@ def generate_weighted_graph(G, nodes_betweenness_centrality, edges_betweenness_c
         congestion_index = math.inf
         # If the residual bandwidth not equals 0, then compute the congestion
         if edge[2]['residual_bandwidth'] != 0:
-            congestion_index = edge[2]['link_capacity'] / edge[2]['residual_bandwidth'] - 1
+            congestion_index = edge[2]['link_capacity'] / edge[2][
+                'residual_bandwidth'] - 1
         # Get the current edge betweenness centrality
-        betweenness_centrality = edges_betweenness_centrality[(edge[0], edge[1])]
+        betweenness_centrality = edges_betweenness_centrality[
+            (edge[0], edge[1])]
         # Compute the weight according to the equation 3
-        weight = alpha * congestion_index + (1 - alpha) * betweenness_centrality
+        weight = alpha * congestion_index + (
+                    1 - alpha) * betweenness_centrality
         # Set the edge weight
         edge[2]['weight'] = weight
     # Traverse the nodes
@@ -192,7 +183,8 @@ def generate_weighted_graph(G, nodes_betweenness_centrality, edges_betweenness_c
         congestion_index = math.inf
         # If the residual bandwidth not equals 0, then compute the congestion
         if node[1]['residual_flow_entries'] != 0:
-            congestion_index = node[1]['flow_limit'] / node[1]['residual_flow_entries'] - 1
+            congestion_index = node[1]['flow_limit'] / node[1][
+                'residual_flow_entries'] - 1
         # Get the current node betweenness centrality
         betweenness_centrality = nodes_betweenness_centrality[node[0]]
         # Compute the weight according to the equation 4
@@ -212,7 +204,8 @@ def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
     :param weight: The weight value in shortest path algorithm, default None
     :return: The list of k shortest paths
     """
-    return list(islice(nx.shortest_simple_paths(G, source, destination, weight), k))
+    return list(
+        islice(nx.shortest_simple_paths(G, source, destination, weight), k))
 
 
 def compute_path_cost(G, path, weight=None):
@@ -241,12 +234,15 @@ def test():
 
     draw_topology(G, pos, title='Topology')
 
-    graph, allocated_flows, multicast_trees = generate_shortest_path_trees(G, flows)
+    graph, allocated_flows, multicast_trees = \
+        generate_shortest_path_trees(G, flows)
 
     for index, tree in enumerate(multicast_trees):
         draw_topology(tree, pos, title='SPT' + str(index))
 
-    graph, allocated_flows, multicast_trees = generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows)
+    graph, allocated_flows, multicast_trees = \
+        generate_bandwidth_efficient_branch_aware_segment_routing_trees(G,
+                                                                        flows)
 
     for index, tree in enumerate(multicast_trees):
         draw_topology(tree, pos, title='BBSRT' + str(index))
