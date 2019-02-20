@@ -122,8 +122,8 @@ def draw_topology(G, position, node_attribute=None, edge_attribute=None,
                             labels=nx.get_node_attributes(G, node_attribute))
     # Show the edge labels
     nx.draw_networkx_edge_labels(G, position,
-                                 edge_labels=nx.get_edge_attributes(G,
-                                                                    edge_attribute))
+                                 edge_labels=nx.get_edge_attributes(
+                                     G, edge_attribute))
     # Figure show
     plt.show()
 
@@ -228,48 +228,8 @@ def compute_path_minimum_bandwidth(G, path):
     return minimum_bandwidth
 
 
-def compute_intersection_node(multicast_tree, path):
-    """According to the multicast tree, to compute the intersection node
-    :param multicast_tree: The allocated multicast tree
-    :param path: The path need to be added
-    :return: node, flag
-    """
-    intersection_node = None
-
-    for i in range(len(path)):
-        if multicast_tree.degree(path[i]) == 0:
-            intersection_node = path[i - 1]
-            break
-
-    if intersection_node is None:
-        return None, False
-
-    if (multicast_tree.nodes[intersection_node][
-            'source'] and multicast_tree.degree(intersection_node) == 1) or \
-            (not multicast_tree.nodes[intersection_node][
-                'source'] and multicast_tree.degree(intersection_node) == 2):
-        return intersection_node, True
-
-    return intersection_node, False
-
-
 def test_1():
-    G = nx.Graph()
-    G.add_nodes_from(range(20), source=False)
-    G.nodes[0]['source'] = True
-    G.add_path([0, 1, 2, 3])
-    print(compute_intersection_node(G, [0, 5]))
-    print(compute_intersection_node(G, [0, 1]))
-    print(compute_intersection_node(G, [0, 1, 4]))
-    print(compute_intersection_node(G, [0, 1, 2, 3, 4]))
-    print('-----------------------')
-
-    G.add_path([0, 1, 2, 4])
-    print(compute_intersection_node(G, [0, 5]))
-    print(compute_intersection_node(G, [0, 1, 2, 5]))
-    print(compute_intersection_node(G, [0, 1, 2]))
-    print(compute_intersection_node(G, [0, 1, 2, 4, 6]))
-    print(compute_intersection_node(G, [0, 1, 5]))
+    pass
 
 
 if __name__ == '__main__':
