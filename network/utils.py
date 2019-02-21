@@ -186,8 +186,7 @@ def update_node_entries(G, multicast_tree):
         elif not node[1]['source'] and multicast_tree.degree(node[0]) >= 3:
             # Residual flow entries minus degree - 1
             G.nodes[node[0]]['residual_flow_entries'] -= (
-                    multicast_tree.degree(
-                        node[0]) - 1)
+                    multicast_tree.degree(node[0]) - 1)
 
 
 def update_edge_bandwidth(G, multicast_tree, flow_size):

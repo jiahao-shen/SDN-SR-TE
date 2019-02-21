@@ -14,14 +14,14 @@ import multiprocessing as mp
 
 
 def main():
-    # print('Lab 1')
-    # run_task(lab_1)
+    print('Lab 1')
+    run_task(lab_1)
     print('Lab 2')
     run_task(lab_2)
     print('Lab 3')
     run_task(lab_3)
-    # print('Lab 4')
-    # run_task(lab_4)
+    print('Lab 4')
+    run_task(lab_4)
 
 
 def run_task(fnc, times=4):

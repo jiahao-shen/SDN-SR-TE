@@ -224,22 +224,25 @@ def compute_intersection_node(multicast_tree, path):
     :param path: The path need to be added
     :return: node, flag
     """
+    # Intersection node initialize
     intersection_node = None
-
+    # Traverse all nodes during path
     for i in range(len(path)):
+        # Find the first node not in the multicast tree
         if multicast_tree.degree(path[i]) == 0:
+            # Set the previous node as intersection and then break
             intersection_node = path[i - 1]
             break
-
+    # If no intersection, return False
     if intersection_node is None:
         return None, False
-
+    # If the intersection is new branch node, return True
     if (multicast_tree.nodes[intersection_node][
             'source'] and multicast_tree.degree(intersection_node) == 1) or \
             (not multicast_tree.nodes[intersection_node][
                 'source'] and multicast_tree.degree(intersection_node) == 2):
         return intersection_node, True
-
+    # Else return False
     return intersection_node, False
 
 
