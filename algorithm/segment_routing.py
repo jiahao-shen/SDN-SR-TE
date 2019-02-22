@@ -1,4 +1,4 @@
-"""
+""""
 @project: RoutingAlgorithm
 @author: sam
 @file segment_routing.py
@@ -67,10 +67,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         d_sorted = {}
         # The multicast tree for current source node
         multicast_tree = nx.Graph()
-        # Add nodes from graph with source=False
-        multicast_tree.add_nodes_from(graph, source=False)
-        # Set the 'source' attribute of source node to True
-        multicast_tree.nodes[f['src']]['source'] = True
+        # Set the source node of multicast tree
+        multicast_tree.source = f['src']
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Compute the k shortest path from source to dst_node
@@ -85,22 +83,24 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         for dst_node in d_sorted:
             # Path initialize
             path = d[dst_node][0]
-            # Initialize the minimum cost
-            minimum_cost = math.inf
-            # Traverse the k shortest path for dst_node
-            for p in d[dst_node]:
-                # If exists cycle after adding p into multicast tree
-                # Then continue
-                if has_cycle(multicast_tree, p):
-                    continue
-                # Compute the extra cost according to the paper
-                extra_cost = compute_extra_cost(graph, multicast_tree, p, w1,
-                                                w2)
-                # If extra cost less than minimum cost
-                if extra_cost < minimum_cost:
-                    # Update minimum cost and path
-                    minimum_cost = extra_cost
-                    path = p
+            # If the multicast tree isn't empty
+            if len(multicast_tree) != 0:
+                # Initialize the minimum cost
+                minimum_cost = math.inf
+                # Traverse the k shortest path for dst_node
+                for p in d[dst_node]:
+                    # If exists cycle after adding p into multicast tree
+                    # Then continue
+                    if has_cycle(multicast_tree, p):
+                        continue
+                    # Compute the extra cost according to the paper
+                    extra_cost = compute_extra_cost(graph, multicast_tree, p, w1,
+                                                    w2)
+                    # If extra cost less than minimum cost
+                    if extra_cost < minimum_cost:
+                        # Update minimum cost and path
+                        minimum_cost = extra_cost
+                        path = p
             # Check the current path whether valid
             if check_path_valid(graph, multicast_tree, path, f['size']):
                 # Record the path for pair(source, destination)
@@ -229,7 +229,7 @@ def compute_intersection_node(multicast_tree, path):
     # Traverse all nodes during path
     for i in range(len(path)):
         # Find the first node not in the multicast tree
-        if multicast_tree.degree(path[i]) == 0:
+        if path[i] not in multicast_tree.nodes:
             # Set the previous node as intersection and then break
             intersection_node = path[i - 1]
             break
@@ -237,10 +237,10 @@ def compute_intersection_node(multicast_tree, path):
     if intersection_node is None:
         return None, False
     # If the intersection is new branch node, return True
-    if (multicast_tree.nodes[intersection_node][
-            'source'] and multicast_tree.degree(intersection_node) == 1) or \
-            (not multicast_tree.nodes[intersection_node][
-                'source'] and multicast_tree.degree(intersection_node) == 2):
+    if (intersection_node == multicast_tree.source and
+            multicast_tree.degree(intersection_node) == 1) or (
+            intersection_node != multicast_tree.source and
+            multicast_tree.degree(intersection_node) == 2):
         return intersection_node, True
     # Else return False
     return intersection_node, False
@@ -270,6 +270,8 @@ def test_1():
     G, pos = generate_topology()
     flows = generate_flow_requests(G, flow_entries=10)
 
+    output_flows(flows)
+
     draw_topology(G, pos, title='Topology')
 
     graph, allocated_flows, multicast_trees = \
@@ -285,14 +287,12 @@ def test_1():
     for index, tree in enumerate(multicast_trees):
         draw_topology(tree, pos, title='BBSRT' + str(index))
 
-    output_flows(allocated_flows)
-
 
 def test_2():
     G = nx.Graph()
-    G.add_nodes_from(range(20), source=False)
-    G.nodes[0]['source'] = True
+    G.source = 0
     G.add_path([0, 1, 2, 3])
+
     print(compute_intersection_node(G, [0, 5]))
     print(compute_intersection_node(G, [0, 1]))
     print(compute_intersection_node(G, [0, 1, 4]))
@@ -309,4 +309,4 @@ def test_2():
 
 if __name__ == '__main__':
     test_1()
-    # test_2()
+    test_2()

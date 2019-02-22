@@ -44,10 +44,8 @@ def generate_steiner_trees(G, flows):
                                      f['src'], weight=None)
         # Steiner Tree for current multicast initialization
         steiner_tree = nx.Graph()
-        # Add nodes from graph with source=False
-        steiner_tree.add_nodes_from(graph, source=False)
-        # Set the 'source' attribute of source node to True
-        steiner_tree.nodes[f['src']]['source'] = True
+        # Set the source node of steiner tree
+        steiner_tree.source = f['src']
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Get the path from source to destination, not considering weight
@@ -93,10 +91,8 @@ def generate_widest_steiner_trees(G, flows):
             weight=None)
         # Steiner Tree for current multicast initialization
         widest_steiner_tree = nx.Graph()
-        # Add nodes from graph with source=False
-        widest_steiner_tree.add_nodes_from(graph, source=False)
-        # Set the 'source' attribute of source node to True
-        widest_steiner_tree.nodes[f['src']]['source'] = True
+        # Set the source node of widest steiner tree
+        widest_steiner_tree.source = f['src']
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Get the path from source to destination, not considering weight

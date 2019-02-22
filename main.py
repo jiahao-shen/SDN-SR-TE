@@ -16,12 +16,12 @@ import multiprocessing as mp
 def main():
     print('Lab 1')
     run_task(lab_1)
-    print('Lab 2')
-    run_task(lab_2)
-    print('Lab 3')
-    run_task(lab_3)
-    print('Lab 4')
-    run_task(lab_4)
+    # print('Lab 2')
+    # run_task(lab_2)
+    # print('Lab 3')
+    # run_task(lab_3)
+    # print('Lab 4')
+    # run_task(lab_4)
 
 
 def run_task(fnc, times=4):
@@ -54,35 +54,36 @@ def run_task(fnc, times=4):
     # The final result
     result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}, 'BBSRT': {}}
 
-    # Traverse each data
-    for data in datas:
-        # Add each data to the result
-        for name in data:
-            for index in data[name]:
-                if index in result[name].keys():
-                    result[name][index] += data[name][index]
-                else:
-                    result[name][index] = 0
-
-    # Compute the average data
-    for name in result:
-        for index in result[name]:
-            result[name][index] /= times
-
-    # Output the result
-    print('', end='\t')
-    for index in result['SPT']:
-        print(index, end='\t')
-
-    print()
-
-    for name in result:
-        print(name, end='\t')
-        for index in result[name]:
-            print(result[name][index], end='\t')
-        print()
-
-    print('----------------------------')
+    print(datas)
+    # # Traverse each data
+    # for data in datas:
+    #     # Add each data to the result
+    #     for name in data:
+    #         for index in data[name]:
+    #             if index in result[name].keys():
+    #                 result[name][index] += data[name][index]
+    #             else:
+    #                 result[name][index] = 0
+    #
+    # # Compute the average data
+    # for name in result:
+    #     for index in result[name]:
+    #         result[name][index] /= times
+    #
+    # # Output the result
+    # print('', end='\t')
+    # for index in result['SPT']:
+    #     print(index, end='\t')
+    #
+    # print()
+    #
+    # for name in result:
+    #     print(name, end='\t')
+    #     for index in result[name]:
+    #         print(result[name][index], end='\t')
+    #     print()
+    #
+    # print('----------------------------')
 
 
 def lab_1(datas, lock):
