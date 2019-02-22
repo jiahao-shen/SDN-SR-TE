@@ -94,8 +94,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                     if has_cycle(multicast_tree, p):
                         continue
                     # Compute the extra cost according to the paper
-                    extra_cost = compute_extra_cost(graph, multicast_tree, p, w1,
-                                                    w2)
+                    extra_cost = compute_extra_cost(graph, multicast_tree, p,
+                                                    w1, w2)
                     # If extra cost less than minimum cost
                     if extra_cost < minimum_cost:
                         # Update minimum cost and path

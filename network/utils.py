@@ -21,10 +21,10 @@ def compute_network_performance(G, allocated_flows, multicast_trees):
     :return: num_branch_nodes, average_rejection_rate, throughput,
     link_utilization
     """
-    return compute_num_branch_nodes(
+    return [compute_num_branch_nodes(
         multicast_trees), compute_average_rejection_rate(
         allocated_flows), compute_throughput(
-        allocated_flows), compute_link_utilization(G)
+        allocated_flows), compute_link_utilization(G)]
 
 
 def compute_num_branch_nodes(multicast_trees):
