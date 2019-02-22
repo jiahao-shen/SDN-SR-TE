@@ -118,13 +118,13 @@ def generate_widest_shortest_path(G, source):
     # the other nodes
     minimum_bandwidth = {}
     # The array to store the father node in path for all nodes
-    father_node = {}
+    pre_node = {}
 
     for node in G.nodes:
         visited[node] = False
         distance[node] = math.inf
         minimum_bandwidth[node] = math.inf
-        father_node[node] = None
+        pre_node[node] = None
 
     # The source node initialize
     visited[source] = True
@@ -150,7 +150,7 @@ def generate_widest_shortest_path(G, source):
                                               G[node][item][
                                                   'residual_bandwidth'])
                 # Record the father node of item
-                father_node[item] = node
+                pre_node[item] = node
                 # Put the item node into open_list
                 open_list.put(item)
             # If the item has been visited
@@ -168,13 +168,13 @@ def generate_widest_shortest_path(G, source):
                                                           'residual_bandwidth']
                                                       )
                         # Update the father node of item
-                        father_node[item] = node
+                        pre_node[item] = node
                 # If the new path length is less than the old path length
                 elif distance[node] + 1 < distance[item]:
                     # Update the distance from source to item
                     distance[item] = distance[node] + 1
                     # Update the father node of item
-                    father_node[item] = node
+                    pre_node[item] = node
                     # Update the minimum bandwidth of item
                     minimum_bandwidth[item] = min(minimum_bandwidth[node],
                                                   G[node][item][
@@ -194,7 +194,8 @@ def generate_widest_shortest_path(G, source):
         node = dst_node
         while node is not None:
             path.append(node)
-            node = father_node[node]
+            node = pre_node[node]
+        # Reverse the path
         path.reverse()
         # Store the path for dst_node
         all_widest_shortest_path[dst_node] = path
