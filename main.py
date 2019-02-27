@@ -10,26 +10,28 @@ from algorithm.shortest_path_tree import *
 from algorithm.steiner_tree import *
 from algorithm.segment_routing import *
 from network.topology import *
+from network.utils import *
 from time import time
 import multiprocessing as mp
 
 
-PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate',
-               'Throughput', 'Link Utilization', 'Generate Time']
+PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate(%)',
+               'Throughput', 'Link Utilization(%)', 'Generate Time']
 
 
 def main():
-    # print('Lab 1')
-    # run_task(lab_1)
+    print('Lab 1')
+    run_task(lab_1, 'Multicast Group Size')
     # print('Lab 2')
     # run_task(lab_2)
-    print('Lab 3')
-    run_task(lab_3)
+    # print('Lab 3')
+    # run_task(lab_3)
 
 
-def run_task(fnc, times=4):
+def run_task(fnc, independent_variable, times=4):
     """Run different experiments
     :param fnc: Lab name
+    :param independent_variable: The independent variable for current lab
     :param times: The running times for each lab
     :return:
     """
@@ -84,6 +86,11 @@ def run_task(fnc, times=4):
             for index in result[name]:
                 print(result[name][index], end='\t')
             print()
+
+        if i == 2 or i == 4:
+            draw_result(result, independent_variable, PERFORMANCE[i], 'bar')
+        else:
+            draw_result(result, independent_variable, PERFORMANCE[i], 'line')
 
         print('-------------------------')
 

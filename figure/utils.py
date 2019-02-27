@@ -10,6 +10,11 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 
+__all__ = [
+    'draw_topology',
+    'draw_result'
+]
+
 POINT_MARKER = {'SPT': 'o', 'ST': 'v', 'WSPT': 's', 'WST': '*', 'BBSRT': 'D'}
 POINT_COLOR = {'SPT': 'r', 'ST': 'm', 'WSPT': 'y', 'WST': 'g', 'BBSRT': 'b'}
 
@@ -42,11 +47,10 @@ def draw_topology(G, position, node_attribute=None, edge_attribute=None,
     plt.show()
 
 
-def draw_results(results, x_label='Multigroup Size',
-                 y_label='Number of Branch Node',
-                 type='line'):
+def draw_result(result, x_label='Multigroup Size',
+                y_label='Number of Branch Node', type='line'):
     """Draw results for main.py
-    :param results: The final results as dict
+    :param result: The final result as dict
     :param x_label: The x label of figure
     :param y_label: The y label of figure
     :param type: The figure type, including line and bar, default line
@@ -57,29 +61,26 @@ def draw_results(results, x_label='Multigroup Size',
     # Check the figure type
     if type == 'line':
         # Draw the line figure
-        for key in results:
-            plt.plot(*zip(*sorted(results[key].items())), label=key,
+        for key in result:
+            plt.plot(*zip(*sorted(result[key].items())), label=key,
                      color=POINT_COLOR[key], marker=POINT_MARKER[key])
 
     elif type == 'bar':
         # Draw the bar figure
         # Get the x values
-        x_value = list(results['SPT'].keys())
+        x_value = list(result['SPT'].keys())
         # Compute the appropriate width
         width = (x_value[1] - x_value[0]) / 6
-        # Initialize offset
-        offset = list(range(len(results)))
         # Compute the offset
-        for i in range(len(offset)):
-            offset[i] -= (len(offset) - 1) / 2
+        offset = [i - (len(result) - 1) / 2 for i in range(len(result))]
         index = 0
-        for key in results:
+        for key in result:
             # Compute the x value of each result
-            x = list(results[key].keys())
+            x = list(result[key].keys())
             for i in range(len(x)):
                 # The origin value plus the offset value
                 x[i] += offset[index] * width
-            plt.bar(x, list(results[key].values()), width=width,
+            plt.bar(x, list(result[key].values()), width=width,
                     label=key, color=POINT_COLOR[key])
             index += 1
 
@@ -94,19 +95,19 @@ def draw_results(results, x_label='Multigroup Size',
     plt.show()
 
 
-def generate_test_results():
-    results = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}}
+def generate_test_result():
+    result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}}
 
-    for key in results:
+    for key in result:
         for index in range(10, 70, 10):
-            results[key][index] = random.randint(10, 100)
+            result[key][index] = random.randint(10, 100)
 
-    return results
+    return result
 
 
 def test():
-    results = generate_test_results()
-    draw_results(results, type='bar')
+    results = generate_test_result()
+    draw_result(results, type='bar')
     # draw_results()
 
 

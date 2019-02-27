@@ -28,7 +28,7 @@ def compute_network_performance(G, allocated_flows, multicast_trees):
 def compute_num_branch_nodes(multicast_trees):
     """Compute the number of branch nodes
     :param multicast_trees: The list of multicast tree
-    :return:
+    :return: num_branch_nodes
     """
     num_branch_nodes = 0
     # Traverse all multicast trees
@@ -45,7 +45,7 @@ def compute_num_branch_nodes(multicast_trees):
 def compute_average_rejection_rate(allocated_flows):
     """Compute the number of average rejection rate
     :param allocated_flows:
-    :return:
+    :return: average_rejection_rate(%)
     """
     num_total_flows = 0
     num_allocated_flows = 0
@@ -60,6 +60,8 @@ def compute_average_rejection_rate(allocated_flows):
 
     # Compute the average rejection rate
     average_rejection_rate = 1 - (num_allocated_flows / num_total_flows)
+    # Transform to percentage
+    average_rejection_rate *= 100
     # print('Average Rejection Rate:', average_rejection_rate * 100, "%")
     return average_rejection_rate
 
@@ -67,7 +69,7 @@ def compute_average_rejection_rate(allocated_flows):
 def compute_throughput(allocated_flows):
     """Compute the network throughput
     :param allocated_flows:
-    :return:
+    :return: throughput(MB)
     """
     throughput = 0
     # Traverse all allocated flows
@@ -84,7 +86,7 @@ def compute_throughput(allocated_flows):
 def compute_link_utilization(G):
     """Compute the link utilization
     :param G:
-    :return:
+    :return: link_utilization
     """
     total_bandwidth = 0
     total_residual_bandwidth = 0
@@ -93,7 +95,10 @@ def compute_link_utilization(G):
         total_bandwidth += edge[2]['link_capacity']
         total_residual_bandwidth += edge[2]['residual_bandwidth']
 
+    # Compute the link utilization
     link_utilization = 1 - total_residual_bandwidth / total_bandwidth
+    # Transform to percentage
+    link_utilization *= 100
     # print('Link Utilization:', link_utilization * 100, "%")
     return link_utilization
 
