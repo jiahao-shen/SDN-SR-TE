@@ -7,7 +7,6 @@
 @blog: https://jiahaoplus.com
 """
 from network.topology import *
-from queue import Queue
 import multiprocessing as mp
 import math
 
@@ -103,104 +102,54 @@ def generate_widest_shortest_path_trees(G, flows):
     return graph, allocated_flows, widest_shortest_path_trees
 
 
-def generate_widest_shortest_path(G, source):
+def generate_widest_shortest_path(G, source,
+                                  widest_attribute='residual_bandwidth'):
     """Compute all widest shortest path from source to other nodes in G
     Using Extension Dijkstra Algorithm
     :param G: The origin graph
     :param source: The source node
-    :return: all_widest_shortest_path
+    :param widest_attribute: The attribute for widest path
+    :return: paths
     """
-    # The array to store whether the node has been visited
-    visited = {}
-    # The array to store the distance from source to the other nodes
-    distance = {}
-    # The array to store the minimum bandwidth during path from source to
-    # the other nodes
+    # Dict to store the paths
+    paths = {source: [source]}
+    # The next traverse
+    next_level = {source: 1}
+    # Dict to store the minimum bandwidth from source to current node
     minimum_bandwidth = {}
-    # The array to store the father node in path for all nodes
-    pre_node = {}
-
+    # Initialize minimum bandwidth for all nodes
     for node in G.nodes:
-        visited[node] = False
-        distance[node] = math.inf
         minimum_bandwidth[node] = math.inf
-        pre_node[node] = None
+    # While not empty
+    while next_level:
+        this_level = next_level
+        next_level = {}
+        # Traverse current level
+        for v in this_level:
+            # Traverse all neighbor nodes of v
+            for w in G.neighbors(v):
+                # if w hasn't been visited
+                if w not in paths:
+                    # Record the path for w
+                    paths[w] = paths[v] + [w]
+                    # Record the minimum bandwidth of w
+                    minimum_bandwidth[w] = min(minimum_bandwidth[v],
+                                               G[v][w][widest_attribute])
+                    # Put w into the next traverse
+                    next_level[w] = 1
+                # If w has been visited, and the current path length equals
+                # the shortest path length and the current minimum bandwidth
+                # less than the shortest path
+                elif w in paths and len(paths[w]) == len(paths[v]) + 1 and \
+                        min(minimum_bandwidth[v], G[v][w][widest_attribute]) \
+                        > minimum_bandwidth[w]:
+                    # Update the shortest path
+                    paths[w] = paths[v] + [w]
+                    # Update the minimum bandwidth
+                    minimum_bandwidth[w] = min(minimum_bandwidth[v],
+                                               G[v][w][widest_attribute])
 
-    # The source node initialize
-    visited[source] = True
-    distance[source] = 0
-
-    # The open_list initialize
-    open_list = Queue()
-    open_list.put(source)
-
-    while not open_list.empty():
-        # Get the top node of open_list
-        node = open_list.get()
-        # Traverse all the neighbor nodes for node
-        for item in G.neighbors(node):  # For current node item
-            # If the item hasn't been visited
-            if not visited[item]:
-                # Compute the distance
-                distance[item] = distance[node] + 1
-                # Update the visited array
-                visited[item] = True
-                # Compute the minimum bandwidth from source to item
-                minimum_bandwidth[item] = min(minimum_bandwidth[node],
-                                              G[node][item][
-                                                  'residual_bandwidth'])
-                # Record the father node of item
-                pre_node[item] = node
-                # Put the item node into open_list
-                open_list.put(item)
-            # If the item has been visited
-            else:
-                # If the new path length equals the old path length
-                if distance[node] + 1 == distance[item]:
-                    # If the minimum bandwidth of new path is bigger
-                    # than the old path
-                    if min(minimum_bandwidth[node],
-                           G[node][item]['residual_bandwidth']) > \
-                            minimum_bandwidth[item]:
-                        # Update the minimum bandwidth for item
-                        minimum_bandwidth[item] = min(minimum_bandwidth[node],
-                                                      G[node][item][
-                                                          'residual_bandwidth']
-                                                      )
-                        # Update the father node of item
-                        pre_node[item] = node
-                # If the new path length is less than the old path length
-                elif distance[node] + 1 < distance[item]:
-                    # Update the distance from source to item
-                    distance[item] = distance[node] + 1
-                    # Update the father node of item
-                    pre_node[item] = node
-                    # Update the minimum bandwidth of item
-                    minimum_bandwidth[item] = min(minimum_bandwidth[node],
-                                                  G[node][item][
-                                                      'residual_bandwidth'])
-
-    # The dict to store all widest shortest path from source to other nodes
-    all_widest_shortest_path = {}
-    # Create all nodes set
-    destinations = set(G.nodes)
-    # Remove the source node
-    destinations.remove(source)
-    # Traverse all other nodes
-    for dst_node in destinations:
-        # Initialize the path to dst_node
-        path = []
-        # Get the path from source to dst_node
-        node = dst_node
-        while node is not None:
-            path.append(node)
-            node = pre_node[node]
-        # Reverse the path
-        path.reverse()
-        # Store the path for dst_node
-        all_widest_shortest_path[dst_node] = path
-
-    return all_widest_shortest_path
+    return paths
 
 
 def test_1():
