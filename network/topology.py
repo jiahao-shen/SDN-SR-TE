@@ -6,9 +6,10 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
+from figure.utils import *
 import warnings
 import random
-from network.utils import *
+import networkx as nx
 
 warnings.filterwarnings('ignore')
 

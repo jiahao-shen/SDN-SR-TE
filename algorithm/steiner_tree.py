@@ -7,6 +7,8 @@
 @blog: https://jiahaoplus.com
 """
 from network.topology import *
+from network.utils import *
+from figure.utils import *
 from itertools import chain
 from networkx.utils import pairwise
 from algorithm.shortest_path_tree import generate_widest_shortest_path

@@ -7,7 +7,9 @@
 @blog: https://jiahaoplus.com
 """
 from network.topology import *
+from network.utils import *
 from algorithm.shortest_path_tree import *
+from figure.utils import *
 from itertools import islice
 from collections import OrderedDict
 

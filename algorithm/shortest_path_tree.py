@@ -7,6 +7,8 @@
 @blog: https://jiahaoplus.com
 """
 from network.topology import *
+from network.utils import *
+from figure.utils import *
 import multiprocessing as mp
 import math
 
