@@ -9,6 +9,7 @@
 from network.topology import *
 from network.utils import *
 from figure.utils import *
+from copy import deepcopy
 import multiprocessing as mp
 import math
 
@@ -25,8 +26,8 @@ def generate_shortest_path_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, shortest_path_trees
     """
-    graph = G.copy()  # Copy G
-    allocated_flows = flows.copy()  # Copy flows
+    graph = deepcopy(G)  # Copy G
+    allocated_flows = deepcopy(flows)  # Copy flows
 
     shortest_path_trees = []  # Initialize
 
@@ -66,8 +67,8 @@ def generate_widest_shortest_path_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
     """
-    graph = G.copy()  # Copy G
-    allocated_flows = flows.copy()  # Copy flows
+    graph = deepcopy(G)  # Copy G
+    allocated_flows = deepcopy(flows)  # Copy flows
 
     widest_shortest_path_trees = []  # Initialize
 
@@ -199,8 +200,6 @@ def test_2():
     """
     G, pos = generate_topology()
     flows = generate_flow_requests(G, flow_groups=3)
-
-    draw_topology(G, pos, title='Topology')
 
     # SPT
     graph, allocated_flows, multicast_trees = \

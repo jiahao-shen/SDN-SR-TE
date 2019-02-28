@@ -6,6 +6,7 @@
 @time: 2019-01-30 23:24:36
 @blog: https://jiahaoplus.com
 """
+from copy import deepcopy
 import math
 
 
@@ -113,7 +114,7 @@ def check_path_valid(G, multicast_tree, path, flow_size):
     :return: Boolean
     """
     # Copy multicast tree as temp tree
-    tmp_tree = multicast_tree.copy()
+    tmp_tree = deepcopy(multicast_tree)
     # Add path to temp tree
     tmp_tree.add_path(path)
     # Traverse nodes during the path except destination node

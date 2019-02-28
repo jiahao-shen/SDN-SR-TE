@@ -15,6 +15,7 @@ __all__ = [
     'draw_result'
 ]
 
+# The default point marker and color
 POINT_MARKER = {'SPT': 'o', 'ST': 'v', 'WSPT': 's', 'WST': '*', 'BBSRT': 'D'}
 POINT_COLOR = {'SPT': 'r', 'ST': 'm', 'WSPT': 'y', 'WST': 'g', 'BBSRT': 'b'}
 

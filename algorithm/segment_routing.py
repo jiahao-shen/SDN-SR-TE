@@ -10,6 +10,7 @@ from network.topology import *
 from network.utils import *
 from algorithm.shortest_path_tree import *
 from figure.utils import *
+from copy import deepcopy
 from itertools import islice
 from collections import OrderedDict
 
@@ -41,8 +42,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
     :return: graph, allocated_flows,
     band_efficient_branch_aware_segment_routing_trees
     """
-    graph = G.copy()  # Copy G
-    allocated_flows = flows.copy()  # Copy flows
+    graph = deepcopy(G)  # Copy G
+    allocated_flows = deepcopy(flows)  # Copy flows
 
     # Add node weight and edge weight
     nx.set_edge_attributes(graph, 0, 'weight')
@@ -128,7 +129,7 @@ def has_cycle(multicast_tree, path):
     :return:
     """
     # Copy multicast tree as temp graph
-    tmp_graph = multicast_tree.copy()
+    tmp_graph = deepcopy(multicast_tree)
     # Add path into the temp graph
     tmp_graph.add_path(path)
     # If temp graph exists cycle

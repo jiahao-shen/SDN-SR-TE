@@ -12,6 +12,7 @@ from figure.utils import *
 from itertools import chain
 from networkx.utils import pairwise
 from algorithm.shortest_path_tree import generate_widest_shortest_path
+from copy import deepcopy
 import networkx.algorithms.approximation as nxaa
 
 __all__ = [
@@ -28,8 +29,8 @@ def generate_steiner_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
     """
-    graph = G.copy()  # Copy G
-    allocated_flows = flows.copy()  # Copy flows
+    graph = deepcopy(G)  # Copy G
+    allocated_flows = deepcopy(flows)  # Copy flows
 
     steiner_trees = []  # Initialize
 
@@ -74,8 +75,8 @@ def generate_widest_steiner_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
     """
-    graph = G.copy()  # Copy G
-    allocated_flows = flows.copy()  # Copy flows
+    graph = deepcopy(G)  # Copy G
+    allocated_flows = deepcopy(flows)  # Copy flows
 
     widest_steiner_trees = []  # Initialize
 
