@@ -6,10 +6,8 @@
 @time: 2019-02-14 20:42:59
 @blog: https://jiahaoplus.com
 """
-from network.topology import *
-from network.utils import *
+from network import *
 from algorithm.shortest_path_tree import *
-from figure.utils import *
 from copy import deepcopy
 from itertools import islice
 from collections import OrderedDict

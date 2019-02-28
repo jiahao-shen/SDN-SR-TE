@@ -6,11 +6,8 @@
 @time: 2019-01-30 20:10:18
 @blog: https://jiahaoplus.com
 """
-from algorithm.shortest_path_tree import *
-from algorithm.steiner_tree import *
-from algorithm.segment_routing import *
-from network.topology import *
-from network.utils import *
+from algorithm import *
+from network import *
 from time import time
 import multiprocessing as mp
 

@@ -6,9 +6,7 @@
 @time: 2019-01-30 20:41:58
 @blog: https://jiahaoplus.com
 """
-from network.topology import *
-from network.utils import *
-from figure.utils import *
+from network import *
 from copy import deepcopy
 import multiprocessing as mp
 import math

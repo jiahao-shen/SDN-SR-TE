@@ -6,7 +6,7 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
-from figure.utils import *
+from network.utils import *
 import warnings
 import random
 import networkx as nx
