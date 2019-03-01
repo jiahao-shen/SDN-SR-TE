@@ -38,12 +38,28 @@ def compute_num_branch_nodes(multicast_trees):
     # Traverse all multicast trees
     for tree in multicast_trees:
         for node in tree.nodes:
-            if node == tree.root and tree.degree(node) >= 2:
-                num_branch_nodes += 1
-            elif node != tree.root and tree.degree(node) >= 3:
+            if check_branch_node(tree, node):
                 num_branch_nodes += 1
     # print('Number of branch nodes:', num_branch_nodes)
     return num_branch_nodes
+
+
+def check_branch_node(tree, node):
+    """According to the tree, check whether is branch node
+    :param tree: The current multicast tree
+    :param node: The node needs to check
+    :return: Boolean
+    """
+    # If node is root of tree and degree is bigger than 2
+    # Is branch node
+    if node == tree.root and tree.degree(node) >= 2:
+        return True
+    # If node isn't root of tree and degree is bigger than 3
+    # Is branch node
+    elif node != tree.root and tree.degree(node) >= 3:
+        return True
+    # Else isn't branch node
+    return False
 
 
 def compute_average_rejection_rate(allocated_flows):
