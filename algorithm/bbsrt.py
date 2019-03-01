@@ -1,13 +1,13 @@
 """"
 @project: RoutingAlgorithm
 @author: sam
-@file segment_routing.py
+@file bbsrt.py
 @ide: PyCharm
 @time: 2019-02-14 20:42:59
 @blog: https://jiahaoplus.com
 """
 from network import *
-from algorithm.shortest_path_tree import *
+from algorithm import *
 from copy import deepcopy
 from itertools import islice
 from collections import OrderedDict
