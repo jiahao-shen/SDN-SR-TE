@@ -38,8 +38,8 @@ def generate_widest_shortest_path_trees(G, flows):
                                                                   f['src'])
         # Widest Shortest Path Tree for current multicast initialization
         widest_shortest_path_tree = nx.Graph()
-        # Set the source node of widest shortest path tree
-        widest_shortest_path_tree.source = f['src']
+        # Set the root of widest shortest path tree
+        widest_shortest_path_tree.root = f['src']
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Get the widest shortest path from source to destination

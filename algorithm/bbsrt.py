@@ -68,8 +68,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         d_sorted = {}
         # The multicast tree for current source node
         multicast_tree = nx.Graph()
-        # Set the source node of multicast tree
-        multicast_tree.source = f['src']
+        # Set the root of multicast tree
+        multicast_tree.root = f['src']
         # Traverse all destination nodes
         for dst_node in f['dst']:
             # Compute the k shortest path from source to dst_node
@@ -238,9 +238,9 @@ def compute_intersection_node(multicast_tree, path):
     if intersection_node is None:
         return None, False
     # If the intersection is new branch node, return True
-    if (intersection_node == multicast_tree.source and
+    if (intersection_node == multicast_tree.root and
             multicast_tree.degree(intersection_node) == 1) or (
-            intersection_node != multicast_tree.source and
+            intersection_node != multicast_tree.root and
             multicast_tree.degree(intersection_node) == 2):
         return intersection_node, True
     # Else return False
@@ -291,7 +291,7 @@ def test_1():
 
 def test_2():
     G = nx.Graph()
-    G.source = 0
+    G.root = 0
     G.add_path([0, 1, 2, 3])
 
     print(compute_intersection_node(G, [0, 5]))

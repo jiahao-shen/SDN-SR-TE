@@ -38,9 +38,9 @@ def compute_num_branch_nodes(multicast_trees):
     # Traverse all multicast trees
     for tree in multicast_trees:
         for node in tree.nodes:
-            if node == tree.source and tree.degree(node) >= 2:
+            if node == tree.root and tree.degree(node) >= 2:
                 num_branch_nodes += 1
-            elif node != tree.source and tree.degree(node) >= 3:
+            elif node != tree.root and tree.degree(node) >= 3:
                 num_branch_nodes += 1
     # print('Number of branch nodes:', num_branch_nodes)
     return num_branch_nodes
@@ -126,16 +126,16 @@ def check_path_valid(G, multicast_tree, path, flow_size):
         # Then drop this flow
         if G[path[i]][path[i + 1]]['residual_bandwidth'] < flow_size:
             return False
-        # If current node is source node in multicast tree and the residual
+        # If current node is root in multicast tree and the residual
         # flow entries in G is less than the degree in temp tree
         # Then drop this flow
-        if path[i] == multicast_tree.source and G.nodes[path[i]][
+        if path[i] == multicast_tree.root and G.nodes[path[i]][
             'residual_flow_entries'] < tmp_tree.degree(path[i]):
             return False
-        # If current node isn't source node in multicast tree and the residual
+        # If current node isn't root in multicast tree and the residual
         # flow entries in G is less than the (degree - 1) in temp tree
         # Then drop this flow
-        if path[i] != multicast_tree.source and G.nodes[path[i]][
+        if path[i] != multicast_tree.root and G.nodes[path[i]][
             'residual_flow_entries'] < tmp_tree.degree(path[i]) - 1:
             return False
 
@@ -153,13 +153,13 @@ def update_node_entries(G, multicast_tree):
     """
     # Traverse all nodes in multicast tree
     for node in multicast_tree.nodes:
-        # If current node is source node
-        if node == multicast_tree.source:
+        # If current node is root
+        if node == multicast_tree.root:
             # Residual flow entries minus degree
             G.nodes[node]['residual_flow_entries'] -= multicast_tree.degree(
                 node)
         # If current node is branch node
-        elif node != multicast_tree.source and \
+        elif node != multicast_tree.root and \
                 multicast_tree.degree(node) >= 3:
             # Residual flow entries minus degree - 1
             G.nodes[node]['residual_flow_entries'] -= \
