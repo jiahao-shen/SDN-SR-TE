@@ -48,12 +48,14 @@ def generate_branch_aware_steiner_tree(G, source, destinations,
                                        all_pair_shortest_path, w=1):
     tree = edge_optimization_phase(G, source, destinations,
                                    all_pair_shortest_path)
+
+    tree = branch_optimization_phase(G, source, destinations, tree,
+                                     all_pair_shortest_path)
     # tree = branch_optimization_phase(G, tree)
     return tree
 
 
-def edge_optimization_phase(G, source, destinations,
-                            all_pair_shortest_path=None):
+def edge_optimization_phase(G, source, destinations, all_pair_shortest_path):
     """The Edge Optimization Phase according to the paper
     :param G: The origin graph
     :param source: The source node of multicast tree
@@ -132,22 +134,51 @@ def shortest_path_to_tree(target, tree, all_pair_shortest_path):
     return path
 
 
-def branch_optimization_phase(G, tree):
+def branch_optimization_phase(G, source, destinations,
+                              tree, all_pair_shortest_path):
     """The Branch Optimization Phase according to the paper
     :param G: The origin graph
+    :param source:
+    :param destinations:
     :param tree: The tree constructed by edge optimization phase
+    :param all_pair_shortest_path:
     :return:
     """
     # Deletion Step
     branch_nodes = {}
+    # Traverse all nodes in tree
     for node in tree.nodes:
+        # If it is branch node
         if check_branch_node(tree, node):
+            # Record the degree of branch node
             branch_nodes[node] = tree.degree(node)
-
+    # Sort the branch nodes in the ascending order of degree
     branch_nodes = OrderedDict(sorted(branch_nodes.items(),
                                       key=lambda x: x[1]))
 
-    print(branch_nodes)
+    # Initialize the terminals
+    terminals = set(destinations)
+    terminals.add(source)
+
+    for v_d in branch_nodes.keys():
+        neighbors = list(tree.neighbors(v_d))
+        tree.remove_node(v_d)
+
+        for v in neighbors:
+            if v in branch_nodes.keys() or v in terminals:
+                path = None
+                for u in branch_nodes.keys():
+                    if u == v_d:
+                        continue
+                    p = all_pair_shortest_path[v][u]
+                    if path is None or (path is not None and
+                                        len(p) < len(path)):
+                        path = p
+                tree.add_path(path)
+
+    return tree
+
+    # print(branch_nodes.keys())
 
 
 def test_1():

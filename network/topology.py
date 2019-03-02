@@ -29,6 +29,7 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
     # References: B. M. Waxman, "Routing of multipoint connections",
     # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp.
     # 1617-1622, December 1988.
+    """Old generator
     G = nx.waxman_graph(size, alpha=a, beta=b)
     # Count variables
     cnt = 0
@@ -41,6 +42,33 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
         if cnt >= 100:
             raise RuntimeError('The parameter alpha and beta is not '
                                'appropriate, please change other values')
+    """
+
+    """New generator
+    """
+    # Randomly generate number of core nodes in topology
+    n = random.randint(size // 3, size // 2)
+    # Generate the waxman graph of core nodes
+    G = nx.waxman_graph(n, alpha=a, beta=b)
+    # Maximum number of tries to create a graph
+    tries = 0
+    # If graph isn't connected
+    while not nx.is_connected(G):
+        # Regenerate it again
+        G = nx.waxman_graph(n, alpha=a, beta=b)
+        tries += 1
+        # If tries bigger than 100 times, raise Error
+        if tries >= 100:
+            raise RuntimeError('The parameter alpha and beta isn\'t'
+                               'appropriate, please change other values ')
+    # Get all core nodes in topology
+    core_nodes = list(G.nodes)
+    # For all edge nodes
+    for u in range(n, size):
+        # Randomly choice core nodes in topology
+        v = random.choice(core_nodes)
+        # Add edge between edge node and core node
+        G.add_edge(u, v)
 
     # Add edge attributes
     # Add link capacity for all edges
@@ -54,12 +82,14 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
     # Add residual flow entries for all nodes
     nx.set_node_attributes(G, flow_limit, 'residual_flow_entries')
 
-    # Get the layout of graph, here we use spring_layout
+    # Get the layout of graph, here we use random_layout
     pos = nx.spring_layout(G)
 
     return G, pos
 
 
+# TODO
+# Rewrite the flow requests
 def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
                            size_upper=100):
     """According the graph G, generate flow requests for multicast
@@ -107,11 +137,17 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
 
 def test():
     # Test function
-    g, pos = generate_topology()
-    draw_topology(g, pos)
-    flows = generate_flow_requests(g, flow_groups=4, flow_entries=10)
-    for item in flows:
-        print(item)
+    G, pos = generate_topology(100, a=0.3, b=0.3)
+    draw_topology(G, pos)
+
+    cnt = 0
+    for v in G.nodes:
+        if G.degree(v) == 1:
+            cnt += 1
+    print(cnt)
+    # flows = generate_flow_requests(g, flow_groups=4, flow_entries=10)
+    # for item in flows:
+    #     print(item)
 
 
 if __name__ == '__main__':
