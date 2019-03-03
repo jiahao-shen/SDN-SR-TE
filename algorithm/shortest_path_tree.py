@@ -1,7 +1,7 @@
 """
 @project: RoutingAlgorithm
 @author: sam
-@file spt.py
+@file shortest_path_tree.py
 @ide: PyCharm
 @time: 2019-03-01 14:33:05
 @blog: https://jiahaoplus.com
@@ -29,27 +29,26 @@ def generate_shortest_path_trees(G, flows):
     for f in allocated_flows:
         # Compute all shortest paths from current multicast source node to
         # others, not considering weight
-        all_shortest_paths = nx.shortest_path(graph, f['src'], weight=None)
+        all_paths = nx.shortest_path(graph, f['src'], weight=None)
         # Shortest path tree for current multicast initialization
-        shortest_path_tree = nx.Graph()
+        T = nx.Graph()
         # Set the root of shortest path tree
-        shortest_path_tree.root = f['src']
+        T.root = f['src']
         # Traverse all destination nodes
-        for dst_node in f['dst']:
+        for dst in f['dst']:
             # Get the shortest path from source to destination
-            shortest_path = all_shortest_paths[dst_node]
+            path = all_paths[dst]
             # Check the current path whether valid
-            if check_path_valid(graph, shortest_path_tree, shortest_path,
-                                f['size']):
+            if is_path_valid(graph, T, path, f['size']):
                 # Record the shortest path for pair(source, destination)
-                f['dst'][dst_node] = shortest_path
+                f['dst'][dst] = path
                 # Add the shortest path into shortest path tree
-                shortest_path_tree.add_path(shortest_path)
+                T.add_path(path)
         # Update the residual flow entries of nodes in the shortest path tree
-        update_node_entries(graph, shortest_path_tree)
+        update_node_entries(graph, T)
         # Update the residual bandwidth of edges in the shortest path tree
-        update_edge_bandwidth(graph, shortest_path_tree, f['size'])
+        update_edge_bandwidth(graph, T, f['size'])
         # Add multicast tree in forest
-        shortest_path_trees.append(shortest_path_tree)
+        shortest_path_trees.append(T)
 
     return graph, allocated_flows, shortest_path_trees

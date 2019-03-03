@@ -1,7 +1,7 @@
 """
 @project: RoutingAlgorithm
 @author: sam
-@file bst.py
+@file branch_aware_steiner_tree.py
 @ide: PyCharm
 @time: 2019-03-01 14:52:59
 @blog: https://jiahaoplus.com
@@ -16,7 +16,7 @@ __all__ = [
 
 
 def generate_branch_aware_steiner_trees(G, flows, w=1):
-    """According to flows and graph, generate Branch-aware Steiner Trees(BST)
+    """According to flows and graph, generate Branch-aware Steiner Tree(BST)
     Huang, L. H., Hung, H. J., Lin, C. C., & Yang, D. N. (2014).
     Scalable and bandwidth-efficient multicast for software-defined networks.
     2014 IEEE Global Communications Conference, GLOBECOM 2014, 1890–1896.
@@ -100,7 +100,7 @@ def edge_optimization_phase(G, source, destinations, all_pair_shortest_path):
             # If the final path isn't None and current path length equals
             # the minimal distance and the intersection node is branch node
             elif final_path is not None and len(path) == min_dis and \
-                    check_branch_node(tree, path[-1]):
+                    is_branch_node(tree, path[-1]):
                 # Update the final path
                 final_path = path
                 break
@@ -149,7 +149,7 @@ def branch_optimization_phase(G, source, destinations,
     # Traverse all nodes in tree
     for node in tree.nodes:
         # If it is branch node
-        if check_branch_node(tree, node):
+        if is_branch_node(tree, node):
             # Record the degree of branch node
             branch_nodes[node] = tree.degree(node)
     # Sort the branch nodes in the ascending order of degree

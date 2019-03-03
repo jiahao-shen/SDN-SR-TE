@@ -16,36 +16,18 @@ warnings.filterwarnings('ignore')
 
 def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
                       flow_limit=100):
-    """Generate a topology using Waxman method
+    """Generate a randomly topology
     :param size: The number of nodes in topology, default 20
     :param a: Alpha (0, 1] float in Waxman method, default 0.7
     :param b: Beta (0, 1] float in Waxman method, default 0.7
     :param link_capacity: The link capacity in topology, here we consider all
-     of them are same, equal to 1GB(1000MB)
+                          of them are same, equal to 1GB(1000MB)
     :param flow_limit: The maximum number of flow entries, default 100
-    :return: G, position
+    :return: G, pos
     """
-    # Generate network topology using Waxman method
     # References: B. M. Waxman, "Routing of multipoint connections",
     # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp.
     # 1617-1622, December 1988.
-    """Old generator
-    G = nx.waxman_graph(size, alpha=a, beta=b)
-    # Count variables
-    cnt = 0
-    # If the graph is not connected
-    while not nx.is_connected(G):
-        # Generate the graph again
-        G = nx.waxman_graph(size, alpha=a, beta=b)
-        cnt += 1
-        # If cnt is bigger than 100, raise exception
-        if cnt >= 100:
-            raise RuntimeError('The parameter alpha and beta is not '
-                               'appropriate, please change other values')
-    """
-
-    """New generator
-    """
     # Randomly generate number of core nodes in topology
     n = random.randint(size // 3, size // 2)
     # Generate the waxman graph of core nodes
@@ -64,11 +46,11 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
     # Get all core nodes in topology
     core_nodes = list(G.nodes)
     # For all edge nodes
-    for u in range(n, size):
+    for v in range(n, size):
         # Randomly choice core nodes in topology
-        v = random.choice(core_nodes)
+        u = random.choice(core_nodes)
         # Add edge between edge node and core node
-        G.add_edge(u, v)
+        G.add_edge(v, u)
 
     # Add edge attributes
     # Add link capacity for all edges
@@ -88,8 +70,6 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
     return G, pos
 
 
-# TODO
-# Rewrite the flow requests
 def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
                            size_upper=100):
     """According the graph G, generate flow requests for multicast
@@ -100,34 +80,40 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
     :param size_upper: The maximum size of flow, default 100MB
     :return: flows
     """
+    # Here we define the node whose degree is one as edge node
+    terminals = set()
+    for v in G.nodes:
+        if G.degree(v) == 1:
+            terminals.add(v)
+
     # Initialize flows
     flows = []
 
-    # If flow groups or flow entries are more than nodes of G, raise exception
-    if flow_groups > len(G) or flow_entries > len(G):
+    # Flow groups or flow entries can't be more than terminals
+    if flow_groups > len(terminals) or flow_entries > len(terminals):
         raise RuntimeError('Flow_groups and flow_entries cannot '
                            'be more than len(G)')
 
     # Randomly generate several source nodes
     # Traverse the source nodes in flows
-    for src_node in random.sample(G.nodes, flow_groups):
+    for src in random.sample(terminals, flow_groups):
         # Initialize flow
         f = {}
         # Generate the destination nodes from G
-        nodes = set(G.nodes)
+        nodes = set(terminals)
         # Remove the source from nodes
-        nodes.remove(src_node)
+        nodes.remove(src)
         # Destination nodes initialize
-        dst_nodes = {}
+        destinations = {}
         # Traverse the destination nodes
-        for dst_node in random.sample(nodes, flow_entries):
+        for dst in random.sample(nodes, flow_entries):
             # Set the path to None
-            dst_nodes[dst_node] = None
+            destinations[dst] = None
         # Randomly generate flow size
         size = random.randint(size_lower, size_upper)
         # Set the src, dst and size
-        f['src'] = src_node
-        f['dst'] = dst_nodes
+        f['src'] = src
+        f['dst'] = destinations
         f['size'] = size
         # Append the flow to flows
         flows.append(f)
@@ -136,18 +122,11 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
 
 
 def test():
-    # Test function
-    G, pos = generate_topology(100, a=0.3, b=0.3)
-    draw_topology(G, pos)
+    G, pos = generate_topology(50)
+    flows = generate_flow_requests(G)
 
-    cnt = 0
-    for v in G.nodes:
-        if G.degree(v) == 1:
-            cnt += 1
-    print(cnt)
-    # flows = generate_flow_requests(g, flow_groups=4, flow_entries=10)
-    # for item in flows:
-    #     print(item)
+    draw_topology(G, pos)
+    output_flows(flows)
 
 
 if __name__ == '__main__':

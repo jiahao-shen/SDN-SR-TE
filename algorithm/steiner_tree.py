@@ -1,7 +1,7 @@
 """
 @project: RoutingAlgorithm
 @author: sam
-@file st.py
+@file steiner_tree.py
 @ide: PyCharm
 @time: 2019-03-01 14:36:05
 @blog: https://jiahaoplus.com
@@ -30,32 +30,32 @@ def generate_steiner_trees(G, flows):
     for f in allocated_flows:
         # Generate the terminal nodes for steiner tree
         # Terminal nodes = destination nodes list + source node
-        terminal_nodes = list(f['dst'].keys()) + [f['src']]
+        terminals = list(f['dst'].keys()) + [f['src']]
         # Generate temp steiner tree for terminal nodes
         # Compute all paths from source to other nodes in temp steiner tree
         all_paths = nx.shortest_path(nx.Graph(nxaa.steiner_tree(graph,
-                                                                terminal_nodes,
+                                                                terminals,
                                                                 weight=None)),
                                      f['src'], weight=None)
         # Steiner Tree for current multicast initialization
-        steiner_tree = nx.Graph()
+        T = nx.Graph()
         # Set the root of steiner tree
-        steiner_tree.root = f['src']
+        T.root = f['src']
         # Traverse all destination nodes
-        for dst_node in f['dst']:
+        for dst in f['dst']:
             # Get the path from source to destination, not considering weight
-            path = all_paths[dst_node]
+            path = all_paths[dst]
             # Check the current path whether valid
-            if check_path_valid(graph, steiner_tree, path, f['size']):
+            if is_path_valid(graph, T, path, f['size']):
                 # Record path for pair(source, destination)
-                f['dst'][dst_node] = path
+                f['dst'][dst] = path
                 # Add the path into steiner tree
-                steiner_tree.add_path(path)
+                T.add_path(path)
         # Update the residual flow entries of nodes in the steiner tree
-        update_node_entries(graph, steiner_tree)
+        update_node_entries(graph, T)
         # Update the residual bandwidth of edges in the steiner tree
-        update_edge_bandwidth(graph, steiner_tree, f['size'])
+        update_edge_bandwidth(graph, T, f['size'])
         # Add multicast tree in forest
-        steiner_trees.append(steiner_tree)
+        steiner_trees.append(T)
 
     return graph, allocated_flows, steiner_trees

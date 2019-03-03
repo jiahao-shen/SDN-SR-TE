@@ -1,7 +1,7 @@
 """
 @project: RoutingAlgorithm
 @author: sam
-@file wspt.py
+@file widest_shortest_path_tree.py
 @ide: PyCharm
 @time: 2019-03-01 14:34:41
 @blog: https://jiahaoplus.com
@@ -34,30 +34,28 @@ def generate_widest_shortest_path_trees(G, flows):
         # Compute all widest shortest paths from current multicast
         # source node to others
         # Considering residual bandwidth of edge as width
-        all_widest_shortest_paths = generate_widest_shortest_path(graph,
-                                                                  f['src'])
+        all_paths = generate_widest_shortest_path(graph, f['src'])
         # Widest Shortest Path Tree for current multicast initialization
-        widest_shortest_path_tree = nx.Graph()
+        T = nx.Graph()
         # Set the root of widest shortest path tree
-        widest_shortest_path_tree.root = f['src']
+        T.root = f['src']
         # Traverse all destination nodes
-        for dst_node in f['dst']:
+        for dst in f['dst']:
             # Get the widest shortest path from source to destination
-            widest_shortest_path = all_widest_shortest_paths[dst_node]
+            path = all_paths[dst]
             # Check the current path whether valid
-            if check_path_valid(graph, widest_shortest_path_tree,
-                                widest_shortest_path, f['size']):
+            if is_path_valid(graph, T, path, f['size']):
                 # Record the widest shortest path for pair(source, destination)
-                f['dst'][dst_node] = widest_shortest_path
+                f['dst'][dst] = path
                 # Add the widest shortest path into widest shortest path tree
-                widest_shortest_path_tree.add_path(widest_shortest_path)
+                T.add_path(path)
         # Update the residual entries of nodes in graph
-        update_node_entries(graph, widest_shortest_path_tree)
-        # Update the residual bandwidth of edges in the widest
-        # shortest path tree
-        update_edge_bandwidth(graph, widest_shortest_path_tree, f['size'])
+        update_node_entries(graph, T)
+        # Update the residual bandwidth of edges in the widest shortest path
+        # tree
+        update_edge_bandwidth(graph, T, f['size'])
         # Add multicast tree in forest
-        widest_shortest_path_trees.append(widest_shortest_path_tree)
+        widest_shortest_path_trees.append(T)
 
     return graph, allocated_flows, widest_shortest_path_trees
 
@@ -78,8 +76,8 @@ def generate_widest_shortest_path(G, source,
     # Dict to store the minimum bandwidth from source to current node
     minimum_bandwidth = {}
     # Initialize minimum bandwidth for all nodes
-    for node in G.nodes:
-        minimum_bandwidth[node] = math.inf
+    for v in G.nodes:
+        minimum_bandwidth[v] = math.inf
     # While not empty
     while next_level:
         this_level = next_level
@@ -87,27 +85,27 @@ def generate_widest_shortest_path(G, source,
         # Traverse current level
         for v in this_level:
             # Traverse all neighbor nodes of v
-            for w in G.neighbors(v):
+            for u in G.neighbors(v):
                 # if w hasn't been visited
-                if w not in paths:
+                if u not in paths:
                     # Record the path for w
-                    paths[w] = paths[v] + [w]
+                    paths[u] = paths[v] + [u]
                     # Record the minimum bandwidth of w
-                    minimum_bandwidth[w] = min(minimum_bandwidth[v],
-                                               G[v][w][widest_attribute])
+                    minimum_bandwidth[u] = min(minimum_bandwidth[v],
+                                               G[v][u][widest_attribute])
                     # Put w into the next traverse
-                    next_level[w] = 1
+                    next_level[u] = 1
                 # If w has been visited, and the current path length equals
                 # the shortest path length and the current minimum bandwidth
                 # less than the shortest path
-                elif w in paths and len(paths[w]) == len(paths[v]) + 1 and \
-                        min(minimum_bandwidth[v], G[v][w][widest_attribute]) \
-                        > minimum_bandwidth[w]:
+                elif u in paths and len(paths[u]) == len(paths[v] + [u]) and \
+                        min(minimum_bandwidth[v], G[v][u][widest_attribute]) \
+                        > minimum_bandwidth[u]:
                     # Update the shortest path
-                    paths[w] = paths[v] + [w]
+                    paths[u] = paths[v] + [u]
                     # Update the minimum bandwidth
-                    minimum_bandwidth[w] = min(minimum_bandwidth[v],
-                                               G[v][w][widest_attribute])
+                    minimum_bandwidth[u] = min(minimum_bandwidth[v],
+                                               G[v][u][widest_attribute])
 
     return paths
 
@@ -186,12 +184,13 @@ def test_3():
     output_flows(flows)
 
     draw_topology(G, pos, title='Topology')
-    graph, allocated_flows, trees = generate_shortest_path_trees(G, flows)
+    graph, allocated_flows, multicast_trees = \
+        generate_shortest_path_trees(G, flows)
 
-    for t in trees:
-        draw_topology(t, pos, title='Trees')
+    for T in multicast_trees:
+        draw_topology(T, pos, title='Trees')
 
-    print(compute_num_branch_nodes(trees))
+    print(compute_num_branch_nodes(multicast_trees))
 
 
 if __name__ == '__main__':
