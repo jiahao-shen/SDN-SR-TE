@@ -7,6 +7,7 @@
 @blog: https://jiahaoplus.com
 """
 from network.utils import *
+from networkx.drawing.nx_agraph import graphviz_layout
 import warnings
 import random
 import networkx as nx
@@ -64,8 +65,8 @@ def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
     # Add residual flow entries for all nodes
     nx.set_node_attributes(G, flow_limit, 'residual_flow_entries')
 
-    # Get the layout of graph, here we use random_layout
-    pos = nx.spring_layout(G)
+    # Get the layout of graph, here we use graphviz_layout
+    pos = graphviz_layout(G)
 
     return G, pos
 
@@ -81,22 +82,22 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
     :return: flows
     """
     # Here we define the node whose degree is one as edge node
-    terminals = set()
+    terminals = []
     for v in G.nodes:
         if G.degree(v) == 1:
-            terminals.add(v)
+            terminals.append(v)
 
     # Initialize flows
     flows = []
 
     # Flow groups or flow entries can't be more than terminals
-    if flow_groups > len(terminals) or flow_entries > len(terminals):
-        raise RuntimeError('Flow_groups and flow_entries cannot '
-                           'be more than len(G)')
+    if flow_entries + 1 > len(terminals):
+        raise RuntimeError('Flow entries cannot be more than len(G)')
 
     # Randomly generate several source nodes
     # Traverse the source nodes in flows
-    for src in random.sample(terminals, flow_groups):
+    for _ in range(flow_groups):
+        src = random.choice(terminals)
         # Initialize flow
         f = {}
         # Generate the destination nodes from G
@@ -122,7 +123,17 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
 
 
 def test():
-    G, pos = generate_topology(50)
+    G, pos = generate_topology(100, 0.3, 0.3)
+    cnt = {}
+    for v in G.nodes:
+        d = G.degree(v)
+        if d in cnt.keys():
+            cnt[d] += 1
+        else:
+            cnt[d] = 1
+
+    cnt = dict(sorted(cnt.items(), key=lambda x: x[0]))
+    print(cnt)
     flows = generate_flow_requests(G)
 
     draw_topology(G, pos)

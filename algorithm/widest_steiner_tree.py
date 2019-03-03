@@ -119,30 +119,34 @@ def test_1():
     """Test Steiner Tree and Widest Steiner Tree
     :return:
     """
-    G, pos = generate_topology()
-    flows = generate_flow_requests(G, flow_groups=3)
+    G, pos = generate_topology(100)
+    flows = generate_flow_requests(G, 2, 10)
 
-    draw_topology(G, pos, title='Topology')
+    draw_topology(G, pos)
 
     # ST
-    graph, allocated_flows, multicast_trees = generate_steiner_trees(G, flows)
+    graph, allocated_flows, steiner_trees = generate_steiner_trees(G, flows)
 
     output_flows(allocated_flows)
 
-    for T in multicast_trees:
-        draw_topology(T, pos, title='Steiner Tree')
+    for T in steiner_trees:
+        position = graphviz_layout(T, prog='dot')
+        draw_topology(T, position, title='ST')
+
+    print(compute_num_branch_nodes(steiner_trees))
 
     # WST
-    graph, allocated_flows, multicast_trees = \
+    graph, allocated_flows, widest_steiner_trees = \
         generate_widest_steiner_trees(G, flows)
 
     output_flows(allocated_flows)
 
-    for T in multicast_trees:
-        draw_topology(T, pos, title='Widest Steiner Tree')
+    for T in widest_steiner_trees:
+        position = graphviz_layout(T, prog='dot')
+        draw_topology(T, position, title='WST')
+
+    print(compute_num_branch_nodes(widest_steiner_trees))
 
 
 if __name__ == '__main__':
     test_1()
-
-

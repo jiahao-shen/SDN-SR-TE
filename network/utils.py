@@ -13,6 +13,22 @@ import networkx as nx
 import random
 import math
 
+__all__ = [
+    'network_performance',
+    'compute_num_branch_nodes',
+    'compute_average_rejection_rate',
+    'compute_throughput',
+    'compute_link_utilization',
+    'compute_path_minimum_bandwidth',
+    'is_branch_node',
+    'is_path_valid',
+    'update_edge_bandwidth',
+    'update_node_entries',
+    'output_flows',
+    'draw_topology',
+    'draw_result',
+]
+
 
 def network_performance(G, allocated_flows, multicast_trees):
     """Compute performance of the network
@@ -52,10 +68,7 @@ def is_branch_node(multicast_tree, node):
     :return: Boolean
     """
     # The degree of branch node is bigger than 3
-    if multicast_tree.degree(node) >= 3:
-        return True
-    # Else isn't branch node
-    return False
+    return multicast_tree.degree(node) >= 3
 
 
 def compute_average_rejection_rate(allocated_flows):
@@ -197,6 +210,7 @@ def output_flows(flows):
         for dst in f['dst']:
             print(f['src'], '->', dst, ':', f['dst'][dst],
                   ',', 'size =', f['size'])
+        print('--------------------------')
 
 
 def compute_path_minimum_bandwidth(G, path):

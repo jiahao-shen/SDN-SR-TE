@@ -153,28 +153,34 @@ def test_2():
     """Test the Shortest Path Tree and Widest Shortest Path Tree
     :return:
     """
-    G, pos = generate_topology()
-    flows = generate_flow_requests(G, flow_groups=3)
+    G, pos = generate_topology(100)
+    flows = generate_flow_requests(G, 3, 10)
+
+    draw_topology(G, pos)
 
     # SPT
-    graph, allocated_flows, multicast_trees = \
+    graph, allocated_flows, shortest_path_trees = \
         generate_shortest_path_trees(G, flows)
 
-    draw_topology(graph, pos, title='Allocated Graph')
     output_flows(allocated_flows)
 
-    for tree in multicast_trees:
-        draw_topology(tree, pos, title='Tree')
+    for T in shortest_path_trees:
+        position = graphviz_layout(T, prog='dot')
+        draw_topology(T, position, 'SPT')
+
+    print(compute_num_branch_nodes(shortest_path_trees))
 
     # WSPT
-    graph, allocated_flows, multicast_trees = \
+    graph, allocated_flows, widest_shortest_path_trees = \
         generate_widest_shortest_path_trees(G, flows)
 
-    draw_topology(graph, pos, title='Allocated Graph')
     output_flows(allocated_flows)
 
-    for tree in multicast_trees:
-        draw_topology(tree, pos, title='Tree')
+    for T in widest_shortest_path_trees:
+        position = graphviz_layout(T, prog='dot')
+        draw_topology(T, position, title='WSPT')
+
+    print(compute_num_branch_nodes(widest_shortest_path_trees))
 
 
 def test_3():
@@ -194,6 +200,6 @@ def test_3():
 
 
 if __name__ == '__main__':
-    test_1()
+    # test_1()
     test_2()
-    test_3()
+    # test_3()

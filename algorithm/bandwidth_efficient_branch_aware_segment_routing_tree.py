@@ -283,5 +283,25 @@ def test_1():
         draw_topology(tree, pos, title='BBSRT' + str(index))
 
 
+def test_2():
+    G = nx.Graph()
+    G.root = 0
+    G.add_path([0, 1, 2, 3])
+
+    # (None, False)
+    print(compute_intersection_node(G, [0, 1]))
+    # (1, 4)
+    print(compute_intersection_node(G, [0, 1, 4]))
+    # (3, False)
+    print(compute_intersection_node(G, [0, 1, 2, 3, 4]))
+
+    G.add_path([0, 1, 4])
+    # (1, False)
+    print(compute_intersection_node(G, [0, 1, 5]))
+    # (4, False)
+    print(compute_intersection_node(G, [0, 1, 4, 5]))
+
+
 if __name__ == '__main__':
-    test_1()
+    # test_1()
+    test_2()
