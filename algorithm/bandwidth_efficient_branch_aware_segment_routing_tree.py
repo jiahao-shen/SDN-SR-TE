@@ -12,6 +12,7 @@ from networkx.utils import pairwise
 from copy import deepcopy
 from itertools import islice
 from collections import OrderedDict
+import math
 
 __all__ = [
     'generate_bandwidth_efficient_branch_aware_segment_routing_trees'

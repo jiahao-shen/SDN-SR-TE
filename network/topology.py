@@ -6,7 +6,6 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
-from network.utils import *
 from networkx.drawing.nx_agraph import graphviz_layout
 import warnings
 import random
@@ -15,44 +14,22 @@ import networkx as nx
 warnings.filterwarnings('ignore')
 
 
-def generate_topology(size=20, a=0.7, b=0.7, link_capacity=1000,
-                      flow_limit=100):
-    """Generate a randomly topology
+def generate_topology(size=20, a=0.41, b=0.54, c=0.05,
+                      link_capacity=1000, flow_limit=100):
+    """Generate a randomly topology using Scale Free model
     :param size: The number of nodes in topology, default 20
-    :param a: Alpha (0, 1] float in Waxman method, default 0.7
-    :param b: Beta (0, 1] float in Waxman method, default 0.7
+    :param a: Alpha (0, 1] float, default 0.41
+    :param b: Beta (0, 1] float, default 0.54
+    :param c: Gamma (0, 1] float, default 0.05
+              The sum of a, b, c must be 1
     :param link_capacity: The link capacity in topology, here we consider all
                           of them are same, equal to 1GB(1000MB)
     :param flow_limit: The maximum number of flow entries, default 100
     :return: G, pos
     """
-    # References: B. M. Waxman, "Routing of multipoint connections",
-    # IEEE Journal on Selected Areas in Communications, vol. 6, no. 9, pp.
-    # 1617-1622, December 1988.
-    # Randomly generate number of core nodes in topology
-    n = random.randint(size // 3, size // 2)
-    # Generate the waxman graph of core nodes
-    G = nx.waxman_graph(n, alpha=a, beta=b)
-    # Maximum number of tries to create a graph
-    tries = 0
-    # If graph isn't connected
-    while not nx.is_connected(G):
-        # Regenerate it again
-        G = nx.waxman_graph(n, alpha=a, beta=b)
-        tries += 1
-        # If tries bigger than 100 times, raise Error
-        if tries >= 100:
-            raise RuntimeError('The parameter alpha and beta isn\'t'
-                               'appropriate, please change other values ')
-    # Get all core nodes in topology
-    core_nodes = list(G.nodes)
-    # For all edge nodes
-    for v in range(n, size):
-        # Randomly choice core nodes in topology
-        u = random.choice(core_nodes)
-        # Add edge between edge node and core node
-        G.add_edge(v, u)
-
+    # Generate a scale free graph
+    # Whose degree of nodes are obeying the power law distribution
+    G = nx.Graph(nx.scale_free_graph(size, alpha=a, beta=b, gamma=c))
     # Add edge attributes
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
@@ -120,25 +97,3 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
         flows.append(f)
 
     return flows
-
-
-def test():
-    G, pos = generate_topology(100, 0.3, 0.3)
-    cnt = {}
-    for v in G.nodes:
-        d = G.degree(v)
-        if d in cnt.keys():
-            cnt[d] += 1
-        else:
-            cnt[d] = 1
-
-    cnt = dict(sorted(cnt.items(), key=lambda x: x[0]))
-    print(cnt)
-    flows = generate_flow_requests(G)
-
-    draw_topology(G, pos)
-    output_flows(flows)
-
-
-if __name__ == '__main__':
-    test()

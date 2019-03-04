@@ -10,7 +10,6 @@ from copy import deepcopy
 from networkx.utils import pairwise
 import matplotlib.pyplot as plt
 import networkx as nx
-import random
 import math
 
 __all__ = [
@@ -27,6 +26,8 @@ __all__ = [
     'output_flows',
     'draw_topology',
     'draw_result',
+    'count_degree',
+    'draw_degree_distribution'
 ]
 
 
@@ -309,20 +310,33 @@ def draw_result(result, x_label='Multigroup Size',
     plt.show()
 
 
-def generate_test_result():
-    result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}}
+def count_degree(G):
+    """Count the degree distribution of graph G
+    :param G: The origin graph
+    :return: cnt
+    """
+    cnt = {}
 
-    for key in result:
-        for index in range(10, 70, 10):
-            result[key][index] = random.randint(10, 100)
+    for v in G.nodes:
+        if G.degree(v) in cnt.keys():
+            cnt[G.degree(v)] += 1
+        else:
+            cnt[G.degree(v)] = 1
 
-    return result
+    cnt = dict(sorted(cnt.items(), key=lambda t: t[0]))
+
+    return cnt
 
 
-def test_1():
-    results = generate_test_result()
-    draw_result(results, type='bar')
+def draw_degree_distribution(cnt, title=''):
+    """Draw the distribution of degree
+    :param cnt: The count of degree
+    :param title: The title of figure
+    :return:
+    """
+    x = cnt.keys()
+    y = cnt.values()
 
-
-if __name__ == '__main__':
-    test_1()
+    plt.title(title)
+    plt.scatter(x, y)
+    plt.show()

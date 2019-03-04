@@ -54,24 +54,3 @@ def generate_shortest_path_trees(G, flows):
 
     return graph, allocated_flows, shortest_path_trees
 
-
-def test_1():
-    G, pos = generate_topology(100)
-    flows = generate_flow_requests(G, 2, 20)
-
-    draw_topology(G, pos)
-
-    graph, allocated_flows, shortest_path_trees = \
-        generate_shortest_path_trees(G, flows)
-
-    output_flows(allocated_flows)
-
-    for T in shortest_path_trees:
-        position = graphviz_layout(T, prog='dot')
-        draw_topology(T, position, title='SPT')
-
-    print(compute_num_branch_nodes(shortest_path_trees))
-
-
-if __name__ == '__main__':
-    test_1()

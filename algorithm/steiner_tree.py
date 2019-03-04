@@ -60,23 +60,3 @@ def generate_steiner_trees(G, flows):
 
     return graph, allocated_flows, steiner_trees
 
-
-def test_1():
-    G, pos = generate_topology(100)
-    flows = generate_flow_requests(G, 2, 10)
-
-    draw_topology(G, pos)
-
-    graph, allocated_flows, steiner_trees = generate_steiner_trees(G, flows)
-
-    output_flows(allocated_flows)
-
-    for T in steiner_trees:
-        position = graphviz_layout(T, 'dot')
-        draw_topology(T, position, title='SPT')
-
-    print(compute_num_branch_nodes(steiner_trees))
-
-
-if __name__ == '__main__':
-    test_1()
