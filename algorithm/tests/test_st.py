@@ -1,7 +1,7 @@
 """
 @project: RoutingAlgorithm
 @author: sam
-@file test_wt.py
+@file test_st.py
 @ide: PyCharm
 @time: 2019-03-04 18:13:06
 @blog: https://jiahaoplus.com
@@ -17,8 +17,6 @@ def test_1():
     draw_topology(G, pos)
 
     graph, allocated_flows, steiner_trees = generate_steiner_trees(G, flows)
-
-    output_flows(allocated_flows)
 
     for T in steiner_trees:
         position = graphviz_layout(T, 'dot')

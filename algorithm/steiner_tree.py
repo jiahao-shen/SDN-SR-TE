@@ -59,4 +59,3 @@ def generate_steiner_trees(G, flows):
         steiner_trees.append(T)
 
     return graph, allocated_flows, steiner_trees
-

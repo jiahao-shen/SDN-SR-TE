@@ -48,3 +48,18 @@ def test_3():
     print(num_degree_one)
 
     assert len(G) + num_degree_one == num_total
+
+
+def test_4():
+    """Test the degree of terminals whether equal to 1
+    :return:
+    """
+    G, pos = generate_topology(100)
+    flows = generate_flow_requests(G, 10, 50)
+
+    for f in flows:
+        assert G.degree(f['src']) == 1
+
+        for dst in f['dst']:
+            assert G.degree(dst) == 1
+
