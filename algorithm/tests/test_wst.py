@@ -28,6 +28,7 @@ def test_1():
     for T in steiner_trees:
         position = graphviz_layout(T, prog='dot')
         draw_topology(T, position, title='ST')
+        assert len(nx.cycle_basis(T)) == 0
 
     print(compute_num_branch_nodes(steiner_trees))
 

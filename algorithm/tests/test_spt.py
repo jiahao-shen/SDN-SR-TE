@@ -27,5 +27,6 @@ def test_1():
     for T in shortest_path_trees:
         position = graphviz_layout(T, prog='dot')
         draw_topology(T, position, title='SPT')
+        assert len(nx.cycle_basis(T)) == 0
 
     print(compute_num_branch_nodes(shortest_path_trees))

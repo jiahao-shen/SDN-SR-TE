@@ -10,12 +10,12 @@ from network import *
 from algorithm import *
 from networkx.utils import pairwise
 from copy import deepcopy
-from itertools import islice
 from collections import OrderedDict
 import math
 
 __all__ = [
-    'generate_bandwidth_efficient_branch_aware_segment_routing_trees'
+    'generate_bandwidth_efficient_branch_aware_segment_routing_trees',
+    'compute_intersection_node'
 ]
 
 
@@ -120,23 +120,6 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         band_efficient_branch_aware_segment_routing_trees
 
 
-def has_cycle(multicast_tree, path):
-    """Check whether exists cycle if path is added into the multicast tree
-    :param multicast_tree: The multicast tree for current multicast
-    :param path: The current path
-    :return: Boolean
-    """
-    # Copy multicast tree as temp graph
-    tmp_graph = deepcopy(multicast_tree)
-    # Add path into the temp graph
-    tmp_graph.add_path(path)
-    # If temp graph exists cycle
-    if len(nx.cycle_basis(tmp_graph)) != 0:
-        return True
-    # Else return False
-    return False
-
-
 def compute_extra_cost(G, multicast_tree, path, w1, w2):
     """Compute the extra cost for path
     :param G: The origin graph
@@ -175,48 +158,30 @@ def generate_weighted_graph(G, nodes_betweenness_centrality,
     :return: weighted G
     """
     # Traverse the edges
-    for edge in G.edges(data=True):
+    for e in G.edges(data=True):
         # Set the congestion to inf
         congestion_index = math.inf
         # If the residual bandwidth not equals 0, then compute the congestion
-        if edge[2]['residual_bandwidth'] != 0:
-            congestion_index = edge[2]['link_capacity'] / edge[2][
+        if e[2]['residual_bandwidth'] != 0:
+            congestion_index = e[2]['link_capacity'] / e[2][
                 'residual_bandwidth'] - 1
-        # Get the current edge betweenness centrality
-        betweenness_centrality = edges_betweenness_centrality[
-            (edge[0], edge[1])]
         # Compute the weight according to the equation 3
         # Set the edge weight
-        edge[2]['weight'] = alpha * congestion_index + (
-                1 - alpha) * betweenness_centrality
+        e[2]['weight'] = alpha * congestion_index + (
+                1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
     # Traverse the nodes
-    for node in G.nodes(data=True):
+    for v in G.nodes(data=True):
         # Set the congestion to inf
         congestion_index = math.inf
         # If the residual bandwidth not equals 0, then compute the congestion
-        if node[1]['residual_flow_entries'] != 0:
-            congestion_index = node[1]['flow_limit'] / node[1][
+        if v[1]['residual_flow_entries'] != 0:
+            congestion_index = v[1]['flow_limit'] / v[1][
                 'residual_flow_entries'] - 1
-        # Get the current node betweenness centrality
-        betweenness_centrality = nodes_betweenness_centrality[node[0]]
         # Set the node weight
-        node[1]['weight'] = beta * congestion_index + (
-                1 - beta) * betweenness_centrality
+        v[1]['weight'] = beta * congestion_index + (
+                1 - beta) * nodes_betweenness_centrality[v[0]]
 
     return G
-
-
-def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
-    """Generate the k shortest paths from source to destination in G
-    :param G: The origin graph
-    :param source: The source node
-    :param destination: The destination node
-    :param k: The parameter in k shortest path, default 2
-    :param weight: The weight value in shortest path algorithm, default None
-    :return: The list of k shortest paths
-    """
-    return list(
-        islice(nx.shortest_simple_paths(G, source, destination, weight), k))
 
 
 def compute_intersection_node(multicast_tree, path):
@@ -241,68 +206,3 @@ def compute_intersection_node(multicast_tree, path):
     # Else return False
     return intersection, False
 
-
-def compute_path_cost(G, path, weight=None):
-    """Compute the cost of path according to the parameter weight
-    :param G: The origin graph
-    :param path: The path need to compute
-    :param weight: The edge value
-    :return: cost
-    """
-    cost = 0
-    # Traverse nodes during the path
-    for v, u in pairwise(path):
-        # If weight==None, cost plus 1
-        if weight is None:
-            cost += 1
-        # Else cost plus the edge weight
-        else:
-            cost += G[v][u][weight]
-
-    return cost
-
-
-def test_1():
-    G, pos = generate_topology()
-    flows = generate_flow_requests(G, flow_entries=10)
-
-    output_flows(flows)
-
-    draw_topology(G, pos, title='Topology')
-
-    graph, allocated_flows, multicast_trees = \
-        generate_shortest_path_trees(G, flows)
-
-    for index, tree in enumerate(multicast_trees):
-        draw_topology(tree, pos, title='SPT' + str(index))
-
-    graph, allocated_flows, multicast_trees = \
-        generate_bandwidth_efficient_branch_aware_segment_routing_trees(G,
-                                                                        flows)
-
-    for index, tree in enumerate(multicast_trees):
-        draw_topology(tree, pos, title='BBSRT' + str(index))
-
-
-def test_2():
-    G = nx.Graph()
-    G.root = 0
-    G.add_path([0, 1, 2, 3])
-
-    # (None, False)
-    print(compute_intersection_node(G, [0, 1]))
-    # (1, 4)
-    print(compute_intersection_node(G, [0, 1, 4]))
-    # (3, False)
-    print(compute_intersection_node(G, [0, 1, 2, 3, 4]))
-
-    G.add_path([0, 1, 4])
-    # (1, False)
-    print(compute_intersection_node(G, [0, 1, 5]))
-    # (4, False)
-    print(compute_intersection_node(G, [0, 1, 4, 5]))
-
-
-if __name__ == '__main__':
-    # test_1()
-    test_2()

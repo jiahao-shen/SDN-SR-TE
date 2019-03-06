@@ -8,6 +8,7 @@
 """
 from copy import deepcopy
 from networkx.utils import pairwise
+from itertools import islice
 import matplotlib.pyplot as plt
 import networkx as nx
 import math
@@ -19,6 +20,7 @@ __all__ = [
     'compute_throughput',
     'compute_link_utilization',
     'compute_path_minimum_bandwidth',
+    'compute_path_cost',
     'is_branch_node',
     'is_path_valid',
     'update_edge_bandwidth',
@@ -27,7 +29,9 @@ __all__ = [
     'draw_topology',
     'draw_result',
     'count_degree',
-    'draw_degree_distribution'
+    'draw_degree_distribution',
+    'generate_k_shortest_paths',
+    'has_cycle'
 ]
 
 
@@ -226,6 +230,53 @@ def compute_path_minimum_bandwidth(G, path):
                                 G[v][u]['residual_bandwidth'])
 
     return minimum_bandwidth
+
+
+def compute_path_cost(G, path, weight=None):
+    """Compute the cost of path according to the parameter weight
+    :param G: The origin graph
+    :param path: The path need to compute
+    :param weight: The edge value
+    :return: cost
+    """
+    cost = 0
+    # Traverse nodes during the path
+    for v, u in pairwise(path):
+        # If weight==None, cost plus 1
+        if weight is None:
+            cost += 1
+        # Else cost plus the edge weight
+        else:
+            cost += G[v][u][weight]
+
+    return cost
+
+
+def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
+    """Generate the k shortest paths from source to destination in G
+    :param G: The origin graph
+    :param source: The source node
+    :param destination: The destination node
+    :param k: The parameter in k shortest path, default 2
+    :param weight: The weight value in shortest path algorithm, default None
+    :return: The list of k shortest paths
+    """
+    return list(
+        islice(nx.shortest_simple_paths(G, source, destination, weight), k))
+
+
+def has_cycle(multicast_tree, path):
+    """Check whether exists cycle if path is added into the multicast tree
+    :param multicast_tree: The multicast tree for current multicast
+    :param path: The current path
+    :return: Boolean
+    """
+    # Copy multicast tree as temp graph
+    tmp_graph = deepcopy(multicast_tree)
+    # Add path into the temp graph
+    tmp_graph.add_path(path)
+    # Return whether has cycle
+    return len(nx.cycle_basis(tmp_graph)) != 0
 
 
 def draw_topology(G, position, node_attribute=None, edge_attribute=None,

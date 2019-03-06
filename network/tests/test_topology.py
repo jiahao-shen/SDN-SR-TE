@@ -28,6 +28,9 @@ def test_2():
 
 
 def test_3():
+    """Test the node whose degree is one
+    :return:
+    """
     G = nx.Graph(nx.scale_free_graph(100))
     pos = graphviz_layout(G)
 

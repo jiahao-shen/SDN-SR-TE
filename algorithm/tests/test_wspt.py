@@ -68,6 +68,7 @@ def test_2():
     for T in shortest_path_trees:
         position = graphviz_layout(T, prog='dot')
         draw_topology(T, position, 'SPT')
+        assert len(nx.cycle_basis(T)) == 0
 
     print(compute_num_branch_nodes(shortest_path_trees))
 
@@ -80,6 +81,7 @@ def test_2():
     for T in widest_shortest_path_trees:
         position = graphviz_layout(T, prog='dot')
         draw_topology(T, position, title='WSPT')
+        assert len(nx.cycle_basis(T)) == 0
 
     print(compute_num_branch_nodes(widest_shortest_path_trees))
 
