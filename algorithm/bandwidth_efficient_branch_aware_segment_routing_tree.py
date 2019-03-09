@@ -7,7 +7,6 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from algorithm import *
 from networkx.utils import pairwise
 from copy import deepcopy
 from collections import OrderedDict
@@ -33,7 +32,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
     In 2017 IEEE International Conference on Communications (ICC) (pp. 1–6).
     https://doi.org/10.1109/ICC.2017.7997197
     :param G: The origin graph
-    :param flows: The flow request
+    :param flows: The current flow request
     :param k: The k-shortest paths in algorithm, default 5
     :param alpha: The parameter in equation 3 in paper, default 0.5
     :param beta: The parameter in equation 4 in paper, default 0.5
@@ -66,55 +65,58 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                                         beta)
         # Dict to store k shortest paths for (source, destinations)
         d = {}
-        # Sorted Dict to store cost of the shortest path
-        d_sorted = {}
         # The multicast tree for current source node
-        T = nx.Graph()
+        allocated_T = nx.Graph()
+        origin_T = nx.Graph()
         # Set the root of multicast tree
-        T.root = f['src']
+        allocated_T.root = f['src']
         # Traverse all destination nodes
         for dst in f['dst']:
             # Compute the k shortest path from source to dst_node
             d[dst] = generate_k_shortest_paths(graph, f['src'], dst,
                                                k, weight='weight')
-            # Store the shortest path cost in d_sorted
-            d_sorted[dst] = compute_path_cost(graph, d[dst][0],
-                                              weight='weight')
         # Sort the dict by value
-        d_sorted = OrderedDict(sorted(d_sorted.items(), key=lambda x: x[1]))
+        d = OrderedDict(sorted(d.items(),
+                               key=lambda x:
+                               compute_path_cost(graph, x[1][0],
+                                                 weight='weight')))
+
         # Traverse the destination nodes in d_sorted
-        for dst in d_sorted:
+        for dst in d:
             # Path initialize
             path = d[dst][0]
             # If the multicast tree isn't empty
-            if len(T) != 0:
+            if len(allocated_T) != 0:
                 # Initialize the minimum cost
                 minimum_cost = math.inf
                 # Traverse the k shortest path for dst_node
-                for p in d[dst]:
+                for p in d[dst][1:]:
                     # If exists cycle after adding p into multicast tree
                     # Then continue
-                    if has_cycle(T, p):
+                    if has_cycle(allocated_T, p):
                         continue
                     # Compute the extra cost according to the paper
-                    extra_cost = compute_extra_cost(graph, T, p, w1, w2)
+                    extra_cost = compute_extra_cost(graph, allocated_T,
+                                                    p, w1, w2)
                     # If extra cost less than minimum cost
                     if extra_cost < minimum_cost:
                         # Update minimum cost and path
                         minimum_cost = extra_cost
                         path = p
+            # Add path into origin_T
+            origin_T.add_path(path)
             # Check the current path whether valid
-            if is_path_valid(graph, T, path, f['size']):
+            if is_path_valid(graph, allocated_T, path, f['size']):
                 # Record the path for pair(source, destination)
                 f['dst'][dst] = path
                 # Add the path into the multicast tree
-                T.add_path(path)
+                allocated_T.add_path(path)
         # Update the residual entries of nodes in graph
-        update_node_entries(graph, T)
+        update_node_entries(graph, allocated_T)
         # Update the residual bandwidth of edges in the multicast tree
-        update_edge_bandwidth(graph, T, f['size'])
+        update_edge_bandwidth(graph, allocated_T, f['size'])
         # Add multicast tree in forest
-        band_efficient_branch_aware_segment_routing_trees.append(T)
+        band_efficient_branch_aware_segment_routing_trees.append(origin_T)
 
     return graph, allocated_flows, \
         band_efficient_branch_aware_segment_routing_trees
@@ -205,4 +207,3 @@ def compute_intersection_node(multicast_tree, path):
         return intersection, True
     # Else return False
     return intersection, False
-

@@ -36,30 +36,28 @@ def generate_widest_steiner_trees(G, flows):
         # Generate the temp widest steiner tree for terminal nodes
         # Then compute all paths from source to other nodes in temp
         # widest steiner tree
-        all_paths = nx.shortest_path(
-            nx.Graph(generate_widest_steiner_tree(graph, terminals)),
-            f['src'],
-            weight=None)
+        origin_T = generate_widest_steiner_tree(graph, terminals)
+        all_paths = nx.shortest_path(origin_T, f['src'], weight=None)
         # Steiner Tree for current multicast initialization
-        T = nx.Graph()
+        allocated_T = nx.Graph()
         # Set the root of widest steiner tree
-        T.root = f['src']
+        allocated_T.root = f['src']
         # Traverse all destination nodes
         for dst in f['dst']:
             # Get the path from source to destination, not considering weight
             path = all_paths[dst]
             # Check the current path whether valid
-            if is_path_valid(graph, T, path, f['size']):
+            if is_path_valid(graph, allocated_T, path, f['size']):
                 # Record path for pair(source, destination)
                 f['dst'][dst] = path
                 # Add the path into steiner tree
-                T.add_path(path)
+                allocated_T.add_path(path)
         # Update the residual flow entries of nodes in the widest steiner tree
-        update_node_entries(graph, T)
+        update_node_entries(graph, allocated_T)
         # Update the residual bandwidth of edges in the widest steiner tree
-        update_edge_bandwidth(graph, T, f['size'])
+        update_edge_bandwidth(graph, allocated_T, f['size'])
         # Add multicast tree in forest
-        widest_steiner_trees.append(T)
+        widest_steiner_trees.append(origin_T)
 
     return graph, allocated_flows, widest_steiner_trees
 

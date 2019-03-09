@@ -12,7 +12,9 @@ from copy import deepcopy
 import math
 
 __all__ = [
-    'generate_branch_aware_steiner_trees'
+    'generate_branch_aware_steiner_trees',
+    'edge_optimization_phase',
+    'branch_optimization_phase'
 ]
 
 
@@ -47,18 +49,19 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
 
 def generate_branch_aware_steiner_tree(G, source, destinations,
                                        all_pair_shortest_paths, w=1):
-    tree = edge_optimization_phase(G, source, destinations,
+    tree = edge_optimization_phase(source, destinations,
                                    all_pair_shortest_paths)
 
-    tree = branch_optimization_phase(G, source, destinations, tree,
-                                     all_pair_shortest_paths)
+    branch_optimization_phase(G, source, destinations, tree,
+                              all_pair_shortest_paths)
+    # tree = branch_optimization_phase(G, source, destinations, tree,
+    #                                  all_pair_shortest_paths)
     # tree = branch_optimization_phase(G, tree)
-    return tree
+    # return tree
 
 
-def edge_optimization_phase(G, source, destinations, all_pair_shortest_paths):
+def edge_optimization_phase(source, destinations, all_pair_shortest_paths):
     """The Edge Optimization Phase according to the paper
-    :param G: The origin graph
     :param source: The source node of multicast tree
     :param destinations: The destination nodes of flow request
     :param all_pair_shortest_paths: Shortest path between any two nodes
@@ -74,30 +77,23 @@ def edge_optimization_phase(G, source, destinations, all_pair_shortest_paths):
     while terminals:
         # The final path need to add into the tree
         path = None
-        # The paths to record all shortest paths from terminals to tree
-        paths = {}
         # The minimal distance of all shortest paths
         min_dis = math.inf
         # Traverse all nodes in terminals
         for v in terminals:
-            # Record the shortest path from node to tree
-            paths[v] = shortest_path_to_tree(v, tree, all_pair_shortest_paths)
-            # Update minimal distance
-            min_dis = min(min_dis, len(paths[v]))
-        # Traverse all shortest paths
-        for p in paths.values():
-            # If the final path is None and current path length equals
-            # the minial distance
-            # Update the final_path
-            if path is None and len(p) == min_dis:
+            # Compute the shortest path from node to tree
+            p = shortest_path_to_tree(v, tree, all_pair_shortest_paths)
+            # If current distance less than min_dis
+            if len(p) < min_dis:
+                # Update the min_dis
+                min_dis = len(p)
+                # And record current path
                 path = p
-            # If the final path isn't None and current path length equals
-            # the minimal distance and the intersection node is branch node
-            elif path is not None and len(p) == min_dis and \
-                    is_branch_node(tree, path[0]):
-                # Update the final path
+            # If current distance equals min_dis and the first node of path
+            # is branch node
+            elif len(p) == min_dis and is_branch_node(tree, p[0]):
+                # Update the path
                 path = p
-                break
         # Add the minial shortest path into the tree
         tree.add_path(path)
         # Remove the terminals corresponding to the path
@@ -106,19 +102,19 @@ def edge_optimization_phase(G, source, destinations, all_pair_shortest_paths):
     return tree
 
 
-def shortest_path_to_tree(target, tree, all_pair_shortest_path):
+def shortest_path_to_tree(target, tree, all_pair_shortest_paths):
     """Compute the shortest path from target node to current tree
     :param target: The target node
     :param tree: The constructed multicast tree
-    :param all_pair_shortest_path: Shortest path for each two nodes
-    :return: path
+    :param all_pair_shortest_paths: Shortest paths for each two nodes
+    :return: path(from tree to target)
     """
     # Path initialization
     path = None
     # Traverse all nodes in tree
     for v in tree.nodes:
         # Compute all paths from v to target
-        p = all_pair_shortest_path[v][target]
+        p = all_pair_shortest_paths[v][target]
         # If path is None
         # Or path is not None and the current length of p is less than path
         # Then set p to path
@@ -128,52 +124,46 @@ def shortest_path_to_tree(target, tree, all_pair_shortest_path):
     return path
 
 
-# TODO
 def branch_optimization_phase(G, source, destinations,
-                              tree, all_pair_shortest_path):
+                              tree, all_pair_shortest_paths):
     """The Branch Optimization Phase according to the paper
     :param G: The origin graph
     :param source:
     :param destinations:
     :param tree: The tree constructed by edge optimization phase
-    :param all_pair_shortest_path:
+    :param all_pair_shortest_paths:
     :return:
     """
     # Deletion Step
     branch_nodes = {}
     # Traverse all nodes in tree
-    for node in tree.nodes:
+    for v in tree.nodes:
         # If it is branch node
-        if is_branch_node(tree, node):
+        if is_branch_node(tree, v):
             # Record the degree of branch node
-            branch_nodes[node] = tree.degree(node)
+            branch_nodes[v] = tree.degree(v)
     # Sort the branch nodes in the ascending order of degree
     branch_nodes = OrderedDict(sorted(branch_nodes.items(),
                                       key=lambda x: x[1]))
 
-    # Initialize the terminals
-    terminals = set(destinations)
-    terminals.add(source)
-
-    for v_d in branch_nodes.keys():
+    for v_d in branch_nodes:
+        print('Remove', v_d)
         neighbors = list(tree.neighbors(v_d))
         tree.remove_node(v_d)
 
         for v in neighbors:
-            if v in branch_nodes.keys() or v in terminals:
-                path = None
-                for u in branch_nodes.keys():
-                    if u == v_d:
-                        continue
-                    p = all_pair_shortest_path[v][u]
-                    if path is None or (path is not None and
-                                        len(p) < len(path)):
-                        path = p
+            path = None
+            print('Neighbor', v)
+            for u in branch_nodes:
+                if u == v_d or nx.node_connectivity(tree, v, u):
+                    continue
+                p = all_pair_shortest_paths[v][u]
+                print('Branch', u, p)
+                if path is None or (path is not None and len(p) < len(path)):
+                    path = p
+            if path is not None:
                 tree.add_path(path)
-
     return tree
-
-    # print(branch_nodes.keys())
 
 
 def test_1():

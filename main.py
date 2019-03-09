@@ -115,7 +115,7 @@ def lab_1(datas, lock):
     G, pos = generate_topology(NETWORK_SIZE)
 
     for multi_group_size in range(10, 60, 10):
-        flows = generate_flow_requests(G, 10, multi_group_size, 100, 500)
+        flows = generate_flow_requests(G, 30, multi_group_size, 100, 500)
 
         t = time()
         graph, allocated_flows, multicast_trees = \

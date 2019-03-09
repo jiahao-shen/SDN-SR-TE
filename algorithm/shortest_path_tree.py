@@ -32,25 +32,28 @@ def generate_shortest_path_trees(G, flows):
         # others, not considering weight
         all_paths = nx.shortest_path(graph, f['src'], weight=None)
         # Shortest path tree for current multicast initialization
-        T = nx.Graph()
+        allocated_T = nx.Graph()
+        origin_T = nx.Graph()
         # Set the root of shortest path tree
-        T.root = f['src']
+        allocated_T.root = f['src']
         # Traverse all destination nodes
         for dst in f['dst']:
             # Get the shortest path from source to destination
             path = all_paths[dst]
+            # Add path into origin_T
+            origin_T.add_path(path)
             # Check the current path whether valid
-            if is_path_valid(graph, T, path, f['size']):
+            if is_path_valid(graph, allocated_T, path, f['size']):
                 # Record the shortest path for pair(source, destination)
                 f['dst'][dst] = path
                 # Add the shortest path into shortest path tree
-                T.add_path(path)
+                allocated_T.add_path(path)
         # Update the residual flow entries of nodes in the shortest path tree
-        update_node_entries(graph, T)
+        update_node_entries(graph, allocated_T)
         # Update the residual bandwidth of edges in the shortest path tree
-        update_edge_bandwidth(graph, T, f['size'])
+        update_edge_bandwidth(graph, allocated_T, f['size'])
         # Add multicast tree in forest
-        shortest_path_trees.append(T)
+        shortest_path_trees.append(origin_T)
 
     return graph, allocated_flows, shortest_path_trees
 
