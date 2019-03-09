@@ -86,17 +86,17 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
             # Path initialize
             path = d[dst][0]
             # If the multicast tree isn't empty
-            if len(allocated_T) != 0:
+            if len(origin_T) != 0:
                 # Initialize the minimum cost
                 minimum_cost = math.inf
                 # Traverse the k shortest path for dst_node
-                for p in d[dst][1:]:
+                for p in d[dst]:
                     # If exists cycle after adding p into multicast tree
                     # Then continue
-                    if has_cycle(allocated_T, p):
+                    if has_cycle(origin_T, p):
                         continue
                     # Compute the extra cost according to the paper
-                    extra_cost = compute_extra_cost(graph, allocated_T,
+                    extra_cost = compute_extra_cost(graph, origin_T,
                                                     p, w1, w2)
                     # If extra cost less than minimum cost
                     if extra_cost < minimum_cost:

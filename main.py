@@ -115,7 +115,7 @@ def lab_1(datas, lock):
     G, pos = generate_topology(NETWORK_SIZE)
 
     for multi_group_size in range(10, 60, 10):
-        flows = generate_flow_requests(G, 30, multi_group_size, 100, 500)
+        flows = generate_flow_requests(G, 1, multi_group_size, 100, 500)
 
         t = time()
         graph, allocated_flows, multicast_trees = \
@@ -179,9 +179,7 @@ def lab_2(datas, lock):
     Compute the performance of network
     :return:
     """
-    NETWORK_SIZE = 100
-    ALPHA = 0.3
-    BETA = 0.3
+    NETWORK_SIZE = 200
 
     spt = {}
     st = {}
@@ -196,7 +194,7 @@ def lab_2(datas, lock):
         wst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
         bbsrt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
 
-    G, pos = generate_topology(NETWORK_SIZE, ALPHA, BETA)
+    G, pos = generate_topology(NETWORK_SIZE)
 
     for num_requests in range(10, 90, 10):
         flows = generate_flow_requests(G, num_requests, 10, 100, 500)
@@ -241,16 +239,16 @@ def lab_2(datas, lock):
         wst[num_requests] = [wst[num_requests][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        # t = time()
-        # graph, allocated_flows, multicast_trees = \
-        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
-        #         G, flows)
-        # t = time() - t
-        # performance = network_performance(graph, allocated_flows,
-        #                                   multicast_trees)
-        # performance.append(t)
-        # bbsrt[num_requests] = [bbsrt[num_requests][i] + performance[i] for i
-        #                        in range(len(PERFORMANCE))]
+        t = time()
+        graph, allocated_flows, multicast_trees = \
+            generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+                G, flows)
+        t = time() - t
+        performance = network_performance(graph, allocated_flows,
+                                          multicast_trees)
+        performance.append(t)
+        bbsrt[num_requests] = [bbsrt[num_requests][i] + performance[i] for i
+                               in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append(
