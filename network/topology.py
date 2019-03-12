@@ -6,7 +6,7 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
-from networkx.drawing.nx_agraph import graphviz_layout
+# from networkx.drawing.nx_agraph import graphviz_layout
 import warnings
 import random
 import networkx as nx
@@ -43,9 +43,10 @@ def generate_topology(size=20, a=0.41, b=0.54, c=0.05,
     nx.set_node_attributes(G, flow_limit, 'residual_flow_entries')
 
     # Get the layout of graph, here we use graphviz_layout
-    pos = graphviz_layout(G)
+    # pos = graphviz_layout(G)
 
-    return G, pos
+    # return G, pos
+    return G
 
 
 def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
