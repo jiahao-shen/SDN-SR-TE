@@ -1,7 +1,7 @@
 """
 @project: SDN-SR-TE
 @author: sam
-@file my_topo.py
+@file topology.py
 @ide: PyCharm
 @time: 2019-03-11 21:32:16
 @blog: https://jiahaoplus.com
@@ -13,13 +13,14 @@ sys.path.append('..')
 from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.cli import CLI
+from mininet.clean import cleanup
 from network import *
 
 
-class MyTopology(Topo):
+class CustomTopology(Topo):
 
     def __init__(self):
-        super(MyTopology, self).__init__()
+        super(CustomTopology, self).__init__()
         G = generate_topology()
 
         for v in G.nodes():
@@ -28,12 +29,13 @@ class MyTopology(Topo):
             else:
                 self.addSwitch(str(v))
 
-        for e in G.edges():
-            self.addLink(str(e[0]), str(e[1]))
+        for e in G.edges(data=True):
+            self.addLink(str(e[0]), str(e[1]), bw=e[2]['link_capacity'])
 
 
 def test_topo():
-    topo = MyTopology()
+    cleanup()
+    topo = CustomTopology()
     net = Mininet(topo)
     net.start()
     CLI(net)

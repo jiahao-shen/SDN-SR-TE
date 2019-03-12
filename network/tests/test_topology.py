@@ -7,6 +7,7 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
+from networkx.drawing.nx_agraph import graphviz_layout
 
 
 def test_1():
@@ -62,4 +63,11 @@ def test_4():
 
         for dst in f['dst']:
             assert G.degree(dst) == 1
+
+
+def test_5():
+    for _ in range(1 << 10):
+        G = generate_topology()
+        for e in G.edges():
+            assert e[0] != e[1]
 

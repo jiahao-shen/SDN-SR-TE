@@ -30,6 +30,7 @@ def generate_topology(size=20, a=0.41, b=0.54, c=0.05,
     # Generate a scale free graph
     # Whose degree of nodes are obeying the power law distribution
     G = nx.Graph(nx.scale_free_graph(size, alpha=a, beta=b, gamma=c))
+    G.remove_edges_from(G.selfloop_edges())
     # Add edge attributes
     # Add link capacity for all edges
     nx.set_edge_attributes(G, link_capacity, 'link_capacity')
@@ -42,10 +43,6 @@ def generate_topology(size=20, a=0.41, b=0.54, c=0.05,
     # Add residual flow entries for all nodes
     nx.set_node_attributes(G, flow_limit, 'residual_flow_entries')
 
-    # Get the layout of graph, here we use graphviz_layout
-    # pos = graphviz_layout(G)
-
-    # return G, pos
     return G
 
 
