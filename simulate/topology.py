@@ -14,14 +14,16 @@ from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.cli import CLI
 from mininet.clean import cleanup
-from network import *
+from mininet.node import Controller
+from mininet.log import info, setLogLevel
 
 
-class CustomTopology(Topo):
+class RandomScaleFreeTopo(Topo):
 
-    def __init__(self):
-        super(CustomTopology, self).__init__()
-        G = generate_topology()
+    def __init__(self, G, *args, **params):
+        super().__init__(*args, **params)
+
+        info('*** RandomScaleFreeTopo init\n')
 
         for v in G.nodes():
             if G.degree(v) == 1:
@@ -33,14 +35,10 @@ class CustomTopology(Topo):
             self.addLink(str(e[0]), str(e[1]), bw=e[2]['link_capacity'])
 
 
-def test_topo():
-    cleanup()
-    topo = CustomTopology()
-    net = Mininet(topo)
-    net.start()
-    CLI(net)
-    net.stop()
+def main():
+    pass
 
 
 if __name__ == '__main__':
-    test_topo()
+    setLogLevel('info')
+    main()
