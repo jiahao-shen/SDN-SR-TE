@@ -22,7 +22,7 @@ def test_1():
     setLogLevel('info')
 
     G = generate_topology()
-    topo = RandomScaleFreeTopo(G)
+    topo = MyTopo(G)
     net = Mininet(topo)
 
     net.start()
