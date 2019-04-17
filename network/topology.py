@@ -6,7 +6,7 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
-# from networkx.drawing.nx_agraph import graphviz_layout
+from networkx.drawing.nx_agraph import graphviz_layout
 import warnings
 import random
 import networkx as nx
@@ -14,22 +14,23 @@ import networkx as nx
 warnings.filterwarnings('ignore')
 
 
-def generate_topology(size=20, a=0.41, b=0.54, c=0.05,
-                      link_capacity=1000, flow_limit=100):
+def generate_topology(size=100, a=0.5, b=0.2, c=0.3,
+                      link_capacity=1000, flow_limit=1000):
     """Generate a randomly topology using Scale Free model
     :param size: The number of nodes in topology, default 20
-    :param a: Alpha (0, 1] float, default 0.41
-    :param b: Beta (0, 1] float, default 0.54
-    :param c: Gamma (0, 1] float, default 0.05
+    :param a: Alpha (0, 1] float, default 0.5
+    :param b: Beta (0, 1] float, default 0.2
+    :param c: Gamma (0, 1] float, default 0.3
               The sum of a, b, c must be 1
     :param link_capacity: The link capacity in topology, here we consider all
                           of them are same, equal to 1GB(1000MB)
-    :param flow_limit: The maximum number of flow entries, default 100
+    :param flow_limit: The maximum number of flow entries, default 1000
     :return: G, pos
     """
     # Generate a scale free graph
     # Whose degree of nodes are obeying the power law distribution
     G = nx.Graph(nx.scale_free_graph(size, alpha=a, beta=b, gamma=c))
+    # Remove the loop edges in graph
     G.remove_edges_from(G.selfloop_edges())
     # Add edge attributes
     # Add link capacity for all edges
@@ -56,7 +57,7 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
     :param size_upper: The maximum size of flow, default 100MB
     :return: flows
     """
-    # Here we define the node whose degree is one as edge node
+    # Here we define nodes whose degree are 1 as edge switches
     terminals = []
     for v in G.nodes:
         if G.degree(v) == 1:
@@ -86,7 +87,7 @@ def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
             # Set the path to None
             destinations[dst] = None
         # Randomly generate flow size
-        size = random.randint(size_lower, size_upper)
+        size = round(random.uniform(size_lower, size_upper), 2)
         # Set the src, dst and size
         f['src'] = src
         f['dst'] = destinations

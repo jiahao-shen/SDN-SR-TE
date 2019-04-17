@@ -33,18 +33,18 @@ def generate_widest_shortest_path_trees(G, flows):
         # source node to others
         # Considering residual bandwidth of edge as width
         all_paths = generate_widest_shortest_path(graph, f['src'])
-        # Widest Shortest Path Tree for current multicast initialization
+        # Initialize allocated_T
         allocated_T = nx.Graph()
-        origin_T = nx.Graph()
-        # Set the root of widest shortest path tree
         allocated_T.root = f['src']
+        # Initialize origin_T
+        origin_T = nx.Graph()
         # Traverse all destination nodes
         for dst in f['dst']:
             # Get the widest shortest path from source to destination
             path = all_paths[dst]
-            # Check the current path whether valid
             # Add path into origin_T
             origin_T.add_path(path)
+            # Check the current path whether valid
             if is_path_valid(graph, allocated_T, path, f['size']):
                 # Record the widest shortest path for pair(source, destination)
                 f['dst'][dst] = path
@@ -55,7 +55,7 @@ def generate_widest_shortest_path_trees(G, flows):
         # Update the residual bandwidth of edges in the widest shortest path
         # tree
         update_edge_bandwidth(graph, allocated_T, f['size'])
-        # Add multicast tree in forest
+        # Add origin_T into widest_shortest_path_trees
         widest_shortest_path_trees.append(origin_T)
 
     return graph, allocated_flows, widest_shortest_path_trees

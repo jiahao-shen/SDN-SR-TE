@@ -11,7 +11,8 @@ from network import *
 
 
 def test_1():
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
+    pos = graphviz_layout(G)
     draw_topology(G, pos)
     flows = generate_flow_requests(G, 1, 20)
     src = flows[0]['src']

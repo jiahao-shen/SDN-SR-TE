@@ -128,10 +128,6 @@ def generate_widest_steiner_trees(G, flows):
 
     # Traverse all flows
     for f in allocated_flows:
-        # Initialize allocated_T
-        allocated_T = nx.Graph()
-        allocated_T.root = f['src']
-        allocated_T.add_node(f['src'])
         # Initialize origin_T
         origin_T = nx.Graph()
         origin_T.add_node(f['src'])
@@ -156,6 +152,10 @@ def generate_widest_steiner_trees(G, flows):
             # Remove the terminal node in current path
             terminals.remove(path[-1])
 
+        # Initialize allocated_T
+        allocated_T = nx.Graph()
+        allocated_T.root = f['src']
+        allocated_T.add_node(f['src'])
         # Compute all paths from source to other nodes in origin_T
         all_paths = nx.shortest_path(origin_T, f['src'])
         # Traverse all destination nodes
@@ -202,7 +202,7 @@ def all_pair_widest_shortest_paths(G):
     """
     all_pair_paths = {}
 
-    for v in G.nodes():
+    for v in G.nodes:
         all_pair_paths[v] = generate_widest_shortest_path(G, v)
 
     return all_pair_paths

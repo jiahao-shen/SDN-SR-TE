@@ -24,7 +24,7 @@ def test_1():
     """
     def task():
         for _ in range(1 << 10):
-            G, pos = generate_topology()
+            G = generate_topology()
             src, dst = random.sample(range(20), 2)
 
             all_widest_shortest_path = generate_widest_shortest_path(G, src)
@@ -54,7 +54,8 @@ def test_2():
     """Test the Shortest Path Tree and Widest Shortest Path Tree
     :return:
     """
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
+    pos = graphviz_layout(G)
     flows = generate_flow_requests(G, 3, 10)
 
     draw_topology(G, pos)
@@ -87,7 +88,8 @@ def test_2():
 
 
 def test_3():
-    G, pos = generate_topology()
+    G = generate_topology()
+    pos = graphviz_layout(G)
     flows = generate_flow_requests(G)
 
     output_flows(flows)

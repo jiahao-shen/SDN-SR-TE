@@ -16,16 +16,18 @@ def test_1():
     """
     for i in range(1 << 10):
         G = nx.Graph(nx.scale_free_graph(100))
-        assert nx.is_connected(G) == True
+        assert nx.is_connected(G) is True
 
 
 def test_2():
     """Test the function of count_degree
     :return:
     """
-    G, pos = generate_topology(100)
-    cnt = count_degree(G)
-    print(cnt)
+    G = generate_topology(100)
+    pos = graphviz_layout(G)
+
+    draw_topology(G, pos)
+    draw_degree_distribution(G)
 
 
 def test_3():
@@ -55,7 +57,7 @@ def test_4():
     """Test the degree of terminals whether equal to 1
     :return:
     """
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
     flows = generate_flow_requests(G, 10, 50)
 
     for f in flows:
@@ -66,6 +68,9 @@ def test_4():
 
 
 def test_5():
+    """Test whether exist loop edges in graph
+    :return:
+    """
     for _ in range(1 << 10):
         G = generate_topology()
         for e in G.edges():

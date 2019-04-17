@@ -15,7 +15,8 @@ def test_1():
     """Test Steiner Tree and Widest Steiner Tree
     :return:
     """
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
+    pos = graphviz_layout(G)
     flows = generate_flow_requests(G, 2, 10)
 
     draw_topology(G, pos)

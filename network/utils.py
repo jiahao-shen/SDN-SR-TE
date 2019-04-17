@@ -28,7 +28,6 @@ __all__ = [
     'output_flows',
     'draw_topology',
     'draw_result',
-    'count_degree',
     'draw_degree_distribution',
     'generate_k_shortest_paths',
     'has_cycle'
@@ -165,7 +164,7 @@ def is_path_valid(G, multicast_tree, path, flow_size):
         # If current node is branch node in multicast tree and the residual
         # flow entries in G is less than the (degree - 1) in temp tree
         # Then drop this flow
-        elif v != multicast_tree.root and is_branch_node(tmp_tree, v) and \
+        elif is_branch_node(tmp_tree, v) and \
                 G.nodes[v]['residual_flow_entries'] < tmp_tree.degree(v) - 1:
             return False
 
@@ -188,7 +187,7 @@ def update_node_entries(G, multicast_tree):
             # Residual flow entries minus degree
             G.nodes[v]['residual_flow_entries'] -= multicast_tree.degree(v)
         # If current node is branch node
-        elif v != multicast_tree.root and is_branch_node(multicast_tree, v):
+        elif is_branch_node(multicast_tree, v):
             # Residual flow entries minus degree - 1
             G.nodes[v]['residual_flow_entries'] -= \
                 (multicast_tree.degree(v) - 1)
@@ -361,30 +360,20 @@ def draw_result(result, x_label='Multigroup Size',
     plt.show()
 
 
-def count_degree(G):
-    """Count the degree distribution of graph G
+def draw_degree_distribution(G, title=''):
+    """Draw the distribution of degree
     :param G: The origin graph
-    :return: cnt
+    :param title: The title of figure
+    :return:
     """
     cnt = {}
-
     for v in G.nodes:
         if G.degree(v) in cnt.keys():
             cnt[G.degree(v)] += 1
         else:
             cnt[G.degree(v)] = 1
-
     cnt = dict(sorted(cnt.items(), key=lambda t: t[0]))
 
-    return cnt
-
-
-def draw_degree_distribution(cnt, title=''):
-    """Draw the distribution of degree
-    :param cnt: The count of degree
-    :param title: The title of figure
-    :return:
-    """
     x = cnt.keys()
     y = cnt.values()
 

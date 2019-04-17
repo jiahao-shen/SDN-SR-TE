@@ -167,7 +167,8 @@ def branch_optimization_phase(G, source, destinations,
 
 
 def test_1():
-    G, pos = generate_topology()
+    G = generate_topology()
+    pos = graphviz_layout(G)
     flows = generate_flow_requests(G, flow_entries=8)
     output_flows(flows)
     draw_topology(G, pos)

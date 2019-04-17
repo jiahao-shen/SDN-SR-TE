@@ -34,7 +34,7 @@ def test_2():
     """Test the function compute_throughput
     :return:
     """
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
     flows = generate_flow_requests(G, 1, 5, 100, 100)
 
     graph, allocated_flows, multicast_trees = \
@@ -131,7 +131,7 @@ def test_6():
     """Test the function of generate_k_shortest_path
     :return:
     """
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
     nx.set_edge_attributes(G, 0, 'weight')
 
     for e in G.edges(data=True):

@@ -65,11 +65,11 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                                         beta)
         # Dict to store k shortest paths for (source, destinations)
         d = {}
-        # The multicast tree for current source node
+        # Initialize allocated_T
         allocated_T = nx.Graph()
-        origin_T = nx.Graph()
-        # Set the root of multicast tree
         allocated_T.root = f['src']
+        # Initialize origin_T
+        origin_T = nx.Graph()
         # Traverse all destination nodes
         for dst in f['dst']:
             # Compute the k shortest path from source to dst_node
@@ -115,7 +115,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         update_node_entries(graph, allocated_T)
         # Update the residual bandwidth of edges in the multicast tree
         update_edge_bandwidth(graph, allocated_T, f['size'])
-        # Add multicast tree in forest
+        # Add origin_T into band_efficient_branch_aware_segment_routing_trees
         band_efficient_branch_aware_segment_routing_trees.append(origin_T)
 
     return graph, allocated_flows, \

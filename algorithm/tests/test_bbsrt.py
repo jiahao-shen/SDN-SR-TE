@@ -12,7 +12,8 @@ from algorithm.shortest_path_tree import *
 
 
 def test_1():
-    G, pos = generate_topology(100)
+    G = generate_topology(100)
+    pos = graphviz_layout(G)
     flows = generate_flow_requests(G, 10, 40)
 
     draw_topology(G, pos)

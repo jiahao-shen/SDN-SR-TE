@@ -112,10 +112,10 @@ def lab_1(datas, lock):
         wst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         bbsrt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
 
-    G, pos = generate_topology(NETWORK_SIZE)
+    G = generate_topology(NETWORK_SIZE)
 
     for multi_group_size in range(10, 60, 10):
-        flows = generate_flow_requests(G, 1, multi_group_size, 100, 500)
+        flows = generate_flow_requests(G, 30, multi_group_size, 10, 500)
 
         t = time()
         graph, allocated_flows, multicast_trees = \
@@ -173,6 +173,8 @@ def lab_1(datas, lock):
         {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBSRT': bbsrt})
     lock.release()
 
+    print('** Finished **')
+
 
 def lab_2(datas, lock):
     """The variable is the number of requests
@@ -194,7 +196,7 @@ def lab_2(datas, lock):
         wst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
         bbsrt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
 
-    G, pos = generate_topology(NETWORK_SIZE)
+    G = generate_topology(NETWORK_SIZE)
 
     for num_requests in range(10, 90, 10):
         flows = generate_flow_requests(G, num_requests, 10, 100, 500)
@@ -278,7 +280,7 @@ def lab_3(datas, lock):
         bbsrt[network_size] = [0 for _ in range(len(PERFORMANCE))]
 
     for network_size in range(100, 500, 100):
-        G, pos = generate_topology(network_size, ALPHA, BETA)
+        G = generate_topology(network_size, ALPHA, BETA)
         flows = generate_flow_requests(G, 50, 50, 100, 500)
 
         t = time()
