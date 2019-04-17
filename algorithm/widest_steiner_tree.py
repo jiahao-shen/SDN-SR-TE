@@ -38,10 +38,11 @@ __all__ = [
 #         # Then compute all paths from source to other nodes in temp
 #         # widest steiner tree
 #         origin_T = generate_widest_steiner_tree(graph, terminals)
+#         origin_T.root = f['src']
+#
 #         all_paths = nx.shortest_path(origin_T, f['src'], weight=None)
-#         # Steiner Tree for current multicast initialization
+#         # Initialize allocated_T
 #         allocated_T = nx.Graph()
-#         # Set the root of widest steiner tree
 #         allocated_T.root = f['src']
 #         # Traverse all destination nodes
 #         for dst in f['dst']:
@@ -57,7 +58,7 @@ __all__ = [
 #         update_node_entries(graph, allocated_T)
 #         # Update the residual bandwidth of edges in the widest steiner tree
 #         update_edge_bandwidth(graph, allocated_T, f['size'])
-#         # Add multicast tree in forest
+#         # Add origin_T into widest_steiner_trees
 #         widest_steiner_trees.append(origin_T)
 #
 #     return graph, allocated_flows, widest_steiner_trees
@@ -131,6 +132,7 @@ def generate_widest_steiner_trees(G, flows):
         # Initialize origin_T
         origin_T = nx.Graph()
         origin_T.add_node(f['src'])
+        origin_T.root = f['src']
         # Initialize terminals
         terminals = set(f['dst'].keys())
         # Compute all pair widest shortest paths
@@ -154,8 +156,8 @@ def generate_widest_steiner_trees(G, flows):
 
         # Initialize allocated_T
         allocated_T = nx.Graph()
-        allocated_T.root = f['src']
         allocated_T.add_node(f['src'])
+        allocated_T.root = f['src']
         # Compute all paths from source to other nodes in origin_T
         all_paths = nx.shortest_path(origin_T, f['src'])
         # Traverse all destination nodes
@@ -187,7 +189,7 @@ def widest_shortest_path_to_tree(target, tree, all_pair_paths):
     """
     path = None
 
-    for v in tree.nodes():
+    for v in tree.nodes:
         p = all_pair_paths[v][target]
         if path is None or (path is not None and len(p) < len(path)):
             path = p

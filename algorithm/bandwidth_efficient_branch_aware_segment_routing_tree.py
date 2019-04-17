@@ -51,11 +51,10 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
     band_efficient_branch_aware_segment_routing_trees = []  # Initialize
 
     # The node betweenness centrality
-    nodes_betweenness_centrality = nx.betweenness_centrality(graph,
-                                                             weight=None)
+    nodes_betweenness_centrality = nx.betweenness_centrality(graph)
+
     # The edge betweenness centrality
-    edges_betweenness_centrality = nx.edge_betweenness_centrality(graph,
-                                                                  weight=None)
+    edges_betweenness_centrality = nx.edge_betweenness_centrality(graph)
 
     # Traverse the flows
     for f in allocated_flows:
@@ -70,6 +69,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         allocated_T.root = f['src']
         # Initialize origin_T
         origin_T = nx.Graph()
+        origin_T.root = f['src']
         # Traverse all destination nodes
         for dst in f['dst']:
             # Compute the k shortest path from source to dst_node
@@ -202,8 +202,9 @@ def compute_intersection_node(multicast_tree, path):
     # If no intersection, return False
     if intersection is None:
         return None, False
-    # If the intersection is new branch node, return True
-    if multicast_tree.degree(intersection) == 2:
+    # If the intersection isn't root but new branch node, return True
+    if intersection != multicast_tree.root and \
+            multicast_tree.degree(intersection) == 2:
         return intersection, True
     # Else return False
     return intersection, False

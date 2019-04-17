@@ -38,6 +38,7 @@ def generate_widest_shortest_path_trees(G, flows):
         allocated_T.root = f['src']
         # Initialize origin_T
         origin_T = nx.Graph()
+        origin_T.root = f['src']
         # Traverse all destination nodes
         for dst in f['dst']:
             # Get the widest shortest path from source to destination
@@ -48,7 +49,7 @@ def generate_widest_shortest_path_trees(G, flows):
             if is_path_valid(graph, allocated_T, path, f['size']):
                 # Record the widest shortest path for pair(source, destination)
                 f['dst'][dst] = path
-                # Add the widest shortest path into widest shortest path tree
+                # Add path into allocated_T
                 allocated_T.add_path(path)
         # Update the residual entries of nodes in graph
         update_node_entries(graph, allocated_T)

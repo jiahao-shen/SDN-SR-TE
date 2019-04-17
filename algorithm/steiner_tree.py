@@ -14,9 +14,8 @@ __all__ = [
     'generate_steiner_trees',
 ]
 
-"""
-Old Steiner Tree
-"""
+
+# Old Steiner Tree
 # def generate_steiner_trees(G, flows):
 #     """According to the flows and graph, generate Steiner Tree(ST)
 #     :param G: The origin graph
@@ -36,10 +35,11 @@ Old Steiner Tree
 #         # Generate temp steiner tree for terminal nodes
 #         # Compute all paths from source to other nodes in temp steiner tree
 #         origin_T = nx.Graph(nxaa.steiner_tree(graph, terminals, weight=None))
+#         origin_T.root = f['src']
+#
 #         all_paths = nx.shortest_path(origin_T, f['src'], weight=None)
-#         # Steiner Tree for current multicast initialization
+#         # Initialize allocated_T
 #         allocated_T = nx.Graph()
-#         # Set the root of steiner tree
 #         allocated_T.root = f['src']
 #         # Traverse all destination nodes
 #         for dst in f['dst']:
@@ -55,11 +55,10 @@ Old Steiner Tree
 #         update_node_entries(graph, allocated_T)
 #         # Update the residual bandwidth of edges in the steiner tree
 #         update_edge_bandwidth(graph, allocated_T, f['size'])
-#         # Add multicast tree in forest
+#         # Add origin_T into steiner_trees
 #         steiner_trees.append(origin_T)
 #
 #     return graph, allocated_flows, steiner_trees
-
 
 # New Steiner Tree
 def generate_steiner_trees(G, flows):
@@ -81,6 +80,7 @@ def generate_steiner_trees(G, flows):
         # Initialize origin_T
         origin_T = nx.Graph()
         origin_T.add_node(f['src'])
+        origin_T.root = f['src']
         # Initialize terminals
         terminals = set(f['dst'].keys())
         # While terminals not empty
@@ -102,8 +102,8 @@ def generate_steiner_trees(G, flows):
 
         # Initialize allocated_T
         allocated_T = nx.Graph()
-        allocated_T.root = f['src']
         allocated_T.add_node(f['src'])
+        allocated_T.root = f['src']
         # Compute all paths from source to other nodes in origin_T
         all_paths = nx.shortest_path(origin_T, f['src'])
         # Traverse all destination nodes
@@ -137,7 +137,7 @@ def shortest_path_to_tree(target, tree, all_pair_paths):
     # Initialize path
     path = None
     # Traverse all nodes in tree
-    for v in tree.nodes():
+    for v in tree.nodes:
         # Get the shortest path from v to target
         p = all_pair_paths[v][target]
         # Update the path

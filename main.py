@@ -97,7 +97,7 @@ def lab_1(datas, lock):
     Compute the performance of network
     :return:
     """
-    NETWORK_SIZE = 200
+    NETWORK_SIZE = 100
 
     spt = {}
     st = {}
@@ -115,7 +115,7 @@ def lab_1(datas, lock):
     G = generate_topology(NETWORK_SIZE)
 
     for multi_group_size in range(10, 60, 10):
-        flows = generate_flow_requests(G, 30, multi_group_size, 10, 500)
+        flows = generate_flow_requests(G, 20, multi_group_size, 100, 500)
 
         t = time()
         graph, allocated_flows, multicast_trees = \
@@ -241,16 +241,16 @@ def lab_2(datas, lock):
         wst[num_requests] = [wst[num_requests][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_bandwidth_efficient_branch_aware_segment_routing_trees(
-                G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
-        bbsrt[num_requests] = [bbsrt[num_requests][i] + performance[i] for i
-                               in range(len(PERFORMANCE))]
+        # t = time()
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         G, flows)
+        # t = time() - t
+        # performance = network_performance(graph, allocated_flows,
+        #                                   multicast_trees)
+        # performance.append(t)
+        # bbsrt[num_requests] = [bbsrt[num_requests][i] + performance[i] for i
+        #                        in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append(
@@ -323,16 +323,16 @@ def lab_3(datas, lock):
         wst[network_size] = [wst[network_size][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_bandwidth_efficient_branch_aware_segment_routing_trees(
-                G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
-        bbsrt[network_size] = [bbsrt[network_size][i] + performance[i] for i
-                               in range(len(PERFORMANCE))]
+        # t = time()
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         G, flows)
+        # t = time() - t
+        # performance = network_performance(graph, allocated_flows,
+        #                                   multicast_trees)
+        # performance.append(t)
+        # bbsrt[network_size] = [bbsrt[network_size][i] + performance[i] for i
+        #                        in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append(

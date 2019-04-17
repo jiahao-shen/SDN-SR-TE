@@ -153,8 +153,8 @@ def test_7():
     G = nx.Graph()
     G.add_path([0, 1, 2, 3])
 
-    assert has_cycle(G, [0, 1, 4, 2]) == True
-    assert has_cycle(G, [0, 1, 4]) == False
+    assert has_cycle(G, [0, 1, 4, 2]) is True
+    assert has_cycle(G, [0, 1, 4]) is False
 
     G.add_path([2, 6])
-    assert has_cycle(G, [0, 1, 4, 6]) == True
+    assert has_cycle(G, [0, 1, 4, 6]) is True

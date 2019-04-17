@@ -38,9 +38,9 @@ def network_performance(G, allocated_flows, multicast_trees):
     """Compute performance of the network
     Including number of branch nodes, average rejection rate, average network
     throughput and link utilization
-    :param G:
-    :param allocated_flows:
-    :param multicast_trees:
+    :param G: The allocated graph
+    :param allocated_flows: The allocated flows
+    :param multicast_trees: The origin generated multicast trees
     :return: num_branch_nodes, average_rejection_rate,
              throughput,link_utilization
     """
@@ -72,7 +72,8 @@ def is_branch_node(multicast_tree, node):
     :return: Boolean
     """
     # The degree of branch node is bigger than 3
-    return multicast_tree.degree(node) >= 3
+    # The root isn't  branch node
+    return node != multicast_tree.root and multicast_tree.degree(node) >= 3
 
 
 def compute_average_rejection_rate(allocated_flows):
@@ -147,7 +148,7 @@ def is_path_valid(G, multicast_tree, path, flow_size):
     """
     # Copy multicast tree as temp tree
     tmp_tree = deepcopy(multicast_tree)
-    # Add path to temp tree
+    # Add path into temp tree
     tmp_tree.add_path(path)
     # Traverse nodes during the path except destination node
     for v, u in pairwise(path):
