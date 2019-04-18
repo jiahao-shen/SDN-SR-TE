@@ -12,6 +12,7 @@ import networkx.algorithms.approximation as nxaa
 
 __all__ = [
     'generate_steiner_trees',
+    'shortest_path_to_tree'
 ]
 
 

@@ -11,22 +11,31 @@ from network import *
 
 
 def test_1():
-    G = generate_topology(100)
-    pos = graphviz_layout(G)
-    draw_topology(G, pos)
-    flows = generate_flow_requests(G, 1, 20)
-    src = flows[0]['src']
-    dst = flows[0]['dst'].keys()
+    for _ in range(1000):
+        G = generate_topology(100)
+        flows = generate_flow_requests(G, 1, 20)
 
-    all_pair_shortest_paths = nx.shortest_path(G)
+        src = flows[0]['src']
+        dst = flows[0]['dst'].keys()
 
-    tree = edge_optimization_phase(src, dst, all_pair_shortest_paths)
+        all_pair_paths = nx.shortest_path(G)
 
-    position = graphviz_layout(tree, prog='dot')
-    draw_topology(tree, position)
+        tree_1 = edge_optimization_phase(src, dst, all_pair_paths)
+        pos_1 = graphviz_layout(tree_1)
+        a = compute_objective_value(tree_1, 10)
 
-    tree = branch_optimization_phase(G, src, dst, tree,
-                                     all_pair_shortest_paths)
+        tree_2 = branch_optimization_phase(src, dst, tree_1, all_pair_paths)
+        pos_2 = graphviz_layout(tree_2)
+        b = compute_objective_value(tree_2, 10)
 
-    position = graphviz_layout(tree, prog='dot')
-    draw_topology(tree, position)
+        if a != b:
+            draw_topology(tree_1, pos_1, title=a)
+            draw_topology(tree_2, pos_2, title=b)
+
+
+def test_2():
+    G = nx.Graph()
+    G.add_node(1)
+    v = 1
+    if v in G.nodes:
+        print('fuck')

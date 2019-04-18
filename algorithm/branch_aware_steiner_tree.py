@@ -7,14 +7,15 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
+from algorithm.steiner_tree import shortest_path_to_tree
 from collections import OrderedDict
 from copy import deepcopy
-import math
 
 __all__ = [
     'generate_branch_aware_steiner_trees',
     'edge_optimization_phase',
-    'branch_optimization_phase'
+    'branch_optimization_phase',
+    'compute_objective_value'
 ]
 
 
@@ -26,7 +27,7 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
     https://doi.org/10.1109/GLOCOM.2014.7037084
     :param G: The origin graph
     :param flows: The flow request
-    :param w: The parameter of branch node
+    :param w: The weight of branch nodes
     :return:
     """
     graph = deepcopy(G)
@@ -35,36 +36,42 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
     branch_aware_steiner_trees = []
     # Pre-processing procedure for quickly lookup afterwards
     # Generate shortest path between any two nods in G
-    all_pair_shortest_paths = nx.shortest_path(graph, weight=None)
+    all_pair_paths = nx.shortest_path(graph)
 
     for f in allocated_flows:
-        branch_aware_steiner_tree = \
-            generate_branch_aware_steiner_tree(graph, f['src'],
-                                               f['dst'].keys(),
-                                               all_pair_shortest_paths, w)
-        branch_aware_steiner_trees.append(branch_aware_steiner_tree)
+        generate_branch_aware_steiner_tree(graph, f['src'],
+                                           f['dst'].keys(),
+                                           all_pair_paths, w)
+        # branch_aware_steiner_trees.append(branch_aware_steiner_tree)
 
     return branch_aware_steiner_trees
 
 
-def generate_branch_aware_steiner_tree(G, source, destinations,
-                                       all_pair_shortest_paths, w=1):
+def generate_branch_aware_steiner_tree(source, destinations,
+                                       all_pair_paths, w=1):
+    """
+    :param source: The source node of multicast tree
+    :param destinations: The destination nodes of flow request
+    :param all_pair_paths: Shortest paths between any two nodes
+    :param w: The weight of branch nodes
+    :return:
+    """
     tree = edge_optimization_phase(source, destinations,
-                                   all_pair_shortest_paths)
+                                   all_pair_paths)
 
-    branch_optimization_phase(G, source, destinations, tree,
-                              all_pair_shortest_paths)
+    # branch_optimization_phase(G, source, destinations, tree,
+    #                           all_pair_paths)
     # tree = branch_optimization_phase(G, source, destinations, tree,
     #                                  all_pair_shortest_paths)
     # tree = branch_optimization_phase(G, tree)
     # return tree
 
 
-def edge_optimization_phase(source, destinations, all_pair_shortest_paths):
+def edge_optimization_phase(source, destinations, all_pair_paths):
     """The Edge Optimization Phase according to the paper
     :param source: The source node of multicast tree
     :param destinations: The destination nodes of flow request
-    :param all_pair_shortest_paths: Shortest path between any two nodes
+    :param all_pair_paths: Shortest paths between any two nodes
     :return:
     """
     # All destination nodes
@@ -77,22 +84,16 @@ def edge_optimization_phase(source, destinations, all_pair_shortest_paths):
     while terminals:
         # The final path need to add into the tree
         path = None
-        # The minimal distance of all shortest paths
-        min_dis = math.inf
         # Traverse all nodes in terminals
         for v in terminals:
             # Compute the shortest path from node to tree
-            p = shortest_path_to_tree(v, tree, all_pair_shortest_paths)
+            p = shortest_path_to_tree(v, tree, all_pair_paths)
             # If current distance less than min_dis
-            if len(p) < min_dis:
-                # Update the min_dis
-                min_dis = len(p)
+            if path is None or \
+                    (path is not None and len(p) < len(path)) or \
+                    (path is not None and len(p) == len(path) and
+                     is_branch_node(tree, p[0])):
                 # And record current path
-                path = p
-            # If current distance equals min_dis and the first node of path
-            # is branch node
-            elif len(p) == min_dis and is_branch_node(tree, p[0]):
-                # Update the path
                 path = p
         # Add the minial shortest path into the tree
         tree.add_path(path)
@@ -102,87 +103,89 @@ def edge_optimization_phase(source, destinations, all_pair_shortest_paths):
     return tree
 
 
-def shortest_path_to_tree(target, tree, all_pair_shortest_paths):
-    """Compute the shortest path from target node to current tree
-    :param target: The target node
-    :param tree: The constructed multicast tree
-    :param all_pair_shortest_paths: Shortest paths for each two nodes
-    :return: path(from tree to target)
-    """
-    # Path initialization
-    path = None
-    # Traverse all nodes in tree
-    for v in tree.nodes:
-        # Compute all paths from v to target
-        p = all_pair_shortest_paths[v][target]
-        # If path is None
-        # Or path is not None and the current length of p is less than path
-        # Then set p to path
-        if path is None or (path is not None and len(p) < len(path)):
-            path = p
-
-    return path
-
-
-def branch_optimization_phase(G, source, destinations,
-                              tree, all_pair_shortest_paths):
+def branch_optimization_phase(source, destinations,
+                              tree, all_pair_paths, w=1):
     """The Branch Optimization Phase according to the paper
-    :param G: The origin graph
-    :param source:
-    :param destinations:
+    :param source: The source node of multicast tree
+    :param destinations: The destination nodes of flow request
     :param tree: The tree constructed by edge optimization phase
-    :param all_pair_shortest_paths:
+    :param all_pair_paths: Shortest path between any two nodes
+    :param w: The weight of branch node
     :return:
     """
     # Deletion Step
+    # Initialize branch nodes
     branch_nodes = {}
-    # Traverse all nodes in tree
+    # Traverse all nodes in generated tree
     for v in tree.nodes:
-        # If it is branch node
+        # If v is branch node
         if is_branch_node(tree, v):
-            # Record the degree of branch node
+            # Store the degree of node v
             branch_nodes[v] = tree.degree(v)
-    # Sort the branch nodes in the ascending order of degree
+    # Sort all branch nodes in the ascending order of the degree in tree
     branch_nodes = OrderedDict(sorted(branch_nodes.items(),
                                       key=lambda x: x[1]))
 
+    # Traverse all branch nodes
     for v_d in branch_nodes:
-        print('Remove', v_d)
+        # If v_d is source node or v_d in destination nodes, then continue
+        if v_d in destinations or v_d == source:
+            continue
+        # Store all neighbor nodes of v_d
         neighbors = list(tree.neighbors(v_d))
-        tree.remove_node(v_d)
-
+        # Copy tree as tmp_tree
+        tmp_tree = deepcopy(tree)
+        # Remove v_d from tmp_tree
+        tmp_tree.remove_node(v_d)
+        # Traverse all neighbor nodes of v_d
         for v in neighbors:
+            # Initialize path
             path = None
-            print('Neighbor', v)
+            # Traverse all branch nodes
             for u in branch_nodes:
-                if u == v_d or nx.node_connectivity(tree, v, u):
+                # If v == u
+                # If node v isn't in tmp_tree
+                # If v and u are in the same connected components
+                # Then continue
+                if v == u or u not in tmp_tree.nodes or \
+                        nx.node_connectivity(tmp_tree, v, u):
                     continue
-                p = all_pair_shortest_paths[v][u]
-                print('Branch', u, p)
+                # Get the shortest path from neighbor node v to branch node u
+                p = all_pair_paths[v][u]
+                # Update the shortest path from v
                 if path is None or (path is not None and len(p) < len(path)):
                     path = p
-            if path is not None:
-                tree.add_path(path)
+            # If the path is None, then break
+            if path is None:
+                break
+            else:
+                # Else add path into tmp_tree
+                tmp_tree.add_path(path)
+
+        # If tmp_tree is connected and the value of tmp_tree is less than the
+        # old tree, then update the tree
+        if nx.is_connected(tmp_tree) and \
+            compute_objective_value(tmp_tree, w) < \
+                compute_objective_value(tree, w):
+            tree = deepcopy(tmp_tree)
+
     return tree
 
 
-def test_1():
-    G = generate_topology()
-    pos = graphviz_layout(G)
-    flows = generate_flow_requests(G, flow_entries=8)
-    output_flows(flows)
-    draw_topology(G, pos)
+def compute_objective_value(tree, w):
+    """Compute the objective value according to the paper
+    A(T) = c(T) + b(T) * w
+    :param tree: The generated multicast tree
+    :param w: The weight of branch nodes
+    :return: value
+    """
+    # A(T) = c(T)
+    value = nx.number_of_edges(tree)
+    # Traverse all nodes in tree
+    for v in tree.nodes:
+        # If v is branch node
+        if is_branch_node(tree, v):
+            # Value add w
+            value += w
 
-    multicast_trees = generate_branch_aware_steiner_trees(G, flows)
-
-    for tree in multicast_trees:
-        draw_topology(tree, pos)
-
-
-def test_2():
-    pass
-
-
-if __name__ == '__main__':
-    test_1()
-    # test_2()
+    return value
