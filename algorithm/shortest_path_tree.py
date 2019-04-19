@@ -16,7 +16,7 @@ __all__ = [
 
 
 def generate_shortest_path_trees(G, flows):
-    """According to flows and graph, generate Shortest Path Tree(SPT)
+    """
     :param G: The origin graph
     :param flows: The flow request
     :return: graph, allocated_flows, shortest_path_trees
@@ -24,37 +24,57 @@ def generate_shortest_path_trees(G, flows):
     graph = deepcopy(G)  # Copy G
     allocated_flows = deepcopy(flows)  # Copy flows
 
-    shortest_path_trees = []  # Initialize
+    # Generate all pair shortest paths
+    all_pair_paths = nx.shortest_path(graph)
+    # Initialize shortest_path_trees
+    shortest_path_trees = []
 
-    # Traverse the flows
+    # Traverse all flows
     for f in allocated_flows:
-        # Compute all shortest paths from current multicast source node to
-        # others, not considering weight
-        all_paths = nx.shortest_path(graph, f['src'])
-        # Initialize allocated_T
-        allocated_T = nx.Graph()
-        allocated_T.root = f['src']
-        # Initialize origin_T
-        origin_T = nx.Graph()
-        origin_T.root = f['src']
-        # Traverse all destination nodes
-        for dst in f['dst']:
-            # Get the shortest path from source to destination
-            path = all_paths[dst]
-            # Add path into origin_T
-            origin_T.add_path(path)
-            # Check the current path whether valid
-            if is_path_valid(graph, allocated_T, path, f['size']):
-                # Record the shortest path for pair(source, destination)
-                f['dst'][dst] = path
-                # Add path into allocated_T
-                allocated_T.add_path(path)
-        # Update the residual flow entries of nodes in the shortest path tree
-        update_node_entries(graph, allocated_T)
-        # Update the residual bandwidth of edges in the shortest path tree
-        update_edge_bandwidth(graph, allocated_T, f['size'])
+        # Compute the origin_T
+        origin_T = generate_shortest_path_tree(f['src'], f['dst'].keys(),
+                                               all_pair_paths)
         # Add origin_T into shortest_path_trees
         shortest_path_trees.append(origin_T)
 
+        # Compute all paths in origin_T
+        all_paths = nx.shortest_path(origin_T, f['src'])
+        # Initialize allocated_T
+        allocated_T = nx.Graph()
+        allocated_T.root = f['src']
+        # Traverse all destination nodes
+        for dst in f['dst']:
+            # Get the path from src to dst
+            path = all_paths[dst]
+            # Check whether the path valid
+            if is_path_valid(graph, allocated_T, path, f['size']):
+                # Record the path
+                f['dst'][dst] = path
+                # Add path into allocated_T
+                allocated_T.add_path(path)
+        # Update the residual flow entries of nodes in the allocated_T
+        update_node_entries(graph, allocated_T)
+        # Update the residual bandwidth of edges in the allocated_T
+        update_edge_bandwidth(graph, allocated_T, f['size'])
+
     return graph, allocated_flows, shortest_path_trees
 
+
+def generate_shortest_path_tree(source, destinations, all_pair_paths):
+    """Generate Shortest Path Tree(SPT)
+    :param source: The source node of flow request
+    :param destinations: The destinations of flow request
+    :param all_pair_paths: Shortest paths between any two nodes
+    :return: Shortest Path Tree
+    """
+    # Initialize T
+    T = nx.Graph()
+    T.root = source
+    # Traverse all destinations
+    for dst in destinations:
+        # Get the shortest path from source to dst
+        path = all_pair_paths[source][dst]
+        # Add path into T
+        T.add_path(path)
+
+    return T

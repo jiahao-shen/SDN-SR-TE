@@ -88,17 +88,13 @@ def test_2():
 
 
 def test_3():
-    G = generate_topology()
-    pos = graphviz_layout(G)
-    flows = generate_flow_requests(G)
+    for _ in range(100):
+        G = generate_topology()
+        flows = generate_flow_requests(G, 10, 40)
 
-    output_flows(flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_shortest_path_trees(G, flows)
 
-    draw_topology(G, pos, title='Topology')
-    graph, allocated_flows, multicast_trees = \
-        generate_shortest_path_trees(G, flows)
+        for T in multicast_trees:
+            assert len(nx.cycle_basis(T)) == 0
 
-    for T in multicast_trees:
-        draw_topology(T, pos, title='Trees')
-
-    print(compute_num_branch_nodes(multicast_trees))

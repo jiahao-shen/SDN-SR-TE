@@ -157,16 +157,16 @@ def lab_1(datas, lock):
         wst[multi_group_size] = [wst[multi_group_size][i] + performance[i] for
                                  i in range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_bandwidth_efficient_branch_aware_segment_routing_trees(
-                G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
-        bbsrt[multi_group_size] = [bbsrt[multi_group_size][i] + performance[i]
-                                   for i in range(len(PERFORMANCE))]
+        # t = time()
+        # graph, allocated_flows, multicast_trees = \
+        #     generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+        #         G, flows)
+        # t = time() - t
+        # performance = network_performance(graph, allocated_flows,
+        #                                   multicast_trees)
+        # performance.append(t)
+        # bbsrt[multi_group_size] = [bbsrt[multi_group_size][i] + performance[i]
+        #                            for i in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append(

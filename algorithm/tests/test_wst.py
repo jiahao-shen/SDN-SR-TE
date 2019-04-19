@@ -12,35 +12,13 @@ from algorithm.widest_steiner_tree import *
 
 
 def test_1():
-    """Test Steiner Tree and Widest Steiner Tree
-    :return:
-    """
-    G = generate_topology(100)
-    pos = graphviz_layout(G)
-    flows = generate_flow_requests(G, 2, 10)
+    for _ in range(100):
+        G = generate_topology()
+        flows = generate_flow_requests(G, 10, 40)
 
-    draw_topology(G, pos)
+        graph, allocated_flows, multicast_trees = \
+            generate_widest_steiner_trees(G, flows)
 
-    # ST
-    graph, allocated_flows, steiner_trees = generate_steiner_trees(G, flows)
+        for T in multicast_trees:
+            assert len(nx.cycle_basis(T)) == 0
 
-    output_flows(allocated_flows)
-
-    for T in steiner_trees:
-        position = graphviz_layout(T, prog='dot')
-        draw_topology(T, position, title='ST')
-        assert len(nx.cycle_basis(T)) == 0
-
-    print(compute_num_branch_nodes(steiner_trees))
-
-    # WST
-    graph, allocated_flows, widest_steiner_trees = \
-        generate_widest_steiner_trees(G, flows)
-
-    output_flows(allocated_flows)
-
-    for T in widest_steiner_trees:
-        position = graphviz_layout(T, prog='dot')
-        draw_topology(T, position, title='WST')
-
-    print(compute_num_branch_nodes(widest_steiner_trees))

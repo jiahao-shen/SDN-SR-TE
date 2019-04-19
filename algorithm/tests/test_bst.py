@@ -11,31 +11,29 @@ from network import *
 
 
 def test_1():
-    for _ in range(1000):
-        G = generate_topology(100)
-        flows = generate_flow_requests(G, 1, 20)
+    for _ in range(100):
+        G = generate_topology()
+        flows = generate_flow_requests(G, 10, 40)
+
+        graph, allocated_flows, multicast_trees = \
+            generate_branch_aware_steiner_trees(G, flows, 5)
+
+        for T in multicast_trees:
+            if len(nx.cycle_basis(T)) != 0:
+                pos = graphviz_layout(G, prog='dot')
+                draw_topology(T, pos)
+
+
+def test_2():
+    for _ in range(100):
+        G = generate_topology()
+        flows = generate_flow_requests(G, 20, 40)
+
+        all_pair_paths = nx.shortest_path(G)
 
         src = flows[0]['src']
         dst = flows[0]['dst'].keys()
 
-        all_pair_paths = nx.shortest_path(G)
+        T_1 = edge_optimization_phase(src, dst, all_pair_paths)
 
-        tree_1 = edge_optimization_phase(src, dst, all_pair_paths)
-        pos_1 = graphviz_layout(tree_1)
-        a = compute_objective_value(tree_1, 10)
-
-        tree_2 = branch_optimization_phase(src, dst, tree_1, all_pair_paths)
-        pos_2 = graphviz_layout(tree_2)
-        b = compute_objective_value(tree_2, 10)
-
-        if a != b:
-            draw_topology(tree_1, pos_1, title=a)
-            draw_topology(tree_2, pos_2, title=b)
-
-
-def test_2():
-    G = nx.Graph()
-    G.add_node(1)
-    v = 1
-    if v in G.nodes:
-        print('fuck')
+        branch_optimization_phase(src, dst, T_1, all_pair_paths, 5)

@@ -11,17 +11,12 @@ from algorithm.steiner_tree import *
 
 
 def test_1():
-    G = generate_topology(100)
-    pos = graphviz_layout(G)
-    flows = generate_flow_requests(G, 2, 10)
+    for _ in range(100):
+        G = generate_topology(100)
+        flows = generate_flow_requests(G, 2, 10)
 
-    draw_topology(G, pos)
+        graph, allocated_flows, steiner_trees = generate_steiner_trees(G, flows)
 
-    graph, allocated_flows, steiner_trees = generate_steiner_trees(G, flows)
+        for T in steiner_trees:
+            assert len(nx.cycle_basis(T)) == 0
 
-    for T in steiner_trees:
-        position = graphviz_layout(T, 'dot')
-        draw_topology(T, position, title='SPT')
-        assert len(nx.cycle_basis(T)) == 0
-
-    print(compute_num_branch_nodes(steiner_trees))
