@@ -24,7 +24,7 @@ def generate_widest_steiner_trees(G, flows):
     :return: graph, allocated_flows, allocated_graph
     """
     graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)   # Copy flows
+    allocated_flows = deepcopy(flows)  # Copy flows
 
     # Initialize widest_steiner_trees
     widest_steiner_trees = []
@@ -32,8 +32,7 @@ def generate_widest_steiner_trees(G, flows):
     # Traverse all flows
     for f in allocated_flows:
         # Compute the origin_T
-        origin_T = generate_widest_steiner_tree(graph, f['src'],
-                                                f['dst'].keys())
+        origin_T = generate_widest_steiner_tree(graph, f['src'], f['dst'])
         # Add origin_T into widest_steiner_trees
         widest_steiner_trees.append(origin_T)
 
@@ -77,28 +76,39 @@ def generate_widest_steiner_tree(G, source, destinations):
     all_pair_paths = all_pair_widest_shortest_paths(G)
     # While terminals isn't empty
     while terminals:
-        # Initialize path, min_dis and max_bandwidth
+        # Initialize path
         path = None
         # Traverse all terminals
         for v in terminals:
             # Get the widest shortest path from v to constructed tree
-            p = widest_shortest_path_to_tree(v, T, all_pair_paths)
+            p = widest_shortest_path_to_tree(G, v, T, all_pair_paths)
             # Update path
-            if path is None or (path is not None and len(p) < len(path)):
+            if path is None or (path is not None and len(p) < len(path)) or \
+                    (path is not None and len(p) == len(path) and
+                     compute_path_minimum_bandwidth(G, p) >
+                     compute_path_minimum_bandwidth(G, path)):
                 path = p
         # Add path into T
         T.add_path(path)
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
-    return T
-    
+        # Remove the terminal already in T
+        v_d = set()
+        for v in terminals:
+            if v in T.nodes:
+                v_d.add(v)
+        terminals = terminals - v_d
 
-def widest_shortest_path_to_tree(target, tree, all_pair_paths):
+    return T
+
+
+def widest_shortest_path_to_tree(G, target, tree, all_pair_paths):
     """Compute the widest shortest path from target to constructed tree
+    :param G: The origin graph
     :param target: The target node needs to be added into the tree
     :param tree: The constructed tree
-    :param all_pair_paths: All pair widest shortest path in graph
+    :param all_pair_paths: All pair widest shortest paths in graph
     :return: path
     """
     # Initialize path
@@ -108,14 +118,17 @@ def widest_shortest_path_to_tree(target, tree, all_pair_paths):
         # Get the widest shortest path from v to target
         p = all_pair_paths[v][target]
         # Update path
-        if path is None or (path is not None and len(p) < len(path)):
+        if path is None or (path is not None and len(p) < len(path)) or \
+                (path is not None and len(p) == len(path) and
+                 compute_path_minimum_bandwidth(G, p) >
+                 compute_path_minimum_bandwidth(G, path)):
             path = p
 
     return path
 
 
 def all_pair_widest_shortest_paths(G):
-    """According to the graph, compute all pair widest shortest paths
+    """Compute all pair widest shortest paths
     :param G: The origin graph
     :return: all_pair_paths
     """
@@ -125,4 +138,3 @@ def all_pair_widest_shortest_paths(G):
         all_pair_paths[v] = generate_widest_shortest_path(G, v)
 
     return all_pair_paths
-

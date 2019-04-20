@@ -32,8 +32,7 @@ def generate_steiner_trees(G, flows):
     # Traverse all flows
     for f in allocated_flows:
         # Compute the origin_T
-        origin_T = generate_steiner_tree(f['src'], f['dst'].keys(),
-                                         all_pair_paths)
+        origin_T = generate_steiner_tree(f['src'], f['dst'], all_pair_paths)
         # Add origin_T into steiner_trees
         steiner_trees.append(origin_T)
 
@@ -88,6 +87,13 @@ def generate_steiner_tree(source, destinations, all_pair_paths):
         T.add_path(path)
         # Remove the terminal node in current path
         terminals.remove(path[-1])
+
+        # Remove the terminal already in T
+        v_d = set()
+        for v in terminals:
+            if v in T.nodes:
+                v_d.add(v)
+        terminals = terminals - v_d
 
     return T
 

@@ -9,6 +9,8 @@
 from copy import deepcopy
 from networkx.utils import pairwise
 from itertools import islice
+from time import time
+import logging
 import matplotlib.pyplot as plt
 import networkx as nx
 import math
@@ -30,8 +32,11 @@ __all__ = [
     'draw_result',
     'draw_degree_distribution',
     'generate_k_shortest_paths',
-    'has_cycle'
+    'has_cycle',
+    'count_time'
 ]
+
+logging.basicConfig(level=logging.DEBUG, format='(%(levelname)s)%(message)s')
 
 
 def network_performance(G, allocated_flows, multicast_trees):
@@ -61,7 +66,10 @@ def compute_num_branch_nodes(multicast_trees):
         for v in T.nodes:
             if is_branch_node(T, v):
                 num_branch_nodes += 1
-    # print('Number of branch nodes:', num_branch_nodes)
+
+    # Compute average number of branch nodes
+    num_branch_nodes /= len(multicast_trees)
+
     return num_branch_nodes
 
 
@@ -96,7 +104,7 @@ def compute_average_rejection_rate(allocated_flows):
     average_rejection_rate = num_unallocated_flows / num_total_flows
     # Transform to percentage
     average_rejection_rate *= 100
-    # print('Average Rejection Rate:', average_rejection_rate * 100, "%")
+
     return average_rejection_rate
 
 
@@ -113,7 +121,7 @@ def compute_throughput(allocated_flows):
             if f['dst'][dst] is not None:
                 # Sum the flow size
                 throughput += f['size']
-    # print('Average Network Throughput:', throughput)
+
     return throughput
 
 
@@ -133,7 +141,7 @@ def compute_link_utilization(G):
     link_utilization = 1 - total_residual_bandwidth / total_bandwidth
     # Transform to percentage
     link_utilization *= 100
-    # print('Link Utilization:', link_utilization * 100, "%")
+
     return link_utilization
 
 
@@ -318,9 +326,9 @@ def draw_result(result, x_label='Multigroup Size',
     """
     # The default point marker and color
     POINT_MARKER = {'SPT': 'o', 'ST': 'v', 'WSPT': 's', 'WST': '*',
-                    'BBSRT': 'D'}
+                    'BBST': 'D'}
     POINT_COLOR = {'SPT': 'r', 'ST': 'm', 'WSPT': 'y', 'WST': 'g',
-                   'BBSRT': 'b'}
+                   'BBST': 'b'}
 
     # The figure size
     plt.figure(figsize=(9, 6))
@@ -381,3 +389,19 @@ def draw_degree_distribution(G, title=''):
     plt.title(title)
     plt.scatter(x, y)
     plt.show()
+
+
+def count_time(func):
+    """Count the run time of function
+    :param func:
+    :return:
+    """
+    def wrapper(*args, **kwargs):
+        start_time = time()
+        res = func(*args, **kwargs)
+        over_time = time()
+        total_time = over_time - start_time
+        logging.info('Func: %s, Run Time: %.6f' % (func.__name__, total_time))
+        return res
+
+    return wrapper

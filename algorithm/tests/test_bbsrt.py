@@ -59,3 +59,28 @@ def test_3():
 
     for p in paths:
         print(p, ',', compute_path_cost(G, p, 'weight'))
+
+
+def test_4():
+    G = generate_topology(100)
+
+    nx.set_edge_attributes(G, 0, 'weight')
+
+    for e in G.edges(data=True):
+        e[2]['weight'] = random.uniform(0, 1)
+
+    src = random.choice(list(G.nodes))
+    dsts = random.sample(G.nodes, 5)
+
+    T = nx.Graph()
+    T.root = src
+
+    for d in dsts:
+        k_paths = generate_k_shortest_paths(G, src, d, 5, weight='weight')
+        path = k_paths[1]
+        print(path)
+        T.add_path(path)
+
+    pos = graphviz_layout(T, prog='dot')
+
+    draw_topology(T, pos)

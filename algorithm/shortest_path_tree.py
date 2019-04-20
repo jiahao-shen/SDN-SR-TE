@@ -24,7 +24,6 @@ def generate_shortest_path_trees(G, flows):
     graph = deepcopy(G)  # Copy G
     allocated_flows = deepcopy(flows)  # Copy flows
 
-    # Generate all pair shortest paths
     all_pair_paths = nx.shortest_path(graph)
     # Initialize shortest_path_trees
     shortest_path_trees = []
@@ -32,7 +31,7 @@ def generate_shortest_path_trees(G, flows):
     # Traverse all flows
     for f in allocated_flows:
         # Compute the origin_T
-        origin_T = generate_shortest_path_tree(f['src'], f['dst'].keys(),
+        origin_T = generate_shortest_path_tree(f['src'], f['dst'],
                                                all_pair_paths)
         # Add origin_T into shortest_path_trees
         shortest_path_trees.append(origin_T)
@@ -72,6 +71,9 @@ def generate_shortest_path_tree(source, destinations, all_pair_paths):
     T.root = source
     # Traverse all destinations
     for dst in destinations:
+        # If dst is already in T
+        if dst in T.nodes:
+            continue
         # Get the shortest path from source to dst
         path = all_pair_paths[source][dst]
         # Add path into T

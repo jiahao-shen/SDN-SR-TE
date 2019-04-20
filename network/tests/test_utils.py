@@ -17,6 +17,7 @@ def test_1():
     """Test the function draw_result
     :return:
     """
+
     def generate_test_result():
         result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}}
 
@@ -158,3 +159,11 @@ def test_7():
 
     G.add_path([2, 6])
     assert has_cycle(G, [0, 1, 4, 6]) is True
+
+
+@count_time
+def test_8():
+    cnt = 1
+    for i in range(1000):
+        for j in range(1000):
+            cnt += i + j

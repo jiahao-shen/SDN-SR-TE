@@ -32,7 +32,7 @@ def generate_widest_shortest_path_trees(G, flows):
     for f in allocated_flows:
         # Compute the origin_T
         origin_T = generate_widest_shortest_path_tree(graph, f['src'],
-                                                      f['dst'].keys())
+                                                      f['dst'])
         # Add origin_T into widest_shortest_path_trees
         widest_shortest_path_trees.append(origin_T)
 
@@ -73,6 +73,9 @@ def generate_widest_shortest_path_tree(G, source, destinations):
     all_pair_paths = generate_widest_shortest_path(G, source)
     # Traverse all destinations
     for dst in destinations:
+        # If dst is already in T
+        if dst in T.nodes:
+            continue
         # Get the widest shortest path from source to dst
         path = all_pair_paths[dst]
         # Add path into T
