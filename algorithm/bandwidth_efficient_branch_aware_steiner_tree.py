@@ -132,9 +132,6 @@ def generate_bandwidth_efficient_branch_aware_steiner_tree(G, source,
         for v in terminals:
             # Get the weighted shortest path from v to constructed tree
             p = weighted_shortest_path_to_tree(G, v, T, all_pair_paths)
-            # Drop the path if it will generate loop edges
-            if has_cycle(T, p):
-                continue
             # Update path
             if path is None or \
                     (path is not None and compute_extra_cost(G, T, p, w1, w2) <
@@ -164,17 +161,10 @@ def compute_extra_cost(G, tree, path, w1, w2):
     :param w2: The weight parameter for branch node
     :return: extra_cost
     """
-    # Initialize intersection
-    intersection = None
-    # Traverse all nodes during path
-    for v, u in pairwise(path):
-        if v in tree.nodes and u not in tree.nodes:
-            intersection = v
-            break
-    # Compute the sub path start from intersection
-    sub_path = path[path.index(intersection):]
     # Compute the path cost
-    extra_cost = w1 * compute_path_cost(G, sub_path, weight='weight')
+    extra_cost = w1 * compute_path_cost(G, path, weight='weight')
+    # Get the intersection node
+    intersection = path[0]
     # If the intersection node of path is new branch node
     if intersection != tree.root and tree.degree(intersection) == 2:
         # Add the branch node cost

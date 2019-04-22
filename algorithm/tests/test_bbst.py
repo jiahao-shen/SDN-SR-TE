@@ -14,16 +14,16 @@ from algorithm.shortest_path_tree import *
 
 @count_time
 def test_1():
-    # for _ in range(10):
-    G = generate_topology()
-    flows = generate_flow_requests(G, 10, 40)
+    for _ in range(1):
+        G = generate_topology()
+        flows = generate_flow_requests(G, 10, 40)
 
-    graph, allocated_flows, multicast_trees = \
-        generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows)
+        graph, allocated_flows, multicast_trees = \
+            generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows)
 
-    # for T in multicast_trees:
-    #     pos = graphviz_layout(T, prog='dot')
-    #     draw_topology(T, pos)
+        for T in multicast_trees:
+            pos = graphviz_layout(T, prog='dot')
+            draw_topology(T, pos)
     #
     # print(compute_num_branch_nodes(multicast_trees))
 
