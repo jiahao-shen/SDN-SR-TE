@@ -16,15 +16,10 @@
 """
 from network import *
 from copy import deepcopy
-from networkx.utils import pairwise
-from time import time
-import math
 
 __all__ = [
     'generate_bandwidth_efficient_branch_aware_steiner_trees',
 ]
-
-cnt = 0
 
 
 def generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
@@ -185,24 +180,17 @@ def generate_weighted_graph(G, nodes_betweenness_centrality,
     """
     # Traverse the edges
     for e in G.edges(data=True):
-        # Set the congestion to inf
-        congestion_index = math.inf
-        # If the residual bandwidth not equals 0, then compute the congestion
-        if e[2]['residual_bandwidth'] != 0:
-            congestion_index = e[2]['link_capacity'] / e[2][
-                'residual_bandwidth'] - 1
         # Compute the weight according to the equation 3
+        congestion_index = e[2]['link_capacity'] / e[2][
+            'residual_bandwidth'] - 1
         # Set the edge weight
         e[2]['weight'] = alpha * congestion_index + (
                 1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
     # Traverse the nodes
     for v in G.nodes(data=True):
-        # Set the congestion to inf
-        congestion_index = math.inf
-        # If the residual bandwidth not equals 0, then compute the congestion
-        if v[1]['residual_flow_entries'] != 0:
-            congestion_index = v[1]['flow_limit'] / v[1][
-                'residual_flow_entries'] - 1
+        # Compute the weight according to the equation 4
+        congestion_index = v[1]['flow_limit'] / v[1][
+            'residual_flow_entries'] - 1
         # Set the node weight
         v[1]['weight'] = beta * congestion_index + (
                 1 - beta) * nodes_betweenness_centrality[v[0]]
