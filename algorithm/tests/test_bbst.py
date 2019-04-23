@@ -6,8 +6,7 @@
 @time: 2019-04-20 14:35:33
 @blog: https://jiahaoplus.com
 """
-from network.topology import *
-from network.utils import *
+from network import *
 from algorithm.bandwidth_efficient_branch_aware_steiner_tree import *
 
 
@@ -18,8 +17,8 @@ def test_1():
     """
     for _ in range(100):
         G = generate_topology()
-        flows = generate_flow_requests(G, 10, 40)
-
+        flows = generate_flow_requests(G, 5, 20)
+        output_flows(flows)
         graph, allocated_flows, trees = \
             generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows)
 

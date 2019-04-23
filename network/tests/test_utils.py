@@ -168,3 +168,27 @@ def test_8():
     for i in range(1000):
         for j in range(1000):
             cnt += i + j
+
+
+def test_9():
+    """Test function compute_acyclic_sub_path
+    :return:
+    """
+    T = nx.Graph()
+    T.add_path([0, 1, 2, 3])
+    T.add_path([0, 1, 2, 4])
+
+    path = [0, 5, 2, 6]
+    assert compute_acyclic_sub_path(T, path) == [2, 6]
+
+    path = [0, 1, 2, 6]
+    assert compute_acyclic_sub_path(T, path) == [2, 6]
+
+    path = [0, 1, 2, 4, 6]
+    assert compute_acyclic_sub_path(T, path) == [4, 6]
+
+    path = [0, 4, 3, 6]
+    assert compute_acyclic_sub_path(T, path) == [3, 6]
+
+    path = [0, 5, 1, 6, 2, 7]
+    assert compute_acyclic_sub_path(T, path) == [2, 7]

@@ -126,7 +126,7 @@ def generate_bandwidth_efficient_branch_aware_steiner_tree(G, source,
         # Traverse all terminals
         for v in terminals:
             # Get the weighted shortest path from v to constructed tree
-            p = weighted_shortest_path_to_tree(G, v, T, all_pair_paths)
+            p = weighted_shortest_path_to_tree(G, v, T, all_pair_paths, w1, w2)
             # Update path
             if path is None or \
                     (path is not None and compute_extra_cost(G, T, p, w1, w2) <
@@ -198,12 +198,14 @@ def generate_weighted_graph(G, nodes_betweenness_centrality,
     return G
 
 
-def weighted_shortest_path_to_tree(G, target, tree, all_pair_paths):
+def weighted_shortest_path_to_tree(G, target, tree, all_pair_paths, w1, w2):
     """Compute the weighted shortest path from target to constructed tree
     :param G: The origin graph
     :param target: The target node needs to be added into the tree
     :param tree: The constructed tree
     :param all_pair_paths: All pair minimum weighted paths in graph
+    :param w1: The weight parameter for extra path
+    :param w2:The weight parameter for branch node
     :return: path
     """
     # Initialize path
@@ -212,11 +214,13 @@ def weighted_shortest_path_to_tree(G, target, tree, all_pair_paths):
     for v in tree.nodes:
         # Get the weighted shortest path from v to target
         p = all_pair_paths[v][target]
+        # Compute the sub path
+        sub_path = compute_acyclic_sub_path(tree, p)
         # Update path
         if path is None or (path is not None and
-                            compute_path_cost(G, p, 'weight') <
-                            compute_path_cost(G, path, 'weight')):
-            path = p
+                            compute_extra_cost(G, tree, sub_path, w1, w2) <
+                            compute_extra_cost(G, tree, path, w1, w2)):
+            path = sub_path
 
     return path
 

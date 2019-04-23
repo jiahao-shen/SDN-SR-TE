@@ -34,6 +34,7 @@ __all__ = [
     'generate_k_shortest_paths',
     'has_cycle',
     'count_time',
+    'compute_acyclic_sub_path'
 ]
 
 logging.basicConfig(level=logging.DEBUG, format='(%(levelname)s)%(message)s')
@@ -406,3 +407,19 @@ def count_time(func):
         return res
 
     return wrapper
+
+
+def compute_acyclic_sub_path(tree, path):
+    """Compute the sub path without loop edges in tree
+    :param tree: The multicast tree
+    :param path: The current path
+    :return: Path with no cycle edges
+    """
+    for i in range(len(path)):
+        flag = True
+        for j in range(i, len(path)):
+            if path[j] in tree.nodes:
+                flag = False
+                break
+        if flag:
+            return path[i - 1:]

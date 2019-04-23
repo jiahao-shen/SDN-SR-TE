@@ -14,7 +14,6 @@ import math
 __all__ = [
     'generate_bandwidth_efficient_branch_aware_segment_routing_trees',
     'generate_weighted_graph',
-    'compute_sub_path'
 ]
 
 
@@ -143,7 +142,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source,
             # Traverse the k shortest path for dst_node
             for p in d_sorted[dst]:
                 # Get the sub_path
-                sub_path = compute_sub_path(T, p)
+                sub_path = compute_acyclic_sub_path(T, p)
                 # Compute the extra cost according to the paper
                 extra_cost = compute_extra_cost(G, T, sub_path, w1, w2)
                 # If extra cost less than minimum cost
@@ -207,18 +206,3 @@ def generate_weighted_graph(G, nodes_betweenness_centrality,
 
     return G
 
-
-def compute_sub_path(tree, path):
-    """Compute the sub path without loop edges in tree
-    :param tree: The multicast tree
-    :param path: The current path
-    :return: Path with no cycle edges
-    """
-    for i in range(len(path)):
-        flag = True
-        for j in range(i, len(path)):
-            if path[j] in tree.nodes:
-                flag = False
-                break
-        if flag:
-            return path[i - 1:]
