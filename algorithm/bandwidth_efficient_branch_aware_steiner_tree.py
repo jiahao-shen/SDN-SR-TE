@@ -180,18 +180,18 @@ def generate_weighted_graph(G, nodes_betweenness_centrality,
     """
     # Traverse the edges
     for e in G.edges(data=True):
-        # Compute the weight according to the equation 3
+        # Compute the congestion for links
         congestion_index = e[2]['link_capacity'] / e[2][
             'residual_bandwidth'] - 1
-        # Set the edge weight
+        # Compute the weight according to the equation 3
         e[2]['weight'] = alpha * congestion_index + (
                 1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
     # Traverse the nodes
     for v in G.nodes(data=True):
-        # Compute the weight according to the equation 4
+        # Compute the congestion for nodes
         congestion_index = v[1]['flow_limit'] / v[1][
             'residual_flow_entries'] - 1
-        # Set the node weight
+        # Compute the weight according to the equation 4
         v[1]['weight'] = beta * congestion_index + (
                 1 - beta) * nodes_betweenness_centrality[v[0]]
 
@@ -232,22 +232,3 @@ def all_pair_weighted_shortest_paths(G):
         all_pair_paths[v] = nx.shortest_path(G, v, weight='weight')
 
     return all_pair_paths
-
-
-@count_time
-def main():
-    G = generate_topology()
-    flows = generate_flow_requests(G, 1, 40)
-
-    graph, allocated_flows, multicast_trees = \
-        generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows)
-
-    for T in multicast_trees:
-        pos = graphviz_layout(T, prog='dot')
-        draw_topology(T, pos)
-
-    print(cnt)
-
-
-if __name__ == '__main__':
-    main()

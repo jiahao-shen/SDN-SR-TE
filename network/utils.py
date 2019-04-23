@@ -33,55 +33,55 @@ __all__ = [
     'draw_degree_distribution',
     'generate_k_shortest_paths',
     'has_cycle',
-    'count_time'
+    'count_time',
 ]
 
 logging.basicConfig(level=logging.DEBUG, format='(%(levelname)s)%(message)s')
 
 
-def network_performance(G, allocated_flows, multicast_trees):
+def network_performance(G, allocated_flows, trees):
     """Compute performance of the network
     Including number of branch nodes, average rejection rate, average network
     throughput and link utilization
     :param G: The allocated graph
     :param allocated_flows: The allocated flows
-    :param multicast_trees: The origin generated multicast trees
+    :param trees: The origin generated multicast trees
     :return: num_branch_nodes, average_rejection_rate,
              throughput,link_utilization
     """
-    return [compute_num_branch_nodes(multicast_trees),
+    return [compute_num_branch_nodes(trees),
             compute_average_rejection_rate(allocated_flows),
             compute_throughput(allocated_flows),
             compute_link_utilization(G)]
 
 
-def compute_num_branch_nodes(multicast_trees):
+def compute_num_branch_nodes(trees):
     """Compute the number of branch nodes
-    :param multicast_trees: The list of multicast tree
+    :param trees: The list of multicast tree
     :return: num_branch_nodes
     """
     num_branch_nodes = 0
     # Traverse all multicast trees
-    for T in multicast_trees:
+    for T in trees:
         for v in T.nodes:
             if is_branch_node(T, v):
                 num_branch_nodes += 1
 
     # Compute average number of branch nodes
-    num_branch_nodes /= len(multicast_trees)
+    num_branch_nodes /= len(trees)
 
     return num_branch_nodes
 
 
-def is_branch_node(multicast_tree, node):
+def is_branch_node(tree, node):
     """According to the tree, check whether is branch node
-    :param multicast_tree: The current multicast tree
+    :param tree: The current multicast tree
     :param node: The node needs to check
     :return: Boolean
     """
     # The degree of branch node is bigger than 3
     # The root isn't  branch node
-    return node != multicast_tree.root and multicast_tree.degree(node) >= 3
+    return node != tree.root and tree.degree(node) >= 3
 
 
 def compute_average_rejection_rate(allocated_flows):
@@ -145,17 +145,17 @@ def compute_link_utilization(G):
     return link_utilization
 
 
-def is_path_valid(G, multicast_tree, path, flow_size):
+def is_path_valid(G, tree, path, flow_size):
     """Check whether the path can add into the graph
     From two points: residual bandwidth and residual flow entries
     :param G: The origin graph
-    :param multicast_tree: The current multicast tree for multicast
+    :param tree: The current multicast tree
     :param path: The computed path
     :param flow_size: Size of Flow
     :return: Boolean
     """
     # Copy multicast tree as temp tree
-    tmp_tree = deepcopy(multicast_tree)
+    tmp_tree = deepcopy(tree)
     # Add path into temp tree
     tmp_tree.add_path(path)
     # Traverse nodes during the path except destination node
@@ -167,7 +167,7 @@ def is_path_valid(G, multicast_tree, path, flow_size):
         # If current node is root in multicast tree and the residual
         # flow entries in G is less than the degree in temp tree
         # Then drop this flow
-        if v == multicast_tree.root and \
+        if v == tree.root and \
                 G.nodes[v]['residual_flow_entries'] < tmp_tree.degree(v):
             return False
         # If current node is branch node in multicast tree and the residual
@@ -180,37 +180,37 @@ def is_path_valid(G, multicast_tree, path, flow_size):
     return True
 
 
-def update_node_entries(G, multicast_tree):
+def update_node_entries(G, tree):
     """Update the residual node entries
     With Segment Routing in SDN, we exploit the branch forwarding technique. We
     only need store the entries in ingress and branch nodes instead of all
     nodes in multicast tree.
     :param G: The origin graph
-    :param multicast_tree: The current multicast tree
+    :param tree: The current multicast tree
     :return:
     """
     # Traverse all nodes in multicast tree
-    for v in multicast_tree.nodes:
+    for v in tree.nodes:
         # If current node is root
-        if v == multicast_tree.root:
+        if v == tree.root:
             # Residual flow entries minus degree
-            G.nodes[v]['residual_flow_entries'] -= multicast_tree.degree(v)
+            G.nodes[v]['residual_flow_entries'] -= tree.degree(v)
         # If current node is branch node
-        elif is_branch_node(multicast_tree, v):
+        elif is_branch_node(tree, v):
             # Residual flow entries minus degree - 1
             G.nodes[v]['residual_flow_entries'] -= \
-                (multicast_tree.degree(v) - 1)
+                (tree.degree(v) - 1)
 
 
-def update_edge_bandwidth(G, multicast_tree, flow_size):
+def update_edge_bandwidth(G, tree, flow_size):
     """Update the residual bandwidth of edges in the tree
     :param G: The origin graph
-    :param multicast_tree: The multicast tree
+    :param tree: The multicast tree
     :param flow_size: The size of current flow
     :return:
     """
     # The residual bandwidth of all edges in multicast tree minus flow size
-    for e in multicast_tree.edges:
+    for e in tree.edges:
         G[e[0]][e[1]]['residual_bandwidth'] -= flow_size
 
 
@@ -273,20 +273,20 @@ def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
         islice(nx.shortest_simple_paths(G, source, destination, weight), k))
 
 
-def has_cycle(multicast_tree, path):
+def has_cycle(tree, path):
     """Check whether exists cycle if path is added into the multicast tree
-    :param multicast_tree: The multicast tree for current multicast
+    :param tree: The multicast tree
     :param path: The current path
     :return: Boolean
     """
-    # Copy multicast tree as temp graph
-    tmp_graph = deepcopy(multicast_tree)
+    # Copy tree as temp graph
+    tmp_graph = deepcopy(tree)
     # Add path into the temp graph
     tmp_graph.add_path(path)
     # Return whether has cycle
-    return len(nx.cycle_basis(tmp_graph)) != 0
+    return len(nx.cycle_basis(tmp_graph, path[0])) != 0
 
-
+    
 def draw_topology(G, position, node_attribute=None, edge_attribute=None,
                   title="Test"):
     """Draw topology and save as png
@@ -315,8 +315,7 @@ def draw_topology(G, position, node_attribute=None, edge_attribute=None,
     plt.show()
 
 
-def draw_result(result, x_label='Multigroup Size',
-                y_label='Number of Branch Node', type='line'):
+def draw_result(result, x_label, y_label, type='line'):
     """Draw results for main.py
     :param result: The final result as dict
     :param x_label: The x label of figure
@@ -325,10 +324,12 @@ def draw_result(result, x_label='Multigroup Size',
     :return:
     """
     # The default point marker and color
-    POINT_MARKER = {'SPT': 'o', 'ST': 'v', 'WSPT': 's', 'WST': '*',
-                    'BBST': 'D'}
-    POINT_COLOR = {'SPT': 'r', 'ST': 'm', 'WSPT': 'y', 'WST': 'g',
-                   'BBST': 'b'}
+    POINT_MARKER = {'SPT': 'o', 'ST': 'v',
+                    'WSPT': 's', 'WST': '*',
+                    'BBSRT': 'x', 'BBST': 'D'}
+    POINT_COLOR = {'SPT': 'r', 'ST': 'm',
+                   'WSPT': 'y', 'WST': 'g',
+                   'BBSRT': 'c', 'BBST': 'b'}
 
     # The figure size
     plt.figure(figsize=(9, 6))

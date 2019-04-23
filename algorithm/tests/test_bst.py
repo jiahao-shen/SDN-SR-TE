@@ -15,10 +15,10 @@ def test_1():
         G = generate_topology()
         flows = generate_flow_requests(G, 10, 40)
 
-        graph, allocated_flows, multicast_trees = \
+        graph, allocated_flows, trees = \
             generate_branch_aware_steiner_trees(G, flows, 5)
 
-        for T in multicast_trees:
+        for T in trees:
             if len(nx.cycle_basis(T)) != 0:
                 pos = graphviz_layout(G, prog='dot')
                 draw_topology(T, pos)

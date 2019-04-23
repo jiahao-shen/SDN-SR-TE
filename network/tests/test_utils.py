@@ -14,25 +14,23 @@ import random
 
 
 def test_1():
-    """Test the function draw_result
+    """Test function draw_result
     :return:
     """
-
     def generate_test_result():
         result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}}
 
         for key in result:
             for index in range(10, 70, 10):
                 result[key][index] = random.randint(10, 100)
-
         return result
 
     results = generate_test_result()
-    draw_result(results, type='bar')
+    draw_result(results, 'x', 'y', type='bar')
 
 
 def test_2():
-    """Test the function compute_throughput
+    """Test function compute_throughput
     :return:
     """
     G = generate_topology(100)
@@ -45,7 +43,7 @@ def test_2():
 
 
 def test_3():
-    """Test the function compute_num_branch_nodes
+    """Test function compute_num_branch_nodes
     :return:
     """
     T = nx.Graph()
@@ -77,7 +75,7 @@ def test_3():
 
 
 def test_4():
-    """Test the function compute_path_minimum_bandwidth
+    """Test function compute_path_minimum_bandwidth
     :return:
     """
     G = nx.Graph()
@@ -103,7 +101,7 @@ def test_4():
 
 
 def test_5():
-    """Test the function of compute_path_cost
+    """Test function compute_path_cost
     :return:
     """
     G = nx.Graph()
@@ -129,7 +127,7 @@ def test_5():
 
 
 def test_6():
-    """Test the function of generate_k_shortest_path
+    """Test function generate_k_shortest_path
     :return:
     """
     G = generate_topology(100)
@@ -148,7 +146,7 @@ def test_6():
 
 
 def test_7():
-    """Test the function has_cycle
+    """Test function has_cycle
     :return:
     """
     G = nx.Graph()
@@ -163,6 +161,9 @@ def test_7():
 
 @count_time
 def test_8():
+    """Test decorator count_time
+    :return:
+    """
     cnt = 1
     for i in range(1000):
         for j in range(1000):

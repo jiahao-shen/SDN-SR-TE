@@ -8,20 +8,17 @@
 """
 from algorithm import *
 from network import *
-from time import time
+from tqdm import trange
 import multiprocessing as mp
 
 PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate(%)',
-               'Throughput', 'Link Utilization(%)', 'Generate Time']
+               'Throughput', 'Link Utilization(%)']
 
 
 def main():
-    # print('Lab 1')
-    # run_task(lab_1, 'Multicast Group Size')
-    # print('Lab 2')
+    run_task(lab_1, 'Multicast Group Size')
     # run_task(lab_2, 'Number of Requests')
-    print('Lab 3')
-    run_task(lab_3, 'Network Size')
+    # run_task(lab_3, 'Network Size')
 
 
 def run_task(fnc, independent_variable, times=6):
@@ -54,7 +51,9 @@ def run_task(fnc, independent_variable, times=6):
 
     for i in range(len(PERFORMANCE)):
         # Result initialize
-        result = {'SPT': {}, 'ST': {}, 'WSPT': {}, 'WST': {}, 'BBST': {}}
+        result = {'SPT': {}, 'ST': {},
+                  'WSPT': {}, 'WST': {},
+                  'BBSRT': {}, 'BBST': {}}
         # Traverse each data and sum all data
         for data in datas:
             # Add each data to the result
@@ -83,7 +82,7 @@ def run_task(fnc, independent_variable, times=6):
                 print(result[name][index], end='\t')
             print()
 
-        if i == 2 or i == 4:
+        if i == 2:
             draw_result(result, independent_variable, PERFORMANCE[i], 'bar')
         else:
             draw_result(result, independent_variable, PERFORMANCE[i], 'line')
@@ -103,78 +102,59 @@ def lab_1(datas, lock):
     wspt = {}
     wst = {}
     bbst = {}
+    bbsrt = {}
 
     for multi_group_size in range(10, 60, 10):
         spt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         st[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         wspt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         wst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
+        bbsrt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         bbst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
 
     G = generate_topology(NETWORK_SIZE)
 
-    for multi_group_size in range(10, 60, 10):
+    for multi_group_size in trange(10, 60, 10, desc='Lab 1'):
         flows = generate_flow_requests(G, 20, multi_group_size, 10, 300)
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_shortest_path_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(*generate_shortest_path_trees(G,
+                                                                        flows))
         spt[multi_group_size] = [spt[multi_group_size][i] + performance[i] for
                                  i in range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(*generate_steiner_trees(G, flows))
         st[multi_group_size] = [st[multi_group_size][i] + performance[i] for i
                                 in range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_shortest_path_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_widest_shortest_path_trees(G, flows))
         wspt[multi_group_size] = [wspt[multi_group_size][i] + performance[i]
                                   for i in range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_widest_steiner_trees(G, flows))
         wst[multi_group_size] = [wst[multi_group_size][i] + performance[i] for
                                  i in range(len(PERFORMANCE))]
 
-        print('** BBST Start', multi_group_size, '**')
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
-                                                                    0.5, 0.5,
-                                                                    1, 5)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
-        bbst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
+                                                                             5, 0.5, 0.5,
+                                                                             1, 5))
+        bbsrt[multi_group_size] = [bbsrt[multi_group_size][i] + performance[i]
                                    for i in range(len(PERFORMANCE))]
 
-    lock.acquire()
-    datas.append(
-        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBST': bbst})
-    lock.release()
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
+                                                                     0.5, 0.5,
+                                                                     1, 5))
+        bbst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
+                                  for i in range(len(PERFORMANCE))]
 
-    print('** Finished **')
+    lock.acquire()
+    datas.append({'SPT': spt, 'ST': st,
+                  'WSPT': wspt, 'WST': wst,
+                  'BBSRT': bbsrt, 'BBST': bbst})
+    lock.release()
 
 
 def lab_2(datas, lock):
@@ -199,61 +179,34 @@ def lab_2(datas, lock):
 
     G = generate_topology(NETWORK_SIZE)
 
-    for num_requests in range(10, 80, 10):
+    for num_requests in trange(10, 80, 10, desc='Lab 2'):
         flows = generate_flow_requests(G, num_requests, 10, 10, 300)
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_shortest_path_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(*generate_shortest_path_trees(G,
+                                                                        flows))
         spt[num_requests] = [spt[num_requests][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(*generate_steiner_trees(G, flows))
         st[num_requests] = [st[num_requests][i] + performance[i] for i in
                             range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_shortest_path_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_widest_shortest_path_trees(G, flows))
         wspt[num_requests] = [wspt[num_requests][i] + performance[i] for i in
                               range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_widest_steiner_trees(G, flows))
         wst[num_requests] = [wst[num_requests][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        print('** BBST Start', num_requests, '**')
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
-                                                                    0.5, 0.5,
-                                                                    1, 5)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
+                                                                     0.5, 0.5,
+                                                                     1, 5))
         bbst[num_requests] = [bbst[num_requests][i] + performance[i]
-                               for i in range(len(PERFORMANCE))]
+                              for i in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append(
@@ -279,61 +232,36 @@ def lab_3(datas, lock):
         wst[network_size] = [0 for _ in range(len(PERFORMANCE))]
         bbst[network_size] = [0 for _ in range(len(PERFORMANCE))]
 
-    for network_size in range(100, 500, 100):
+    for network_size in trange(100, 500, 100, desc='Lab 3'):
         G = generate_topology(network_size)
         flows = generate_flow_requests(G, network_size // 10,
                                        network_size // 10, 100, 500)
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_shortest_path_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(*generate_shortest_path_trees(G,
+                                                                        flows))
         spt[network_size] = [spt[network_size][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(*generate_steiner_trees(G, flows))
         st[network_size] = [st[network_size][i] + performance[i] for i in
                             range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_shortest_path_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_widest_shortest_path_trees(G, flows))
         wspt[network_size] = [wspt[network_size][i] + performance[i] for i in
                               range(len(PERFORMANCE))]
 
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_widest_steiner_trees(G, flows))
         wst[network_size] = [wst[network_size][i] + performance[i] for i in
                              range(len(PERFORMANCE))]
 
-        print('** BBST Start', network_size, '**')
-        t = time()
-        graph, allocated_flows, multicast_trees = \
-            generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows)
-        t = time() - t
-        performance = network_performance(graph, allocated_flows,
-                                          multicast_trees)
-        performance.append(t)
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
+                                                                     0.5, 0.5,
+                                                                     1, 5))
         bbst[network_size] = [bbst[network_size][i] + performance[i] for i
-                               in range(len(PERFORMANCE))]
+                              in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append(

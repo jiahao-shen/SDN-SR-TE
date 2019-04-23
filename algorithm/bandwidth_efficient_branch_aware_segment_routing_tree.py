@@ -7,15 +7,14 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from networkx.utils import pairwise
 from copy import deepcopy
 from collections import OrderedDict
 import math
 
 __all__ = [
     'generate_bandwidth_efficient_branch_aware_segment_routing_trees',
-    'compute_intersection_node',
-    'generate_weighted_graph'
+    'generate_weighted_graph',
+    'compute_sub_path'
 ]
 
 
@@ -54,32 +53,32 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
     # Traverse all flows
     for f in allocated_flows:
         # Compute the origin_T
-        origin_T = generate_bandwidth_efficient_branch_aware_segment_routing_tree(graph, f['src'], f['dst'].keys(),
+        origin_T = generate_bandwidth_efficient_branch_aware_segment_routing_tree(graph, f['src'], f['dst'],
                                                                                   nodes_betweenness_centrality,
                                                                                   edges_betweenness_centrality,
                                                                                   k, alpha, beta, w1, w2)
         # Add origin_T into band_efficient_branch_aware_segment_routing_trees
         band_efficient_branch_aware_segment_routing_trees.append(origin_T)
 
-        # # Compute all paths in origin_T
-        # all_paths = nx.shortest_path(origin_T, f['src'])
-        # # Initialize allocated_T
-        # allocated_T = nx.Graph()
-        # allocated_T.root = f['src']
-        # # Traverse all destination nodes
-        # for dst in f['dst']:
-        #     # Get the path from src to dst
-        #     path = all_paths[dst]
-        #     # Check whether path valid
-        #     if is_path_valid(graph, allocated_T, path, f['size']):
-        #         # Record the path
-        #         f['dst'][dst] = path
-        #         # Add path into allocated_T
-        #         allocated_T.add_path(path)
-        # # Update the residual entries of nodes in the allocated_T
-        # update_node_entries(graph, allocated_T)
-        # # Update the residual bandwidth of edges in the allocated_T
-        # update_edge_bandwidth(graph, allocated_T, f['size'])
+        # Compute all paths in origin_T
+        all_paths = nx.shortest_path(origin_T, f['src'])
+        # Initialize allocated_T
+        allocated_T = nx.Graph()
+        allocated_T.root = f['src']
+        # Traverse all destination nodes
+        for dst in f['dst']:
+            # Get the path from src to dst
+            path = all_paths[dst]
+            # Check whether path valid
+            if is_path_valid(graph, allocated_T, path, f['size']):
+                # Record the path
+                f['dst'][dst] = path
+                # Add path into allocated_T
+                allocated_T.add_path(path)
+        # Update the residual entries of nodes in the allocated_T
+        update_node_entries(graph, allocated_T)
+        # Update the residual bandwidth of edges in the allocated_T
+        update_edge_bandwidth(graph, allocated_T, f['size'])
 
     return graph, allocated_flows, \
            band_efficient_branch_aware_segment_routing_trees
@@ -130,9 +129,11 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source,
     d_sorted = OrderedDict(sorted(d_sorted.items(), key=lambda x:
                            compute_path_cost(G, x[1][0], weight='weight')))
 
-    cnt = 0
     # Traverse the destination nodes in d_sorted
     for dst in d_sorted:
+        # If dst already in T, then continue
+        if dst in T.nodes:
+            continue
         # Initialize path
         path = d_sorted[dst][0]
         # If T isn't empty
@@ -141,54 +142,38 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source,
             minimum_cost = math.inf
             # Traverse the k shortest path for dst_node
             for p in d_sorted[dst]:
-                # If exists cycle after adding p into multicast tree
-                # Then continue
-                if has_cycle(T, p):
-                    continue
+                # Get the sub_path
+                sub_path = compute_sub_path(T, p)
                 # Compute the extra cost according to the paper
-                extra_cost = compute_extra_cost(G, T, p, w1, w2)
+                extra_cost = compute_extra_cost(G, T, sub_path, w1, w2)
                 # If extra cost less than minimum cost
                 if extra_cost < minimum_cost:
                     # Update minimum cost and path
                     minimum_cost = extra_cost
-                    path = p
-
-        print(path)
+                    path = sub_path
+        # Add path into T
         T.add_path(path)
-        # if not has_cycle(T, path):
-        #     # Add path into T
-        #     T.add_path(path)
-        # else:
-        #     cnt += 1
-
-    # print('cnt =', cnt)
 
     return T
 
 
-def compute_extra_cost(G, multicast_tree, path, w1, w2):
+def compute_extra_cost(G, tree, path, w1, w2):
     """Compute the extra cost for path
     :param G: The origin graph
-    :param multicast_tree: The multicast tree
-    :param path: The path needs to add into the graph
+    :param tree: The multicast tree
+    :param path: The current path
     :param w1: The first parameter of extra cost
     :param w2: The second parameter of extra cost
     :return: extra_cost
     """
-    # Compute the branch node and flag(whether new branch node)
-    intersection, flag = compute_intersection_node(multicast_tree, path)
-    # The final result
-    extra_cost = 0
-    # If exists intersection node
-    if intersection is not None:
-        # Compute sub path start from intersection
-        sub_path = path[path.index(intersection):]
-        # Extra cost add path cost
-        extra_cost += w1 * compute_path_cost(G, sub_path, weight='weight')
-        # If the intersection node is new branch node
-        if flag:
-            # Extra cost add cost of new branch node
-            extra_cost += w2 * G.nodes[intersection]['weight']
+    # Compute the path cost
+    extra_cost = w1 * compute_path_cost(G, path, weight='weight')
+    # Get the intersection
+    intersection = path[0]
+    # If intersection is new branch node
+    if intersection != tree.root and tree.degree(intersection) == 2:
+        # Extra cost add cost of new branch node
+        extra_cost += w2 * G.nodes[intersection]['weight']
 
     return extra_cost
 
@@ -205,50 +190,35 @@ def generate_weighted_graph(G, nodes_betweenness_centrality,
     """
     # Traverse the edges
     for e in G.edges(data=True):
-        # Set the congestion to inf
-        congestion_index = math.inf
-        # If the residual bandwidth not equals 0, then compute the congestion
-        if e[2]['residual_bandwidth'] != 0:
-            congestion_index = e[2]['link_capacity'] / e[2][
-                'residual_bandwidth'] - 1
+        # Compute the congestion for links
+        congestion_index = e[2]['link_capacity'] / e[2][
+            'residual_bandwidth'] - 1
         # Compute the weight according to the equation 3
-        # Set the edge weight
         e[2]['weight'] = alpha * congestion_index + (
                 1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
     # Traverse the nodes
     for v in G.nodes(data=True):
-        # Set the congestion to inf
-        congestion_index = math.inf
-        # If the residual bandwidth not equals 0, then compute the congestion
-        if v[1]['residual_flow_entries'] != 0:
-            congestion_index = v[1]['flow_limit'] / v[1][
-                'residual_flow_entries'] - 1
-        # Set the node weight
+        # Compute the congestion for nodes
+        congestion_index = v[1]['flow_limit'] / v[1][
+            'residual_flow_entries'] - 1
+        # Compute the weight according to the equation 4
         v[1]['weight'] = beta * congestion_index + (
                 1 - beta) * nodes_betweenness_centrality[v[0]]
 
     return G
 
 
-def compute_intersection_node(multicast_tree, path):
-    """According to the multicast tree, to compute the intersection node
-    :param multicast_tree: The allocated multicast tree
-    :param path: The path need to be added
-    :return: node, flag
+def compute_sub_path(tree, path):
+    """Compute the sub path without loop edges in tree
+    :param tree: The multicast tree
+    :param path: The current path
+    :return: Path with no cycle edges
     """
-    # Intersection node initialize
-    intersection = None
-    # Traverse all nodes during path
-    for v, u in pairwise(path):
-        if v in multicast_tree.nodes and u not in multicast_tree.nodes:
-            intersection = v
-            break
-    # If no intersection, return False
-    if intersection is None:
-        return None, False
-    # If the intersection isn't root but new branch node, return True
-    if intersection != multicast_tree.root and \
-            multicast_tree.degree(intersection) == 2:
-        return intersection, True
-    # Else return False
-    return intersection, False
+    for i in range(len(path)):
+        flag = True
+        for j in range(i, len(path)):
+            if path[j] in tree.nodes:
+                flag = False
+                break
+        if flag:
+            return path[i - 1:]

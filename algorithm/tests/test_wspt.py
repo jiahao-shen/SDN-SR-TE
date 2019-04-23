@@ -12,6 +12,7 @@ from algorithm.widest_shortest_path_tree import *
 import multiprocessing as mp
 
 
+@count_time
 def test_1():
     """Test Widest Shortest Path algorithm
     Start 4 processes, each process runs 1 << 12 times, each time randomly
@@ -23,7 +24,7 @@ def test_1():
     :return:
     """
     def task():
-        for _ in range(1 << 10):
+        for _ in range(100):
             G = generate_topology()
             src, dst = random.sample(range(20), 2)
 
@@ -50,51 +51,17 @@ def test_1():
         item.join()
 
 
+@count_time
 def test_2():
-    """Test the Shortest Path Tree and Widest Shortest Path Tree
+    """Test no cycle in WSPT
     :return:
     """
-    G = generate_topology(100)
-    pos = graphviz_layout(G)
-    flows = generate_flow_requests(G, 3, 10)
-
-    draw_topology(G, pos)
-
-    # SPT
-    graph, allocated_flows, shortest_path_trees = \
-        generate_shortest_path_trees(G, flows)
-
-    output_flows(allocated_flows)
-
-    for T in shortest_path_trees:
-        position = graphviz_layout(T, prog='dot')
-        draw_topology(T, position, 'SPT')
-        assert len(nx.cycle_basis(T)) == 0
-
-    print(compute_num_branch_nodes(shortest_path_trees))
-
-    # WSPT
-    graph, allocated_flows, widest_shortest_path_trees = \
-        generate_widest_shortest_path_trees(G, flows)
-
-    output_flows(allocated_flows)
-
-    for T in widest_shortest_path_trees:
-        position = graphviz_layout(T, prog='dot')
-        draw_topology(T, position, title='WSPT')
-        assert len(nx.cycle_basis(T)) == 0
-
-    print(compute_num_branch_nodes(widest_shortest_path_trees))
-
-
-def test_3():
     for _ in range(100):
         G = generate_topology()
         flows = generate_flow_requests(G, 10, 40)
 
-        graph, allocated_flows, multicast_trees = \
-            generate_shortest_path_trees(G, flows)
+        graph, allocated_flows, trees = generate_shortest_path_trees(G, flows)
 
-        for T in multicast_trees:
+        for T in trees:
             assert len(nx.cycle_basis(T)) == 0
 

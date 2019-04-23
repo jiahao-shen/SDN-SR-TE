@@ -10,30 +10,17 @@ from network import *
 from algorithm import *
 
 
+@count_time
 def test_1():
+    """Test no cycle in WST
+    :return:
+    """
     for _ in range(100):
         G = generate_topology()
         flows = generate_flow_requests(G, 10, 40)
 
-        graph, allocated_flows, multicast_trees = \
-            generate_widest_steiner_trees(G, flows)
+        graph, allocated_flows, trees = generate_widest_steiner_trees(G, flows)
 
-        for T in multicast_trees:
+        for T in trees:
             assert len(nx.cycle_basis(T)) == 0
 
-
-def test_2():
-    G = generate_topology()
-    flows = generate_flow_requests(G, 1, 40)
-
-    graph, allocated_flows, multicast_trees = \
-        generate_widest_steiner_trees(G, flows)
-
-    for T in multicast_trees:
-        print(len(T))
-
-    graph, allocated_flows, multicast_trees = \
-        generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows)
-
-    for T in multicast_trees:
-        print(len(T))
