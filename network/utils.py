@@ -221,8 +221,7 @@ def output_flows(flows):
     """
     for f in flows:
         for dst in f['dst']:
-            print(f['src'], '->', dst, ':', f['dst'][dst],
-                  ',', 'size =', f['size'])
+            print(f['src'], '->', dst, ':', f['dst'][dst], ',', 'size =', f['size'])
         print('--------------------------')
 
 
@@ -234,8 +233,7 @@ def compute_path_minimum_bandwidth(G, path):
     """
     minimum_bandwidth = math.inf
     for v, u in pairwise(path):
-        minimum_bandwidth = min(minimum_bandwidth,
-                                G[v][u]['residual_bandwidth'])
+        minimum_bandwidth = min(minimum_bandwidth, G[v][u]['residual_bandwidth'])
 
     return minimum_bandwidth
 
@@ -269,8 +267,7 @@ def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
     :param weight: The weight value in shortest path algorithm, default None
     :return: The list of k shortest paths
     """
-    return list(
-        islice(nx.shortest_simple_paths(G, source, destination, weight), k))
+    return list(islice(nx.shortest_simple_paths(G, source, destination, weight), k))
 
 
 def has_cycle(tree, path):
@@ -287,7 +284,8 @@ def has_cycle(tree, path):
     return len(nx.cycle_basis(tmp_graph, path[0])) != 0
 
     
-def draw_topology(G, position, node_attribute=None, edge_attribute=None,
+def draw_topology(G, position,
+                  node_attribute=None, edge_attribute=None,
                   title="Test"):
     """Draw topology and save as png
     :param G: The graph
@@ -345,7 +343,7 @@ def draw_result(result, x_label, y_label, type='line'):
         # Get the x values
         x_value = list(result['SPT'].keys())
         # Compute the appropriate width
-        width = (x_value[1] - x_value[0]) / 6
+        width = (x_value[1] - x_value[0]) / 8
         # Compute the offset
         offset = [i - (len(result) - 1) / 2 for i in range(len(result))]
         index = 0

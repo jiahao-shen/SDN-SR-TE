@@ -22,8 +22,8 @@ def generate_widest_shortest_path_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
     """
-    graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)  # Copy flows
+    graph = deepcopy(G)
+    allocated_flows = deepcopy(flows)
 
     # Initialize widest_shortest_path_trees
     widest_shortest_path_trees = []
@@ -31,8 +31,8 @@ def generate_widest_shortest_path_trees(G, flows):
     # Traverse all flows
     for f in allocated_flows:
         # Compute the origin_T
-        origin_T = generate_widest_shortest_path_tree(graph, f['src'],
-                                                      f['dst'])
+        origin_T = generate_widest_shortest_path_tree(graph,
+                                                      f['src'], f['dst'])
         # Add origin_T into widest_shortest_path_trees
         widest_shortest_path_trees.append(origin_T)
 

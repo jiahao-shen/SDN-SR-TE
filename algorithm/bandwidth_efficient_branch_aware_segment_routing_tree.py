@@ -34,19 +34,19 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
     :return: graph, allocated_flows,
     band_efficient_branch_aware_segment_routing_trees
     """
-    graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)  # Copy flows
+    graph = deepcopy(G)
+    allocated_flows = deepcopy(flows)
 
     # Add node weight and edge weight
     nx.set_edge_attributes(graph, 0, 'weight')
     nx.set_node_attributes(graph, 0, 'weight')
 
-    band_efficient_branch_aware_segment_routing_trees = []  # Initialize
-
     # The node betweenness centrality
     nodes_betweenness_centrality = nx.betweenness_centrality(graph)
     # The edge betweenness centrality
     edges_betweenness_centrality = nx.edge_betweenness_centrality(graph)
+    # Initialize bandwidth_efficient_branch_node_aware_segment_routing_trees
+    bandwidth_efficient_branch_aware_segment_routing_trees = []
 
     # Traverse all flows
     for f in allocated_flows:
@@ -56,7 +56,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                                                                                   edges_betweenness_centrality,
                                                                                   k, alpha, beta, w1, w2)
         # Add origin_T into band_efficient_branch_aware_segment_routing_trees
-        band_efficient_branch_aware_segment_routing_trees.append(origin_T)
+        bandwidth_efficient_branch_aware_segment_routing_trees.append(origin_T)
 
         # Compute all paths in origin_T
         all_paths = nx.shortest_path(origin_T, f['src'])
@@ -79,15 +79,13 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
         update_edge_bandwidth(graph, allocated_T, f['size'])
 
     return graph, allocated_flows, \
-           band_efficient_branch_aware_segment_routing_trees
+           bandwidth_efficient_branch_aware_segment_routing_trees
 
 
-def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source,
-                                                                   destinations,
+def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source, destinations,
                                                                    nodes_betweenness_centrality,
                                                                    edges_betweenness_centrality,
-                                                                   k,
-                                                                   alpha, beta,
+                                                                   k, alpha, beta,
                                                                    w1, w2):
     """Generate Bandwidth-efficient Branch-aware Segment Routing Tree(BBSRT)
     Sheu, J.-P., & Chen, Y.-C. (2017).
@@ -175,8 +173,10 @@ def compute_extra_cost(G, tree, path, w1, w2):
     return extra_cost
 
 
-def generate_weighted_graph(G, nodes_betweenness_centrality,
-                            edges_betweenness_centrality, alpha, beta):
+def generate_weighted_graph(G,
+                            nodes_betweenness_centrality,
+                            edges_betweenness_centrality,
+                            alpha, beta):
     """Generate the weighted graph according to the paper
     :param G: The origin graph
     :param nodes_betweenness_centrality:

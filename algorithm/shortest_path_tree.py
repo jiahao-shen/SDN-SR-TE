@@ -21,8 +21,8 @@ def generate_shortest_path_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, shortest_path_trees
     """
-    graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)  # Copy flows
+    graph = deepcopy(G)
+    allocated_flows = deepcopy(flows)
 
     all_pair_paths = nx.shortest_path(graph)
     # Initialize shortest_path_trees

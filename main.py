@@ -143,10 +143,11 @@ def lab_1(datas, lock):
         bbsrt[multi_group_size] = [bbsrt[multi_group_size][i] + performance[i]
                                    for i in range(len(PERFORMANCE))]
 
-        performance = network_performance(
-            *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
-                                                                     0.5, 0.5,
-                                                                     1, 5))
+        # performance = network_performance(
+        #     *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
+        #                                                              0.5, 0.5,
+        #                                                              1, 5))
+        performance = network_performance(*generate_branch_aware_steiner_trees(G, flows, 5))
         bbst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
                                   for i in range(len(PERFORMANCE))]
 

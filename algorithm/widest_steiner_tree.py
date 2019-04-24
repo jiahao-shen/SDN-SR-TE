@@ -18,13 +18,13 @@ __all__ = [
 
 
 def generate_widest_steiner_trees(G, flows):
-    """According to the flows and graph, generate Widest Steiner Tree(WSPT)
+    """
     :param G: The origin graph
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
     """
-    graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)  # Copy flows
+    graph = deepcopy(G)
+    allocated_flows = deepcopy(flows)
 
     # Initialize widest_steiner_trees
     widest_steiner_trees = []
@@ -93,7 +93,7 @@ def generate_widest_steiner_tree(G, source, destinations):
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
-        # Remove the terminal already in T
+        # Remove the terminals already in T
         v_d = set()
         for v in terminals:
             if v in T.nodes:

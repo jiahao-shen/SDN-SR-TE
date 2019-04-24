@@ -25,10 +25,8 @@ __all__ = [
 def generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
                                                             alpha=0.5,
                                                             beta=0.5,
-                                                            w1=1,
-                                                            w2=1):
-    """According to the flows and graph, generate Bandwidth-efficient
-    Branch-aware Segment Routing Tree(BBSRT)
+                                                            w1=1, w2=1):
+    """
     :param G: The origin graph
     :param flows: The current flow request
     :param alpha: The weight parameter for edges, default 0.5
@@ -38,8 +36,8 @@ def generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
     :return: graph, allocated_flows,
     band_efficient_branch_aware_segment_routing_trees
     """
-    graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)  # Copy flows
+    graph = deepcopy(G)
+    allocated_flows = deepcopy(flows)
 
     # Add node weight and edge weight
     nx.set_edge_attributes(graph, 0, 'weight')
@@ -168,8 +166,10 @@ def compute_extra_cost(G, tree, path, w1, w2):
     return extra_cost
 
 
-def generate_weighted_graph(G, nodes_betweenness_centrality,
-                            edges_betweenness_centrality, alpha, beta):
+def generate_weighted_graph(G,
+                            nodes_betweenness_centrality,
+                            edges_betweenness_centrality,
+                            alpha, beta):
     """Generate the weighted graph according to the paper
     :param G: The origin graph
     :param nodes_betweenness_centrality:

@@ -20,20 +20,6 @@ def test_1():
 
         for T in trees:
             if len(nx.cycle_basis(T)) != 0:
-                pos = graphviz_layout(G, prog='dot')
+                pos = graphviz_layout(T, prog='dot')
                 draw_topology(T, pos)
 
-
-def test_2():
-    for _ in range(100):
-        G = generate_topology()
-        flows = generate_flow_requests(G, 20, 40)
-
-        all_pair_paths = nx.shortest_path(G)
-
-        src = flows[0]['src']
-        dst = flows[0]['dst'].keys()
-
-        T_1 = edge_optimization_phase(src, dst, all_pair_paths)
-
-        branch_optimization_phase(src, dst, T_1, all_pair_paths, 5)

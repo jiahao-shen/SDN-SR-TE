@@ -57,8 +57,9 @@ def generate_topology(size=100, a=0.2, b=0.2,
     return G
 
 
-def generate_flow_requests(G, flow_groups=1, flow_entries=5, size_lower=10,
-                           size_upper=100):
+def generate_flow_requests(G,
+                           flow_groups=1, flow_entries=5,
+                           size_lower=10, size_upper=100):
     """According the graph G, generate flow requests for multicast
     :param G: The topology graph
     :param flow_groups: The number of flow groups, default 1

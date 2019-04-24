@@ -21,8 +21,8 @@ def generate_steiner_trees(G, flows):
     :param flows: The flow request
     :return: graph, allocated_flows, allocated_graph
     """
-    graph = deepcopy(G)  # Copy G
-    allocated_flows = deepcopy(flows)   # Copy flows
+    graph = deepcopy(G)
+    allocated_flows = deepcopy(flows)
 
     # Generate all pair shortest path
     all_pair_paths = nx.shortest_path(graph)
@@ -88,7 +88,7 @@ def generate_steiner_tree(source, destinations, all_pair_paths):
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
-        # Remove the terminal already in T
+        # Remove the terminals already in T
         v_d = set()
         for v in terminals:
             if v in T.nodes:
