@@ -13,7 +13,6 @@ import math
 
 __all__ = [
     'generate_bandwidth_efficient_branch_aware_segment_routing_trees',
-    'generate_weighted_graph',
 ]
 
 
@@ -83,7 +82,6 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
            band_efficient_branch_aware_segment_routing_trees
 
 
-# TODO(Loop edges)
 def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source,
                                                                    destinations,
                                                                    nodes_betweenness_centrality,

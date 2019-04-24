@@ -199,8 +199,7 @@ def update_node_entries(G, tree):
         # If current node is branch node
         elif is_branch_node(tree, v):
             # Residual flow entries minus degree - 1
-            G.nodes[v]['residual_flow_entries'] -= \
-                (tree.degree(v) - 1)
+            G.nodes[v]['residual_flow_entries'] -= (tree.degree(v) - 1)
 
 
 def update_edge_bandwidth(G, tree, flow_size):
