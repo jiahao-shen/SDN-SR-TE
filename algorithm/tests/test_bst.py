@@ -11,6 +11,9 @@ from network import *
 
 
 def test_1():
+    """Test no cycle in BST
+    :return:
+    """
     for _ in range(100):
         G = generate_topology()
         flows = generate_flow_requests(G, 10, 40)
@@ -19,7 +22,5 @@ def test_1():
             generate_branch_aware_steiner_trees(G, flows, 5)
 
         for T in trees:
-            if len(nx.cycle_basis(T)) != 0:
-                pos = graphviz_layout(T, prog='dot')
-                draw_topology(T, pos)
+            assert len(nx.cycle_basis(T)) == 0
 

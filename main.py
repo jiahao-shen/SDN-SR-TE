@@ -53,7 +53,8 @@ def run_task(fnc, independent_variable, times=6):
         # Result initialize
         result = {'SPT': {}, 'ST': {},
                   'WSPT': {}, 'WST': {},
-                  'BBSRT': {}, 'BBST': {}}
+                  'BST': {}, 'BBSRT': {},
+                  'BBST': {}}
         # Traverse each data and sum all data
         for data in datas:
             # Add each data to the result
@@ -101,6 +102,7 @@ def lab_1(datas, lock):
     st = {}
     wspt = {}
     wst = {}
+    bst = {}
     bbst = {}
     bbsrt = {}
 
@@ -109,6 +111,7 @@ def lab_1(datas, lock):
         st[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         wspt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         wst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
+        bst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         bbsrt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         bbst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
 
@@ -137,24 +140,29 @@ def lab_1(datas, lock):
                                  i in range(len(PERFORMANCE))]
 
         performance = network_performance(
+            *generate_branch_aware_steiner_trees(G, flows, 5))
+        bst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
+                                  for i in range(len(PERFORMANCE))]
+
+        performance = network_performance(
             *generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                                                                              5, 0.5, 0.5,
                                                                              1, 5))
         bbsrt[multi_group_size] = [bbsrt[multi_group_size][i] + performance[i]
                                    for i in range(len(PERFORMANCE))]
 
-        # performance = network_performance(
-        #     *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
-        #                                                              0.5, 0.5,
-        #                                                              1, 5))
-        performance = network_performance(*generate_branch_aware_steiner_trees(G, flows, 5))
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
+                                                                     0.5, 0.5,
+                                                                     1, 5))
         bbst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
                                   for i in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append({'SPT': spt, 'ST': st,
                   'WSPT': wspt, 'WST': wst,
-                  'BBSRT': bbsrt, 'BBST': bbst})
+                  'BST': bst, 'BBSRT': bbsrt,
+                  'BBST': bbst})
     lock.release()
 
 

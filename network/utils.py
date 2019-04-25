@@ -324,10 +324,15 @@ def draw_result(result, x_label, y_label, type='line'):
     # The default point marker and color
     POINT_MARKER = {'SPT': 'o', 'ST': 'v',
                     'WSPT': 's', 'WST': '*',
-                    'BBSRT': 'x', 'BBST': 'D'}
-    POINT_COLOR = {'SPT': 'r', 'ST': 'm',
-                   'WSPT': 'y', 'WST': 'g',
-                   'BBSRT': 'c', 'BBST': 'b'}
+                    'BST': 'p', 'BBSRT': 'x',
+                    'BBST': 'D'}
+    # POINT_COLOR = {'SPT': 'r', 'ST': 'm',
+    #                'WSPT': 'y', 'WST': 'g',
+    #                'BBSRT': 'c', 'BBST': 'b'}
+    POINT_COLOR = {'SPT': '#cf4d5a', 'ST': '#69d5b2',
+                   'WSPT': '#b15380', 'WST': '#c7cada',
+                   'BST': '#393231', 'BBSRT': '#e8ab44',
+                   'BBST': '#201db9'}
 
     # The figure size
     plt.figure(figsize=(9, 6))
@@ -412,11 +417,6 @@ def compute_acyclic_sub_path(tree, path):
     :param path: The current path
     :return: Path with no cycle edges
     """
-    for i in range(len(path)):
-        flag = True
-        for j in range(i, len(path)):
-            if path[j] in tree.nodes:
-                flag = False
-                break
-        if flag:
-            return path[i - 1:]
+    for u, v in pairwise(reversed(path)):
+        if v in tree.nodes and u not in tree.nodes:
+            return path[path.index(v):]

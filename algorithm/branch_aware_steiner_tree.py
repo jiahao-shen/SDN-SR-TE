@@ -13,10 +13,10 @@ from copy import deepcopy
 
 __all__ = [
     'generate_branch_aware_steiner_trees',
+    'compute_objective_value',
 ]
 
 
-# TODO(Modify)
 def generate_branch_aware_steiner_trees(G, flows, w=1):
     """According to flows and graph, generate Branch-aware Steiner Tree(BST)
     :param G: The origin graph
@@ -138,10 +138,8 @@ def branch_optimization_phase(source, destinations, tree, all_pair_paths, w):
     # Traverse all branch nodes
     for v_d in branch_nodes:
         # If v_d is source node or v_d in destination nodes
-        # If v_d isn't branch node in tree
         # Then continue
-        if v_d in destinations or v_d == source or \
-                not is_branch_node(tree, v_d):
+        if v_d in destinations or v_d == source:
             continue
         # Store all neighbor nodes of v_d
         neighbors = list(tree.neighbors(v_d))
@@ -191,8 +189,7 @@ def branch_optimization_phase(source, destinations, tree, all_pair_paths, w):
         # If v_a is source node or v_a in destination nodes
         # If v_a isn't branch node in tree
         # Then continue
-        if v_a in destinations or v_a == source or \
-                not is_branch_node(tree, v_a):
+        if v_a in destinations or v_a == source:
             continue
         # Store all neighbor nodes of v_a
         neighbors = list(tree.neighbors(v_a))
@@ -211,6 +208,7 @@ def branch_optimization_phase(source, destinations, tree, all_pair_paths, w):
             # If tmp_tree is connected and the value of tmp_tree is less than
             # the old tree, then update the tree
             if nx.is_connected(tmp_tree) and \
+                len(nx.cycle_basis(tmp_tree)) == 0 and \
                     compute_objective_value(tmp_tree, w) < \
                     compute_objective_value(tree, w):
                 tree = deepcopy(tmp_tree)
