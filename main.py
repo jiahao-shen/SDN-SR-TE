@@ -17,8 +17,8 @@ PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate(%)',
 
 def main():
     run_task(lab_1, 'Multicast Group Size')
-    # run_task(lab_2, 'Number of Requests')
-    # run_task(lab_3, 'Network Size')
+    run_task(lab_2, 'Number of Requests')
+    run_task(lab_3, 'Network Size')
 
 
 def run_task(fnc, independent_variable, times=6):
@@ -103,8 +103,8 @@ def lab_1(datas, lock):
     wspt = {}
     wst = {}
     bst = {}
-    bbst = {}
     bbsrt = {}
+    bbst = {}
 
     for multi_group_size in range(10, 60, 10):
         spt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
@@ -162,7 +162,7 @@ def lab_1(datas, lock):
     datas.append({'SPT': spt, 'ST': st,
                   'WSPT': wspt, 'WST': wst,
                   'BST': bst, 'BBSRT': bbsrt,
-                  'BBST': bbst})
+                   'BBST': bbst})
     lock.release()
 
 
@@ -177,6 +177,8 @@ def lab_2(datas, lock):
     st = {}
     wspt = {}
     wst = {}
+    bst = {}
+    bbsrt = {}
     bbst = {}
 
     for num_requests in range(10, 80, 10):
@@ -184,6 +186,8 @@ def lab_2(datas, lock):
         st[num_requests] = [0 for _ in range(len(PERFORMANCE))]
         wspt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
         wst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        bst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        bbsrt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
         bbst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
 
     G = generate_topology(NETWORK_SIZE)
@@ -211,6 +215,18 @@ def lab_2(datas, lock):
                              range(len(PERFORMANCE))]
 
         performance = network_performance(
+            *generate_branch_aware_steiner_trees(G, flows, 5))
+        bst[num_requests] = [bst[num_requests][i] + performance[i] for i in
+                             range(len(PERFORMANCE))]
+
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
+                                                                             5, 0.5, 0.5,
+                                                                             1, 5))
+        bbsrt[num_requests] = [bbsrt[num_requests][i] + performance[i] for i in
+                               range(len(PERFORMANCE))]
+
+        performance = network_performance(
             *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
                                                                      0.5, 0.5,
                                                                      1, 5))
@@ -218,8 +234,10 @@ def lab_2(datas, lock):
                               for i in range(len(PERFORMANCE))]
 
     lock.acquire()
-    datas.append(
-        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBST': bbst})
+    datas.append({'SPT': spt, 'ST': st,
+                  'WSPT': wspt, 'WST': wst,
+                  'BST': bst, 'BBSRT': bbsrt,
+                  'BBST': bbst})
     lock.release()
 
 
@@ -232,6 +250,8 @@ def lab_3(datas, lock):
     st = {}
     wspt = {}
     wst = {}
+    bst = {}
+    bbsrt = {}
     bbst = {}
 
     for network_size in range(100, 500, 100):
@@ -239,12 +259,14 @@ def lab_3(datas, lock):
         st[network_size] = [0 for _ in range(len(PERFORMANCE))]
         wspt[network_size] = [0 for _ in range(len(PERFORMANCE))]
         wst[network_size] = [0 for _ in range(len(PERFORMANCE))]
+        bst[network_size] = [0 for _ in range(len(PERFORMANCE))]
+        bbsrt[network_size] = [0 for _ in range(len(PERFORMANCE))]
         bbst[network_size] = [0 for _ in range(len(PERFORMANCE))]
 
     for network_size in trange(100, 500, 100, desc='Lab 3'):
         G = generate_topology(network_size)
         flows = generate_flow_requests(G, network_size // 10,
-                                       network_size // 10, 100, 500)
+                                       network_size // 10, 100, 1000)
 
         performance = network_performance(*generate_shortest_path_trees(G,
                                                                         flows))
@@ -266,6 +288,18 @@ def lab_3(datas, lock):
                              range(len(PERFORMANCE))]
 
         performance = network_performance(
+            *generate_branch_aware_steiner_trees(G, flows, 5))
+        bst[network_size] = [bst[network_size][i] + performance[i] for i in
+                             range(len(PERFORMANCE))]
+
+        performance = network_performance(
+            *generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
+                                                                             5, 0.5, 0.5,
+                                                                             1, 5))
+        bbsrt[network_size] = [bbsrt[network_size][i] + performance[i] for i in
+                               range(len(PERFORMANCE))]
+
+        performance = network_performance(
             *generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
                                                                      0.5, 0.5,
                                                                      1, 5))
@@ -273,8 +307,10 @@ def lab_3(datas, lock):
                               in range(len(PERFORMANCE))]
 
     lock.acquire()
-    datas.append(
-        {'SPT': spt, 'ST': st, 'WSPT': wspt, 'WST': wst, 'BBST': bbst})
+    datas.append({'SPT': spt, 'ST': st,
+                  'WSPT': wspt, 'WST': wst,
+                  'BST': bst, 'BBSRT': bbsrt,
+                  'BBST': bbst})
     lock.release()
 
 

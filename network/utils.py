@@ -326,14 +326,10 @@ def draw_result(result, x_label, y_label, type='line'):
                     'WSPT': 's', 'WST': '*',
                     'BST': 'p', 'BBSRT': 'x',
                     'BBST': 'D'}
-    # POINT_COLOR = {'SPT': 'r', 'ST': 'm',
-    #                'WSPT': 'y', 'WST': 'g',
-    #                'BBSRT': 'c', 'BBST': 'b'}
-    POINT_COLOR = {'SPT': '#cf4d5a', 'ST': '#69d5b2',
-                   'WSPT': '#b15380', 'WST': '#c7cada',
-                   'BST': '#393231', 'BBSRT': '#e8ab44',
-                   'BBST': '#201db9'}
-
+    POINT_COLOR = {'SPT': '#c3637f', 'ST': '#eb8773',
+                   'WSPT': '#f4b861', 'WST': '#d9ea70',
+                   'BST': '#81d2b4', 'BBSRT': '#5bc0d5',
+                   'BBST': '#70acf6'}
     # The figure size
     plt.figure(figsize=(9, 6))
     # Check the figure type

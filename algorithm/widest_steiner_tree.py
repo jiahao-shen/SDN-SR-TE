@@ -118,10 +118,7 @@ def widest_shortest_path_to_tree(G, target, tree, all_pair_paths):
         # Get the widest shortest path from v to target
         p = all_pair_paths[v][target]
         # Update path
-        if path is None or (path is not None and len(p) < len(path)) or \
-                (path is not None and len(p) == len(path) and
-                 compute_path_minimum_bandwidth(G, p) >
-                 compute_path_minimum_bandwidth(G, path)):
+        if path is None or (path is not None and len(p) < len(path)):
             path = p
 
     return path
