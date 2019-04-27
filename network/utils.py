@@ -25,8 +25,7 @@ __all__ = [
     'compute_path_cost',
     'is_branch_node',
     'is_path_valid',
-    'update_edge_bandwidth',
-    'update_node_entries',
+    'update_topo_info',
     'output_flows',
     'draw_topology',
     'draw_result',
@@ -181,13 +180,11 @@ def is_path_valid(G, tree, path, flow_size):
     return True
 
 
-def update_node_entries(G, tree):
-    """Update the residual node entries
-    With Segment Routing in SDN, we exploit the branch forwarding technique. We
-    only need store the entries in ingress and branch nodes instead of all
-    nodes in multicast tree.
+def update_topo_info(G, tree, flow_size):
+    """Update the information of nodes and links in topology
     :param G: The origin graph
-    :param tree: The current multicast tree
+    :param tree: The constructed multicast tree
+    :param flow_size: The size of current flow
     :return:
     """
     # Traverse all nodes in multicast tree
@@ -201,14 +198,6 @@ def update_node_entries(G, tree):
             # Residual flow entries minus degree - 1
             G.nodes[v]['residual_flow_entries'] -= (tree.degree(v) - 1)
 
-
-def update_edge_bandwidth(G, tree, flow_size):
-    """Update the residual bandwidth of edges in the tree
-    :param G: The origin graph
-    :param tree: The multicast tree
-    :param flow_size: The size of current flow
-    :return:
-    """
     # The residual bandwidth of all edges in multicast tree minus flow size
     for e in tree.edges:
         G[e[0]][e[1]]['residual_bandwidth'] -= flow_size
@@ -221,7 +210,9 @@ def output_flows(flows):
     """
     for f in flows:
         for dst in f['dst']:
-            print(f['src'], '->', dst, ':', f['dst'][dst], ',', 'size =', f['size'])
+            print(f['src'], '->', dst,
+                  ':', f['dst'][dst], ',',
+                  'size =', f['size'])
         print('--------------------------')
 
 
@@ -233,7 +224,8 @@ def compute_path_minimum_bandwidth(G, path):
     """
     minimum_bandwidth = math.inf
     for v, u in pairwise(path):
-        minimum_bandwidth = min(minimum_bandwidth, G[v][u]['residual_bandwidth'])
+        minimum_bandwidth = min(minimum_bandwidth,
+                                G[v][u]['residual_bandwidth'])
 
     return minimum_bandwidth
 
@@ -245,14 +237,15 @@ def compute_path_cost(G, path, weight=None):
     :param weight: The edge value
     :return: cost
     """
+    # Initialize cost
     cost = 0
-    # Traverse nodes during the path
-    for v, u in pairwise(path):
-        # If weight==None, cost plus 1
-        if weight is None:
-            cost += 1
-        # Else cost plus the edge weight
-        else:
+    # If weight is None
+    if weight is None:
+        cost = len(path) - 1
+    else:
+        # Traverse nodes during the path
+        for v, u in pairwise(path):
+            # Sum all weight of edges during the path
             cost += G[v][u][weight]
 
     return cost
@@ -267,7 +260,8 @@ def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
     :param weight: The weight value in shortest path algorithm, default None
     :return: The list of k shortest paths
     """
-    return list(islice(nx.shortest_simple_paths(G, source, destination, weight), k))
+    return list(
+        islice(nx.shortest_simple_paths(G, source, destination, weight), k))
 
 
 def has_cycle(tree, path):
@@ -283,7 +277,7 @@ def has_cycle(tree, path):
     # Return whether has cycle
     return len(nx.cycle_basis(tmp_graph, path[0])) != 0
 
-    
+
 def draw_topology(G, position,
                   node_attribute=None, edge_attribute=None,
                   title="Test"):

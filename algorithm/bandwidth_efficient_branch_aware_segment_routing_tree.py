@@ -73,10 +73,8 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                 f['dst'][dst] = path
                 # Add path into allocated_T
                 allocated_T.add_path(path)
-        # Update the residual entries of nodes in the allocated_T
-        update_node_entries(graph, allocated_T)
-        # Update the residual bandwidth of edges in the allocated_T
-        update_edge_bandwidth(graph, allocated_T, f['size'])
+        # Update the information of graph
+        update_topo_info(graph, allocated_T, f['size'])
 
     return graph, allocated_flows, \
            bandwidth_efficient_branch_aware_segment_routing_trees

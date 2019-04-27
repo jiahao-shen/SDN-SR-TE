@@ -14,7 +14,8 @@ import networkx as nx
 warnings.filterwarnings('ignore')
 
 
-def generate_topology(size=100, a=0.2, b=0.2,
+def generate_topology(size=100,
+                      a=0.2, b=0.2,
                       link_capacity=1000, flow_limit=1000):
     """Generate a randomly topology using Waxman Method
     B. M. Waxman, "Routing of multipoint connections,"

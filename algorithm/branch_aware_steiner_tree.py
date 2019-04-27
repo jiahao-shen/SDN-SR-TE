@@ -13,7 +13,6 @@ from copy import deepcopy
 
 __all__ = [
     'generate_branch_aware_steiner_trees',
-    'compute_objective_value',
 ]
 
 
@@ -53,10 +52,8 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
                 f['dst'][dst] = path
                 # Add path into allocated_T
                 allocated_T.add_path(path)
-        # Update the residual flow entries of nodes in the allocated_T
-        update_node_entries(graph, allocated_T)
-        # Update the residual bandwidth of edges in the allocated_T
-        update_edge_bandwidth(graph, allocated_T, f['size'])
+        # Update the information of graph
+        update_topo_info(G, allocated_T, f['size'])
 
     return graph, allocated_flows, branch_aware_steiner_trees
 
