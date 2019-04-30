@@ -8,8 +8,6 @@
 """
 from network import *
 from algorithm import *
-from itertools import chain
-from networkx.utils import pairwise
 from copy import deepcopy
 
 __all__ = [
