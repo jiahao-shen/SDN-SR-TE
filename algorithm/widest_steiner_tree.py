@@ -60,7 +60,7 @@ def generate_widest_steiner_trees(G, flows):
 def generate_widest_steiner_tree(G, source, destinations):
     """According to the source and destinations, generate Widest Steiner Tree
     :param G: The origin graph
-    :param source: The source of flow request 
+    :param source: The source of flow request
     :param destinations: The destinations of flow request
     :return: Widest Steiner Tree
     """

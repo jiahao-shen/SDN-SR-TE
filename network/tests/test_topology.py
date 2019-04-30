@@ -18,4 +18,3 @@ def test_1():
         flows = generate_flow_requests(G)
 
         output_flows(flows)
-

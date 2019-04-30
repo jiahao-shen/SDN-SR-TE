@@ -142,7 +142,7 @@ def test_6():
 
         for p1, p2 in pairwise(paths):
             assert compute_path_cost(G, p1, 'weight') <= \
-                   compute_path_cost(G, p2, 'weight')
+                compute_path_cost(G, p2, 'weight')
 
 
 def test_7():

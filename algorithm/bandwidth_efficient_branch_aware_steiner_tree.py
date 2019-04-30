@@ -6,14 +6,6 @@
 @time: 2019-04-20 13:54:55
 @blog: https://jiahaoplus.com
 """
-""""
-@project: RoutingAlgorithm
-@author: sam
-@file bandwidth_efficient_branch_aware_segment_routing_tree.py
-@ide: PyCharm
-@time: 2019-02-14 20:42:59
-@blog: https://jiahaoplus.com
-"""
 from network import *
 from copy import deepcopy
 
@@ -80,7 +72,7 @@ def generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
         update_topo_info(G, allocated_T, f['size'])
 
     return graph, allocated_flows, \
-           band_efficient_branch_aware_steiner_trees
+        band_efficient_branch_aware_steiner_trees
 
 
 def generate_bandwidth_efficient_branch_aware_steiner_tree(G, source,
@@ -183,7 +175,7 @@ def generate_weighted_graph(G,
             'residual_bandwidth'] - 1
         # Compute the weight according to the equation 3
         e[2]['weight'] = alpha * congestion_index + (
-                1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
+            1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
     # Traverse the nodes
     for v in G.nodes(data=True):
         # Compute the congestion for nodes
@@ -191,7 +183,7 @@ def generate_weighted_graph(G,
             'residual_flow_entries'] - 1
         # Compute the weight according to the equation 4
         v[1]['weight'] = beta * congestion_index + (
-                1 - beta) * nodes_betweenness_centrality[v[0]]
+            1 - beta) * nodes_betweenness_centrality[v[0]]
 
     return G
 

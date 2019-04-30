@@ -130,4 +130,3 @@ def generate_widest_shortest_path(G, source,
                                                G[v][u][widest_attribute])
 
     return paths
-

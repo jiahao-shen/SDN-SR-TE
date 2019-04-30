@@ -19,8 +19,8 @@ def test_1():
         flows = generate_flow_requests(G, 5, 20)
         output_flows(flows)
         graph, allocated_flows, trees = \
-            generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows)
+            generate_bandwidth_efficient_branch_aware_segment_routing_trees(
+                G, flows)
 
         for T in trees:
             assert len(nx.cycle_basis(T)) == 0
-

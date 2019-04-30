@@ -58,7 +58,8 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
     return graph, allocated_flows, branch_aware_steiner_trees
 
 
-def generate_branch_aware_steiner_tree(source, destinations, all_pair_paths, w):
+def generate_branch_aware_steiner_tree(source, destinations,
+                                       all_pair_paths, w):
     """Generate Branch-aware Steiner Tree(BST)
     Huang, L. H., Hung, H. J., Lin, C. C., & Yang, D. N. (2014).
     Scalable and bandwidth-efficient multicast for software-defined networks.

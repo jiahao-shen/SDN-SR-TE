@@ -64,4 +64,3 @@ def test_2():
 
         for T in trees:
             assert len(nx.cycle_basis(T)) == 0
-
