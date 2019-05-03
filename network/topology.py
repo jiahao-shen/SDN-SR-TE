@@ -10,8 +10,16 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import warnings
 import random
 import networkx as nx
+import os
 
 warnings.filterwarnings('ignore')
+
+__all__ = [
+    'generate_topology',
+    'generate_flow_requests',
+    'load_topology_zoo',
+    'graphviz_layout'
+]
 
 
 def generate_topology(size=100,
@@ -27,7 +35,7 @@ def generate_topology(size=100,
     :param link_capacity: The link capacity in topology, here we consider all
                           of them are same, equal to 1GB(1000MB)
     :param flow_limit: The maximum number of flow entries, default 1000
-    :return: G, pos
+    :return: G
     """
     # Randomly generate waxman graph
     G = nx.waxman_graph(size, a, b)
@@ -103,3 +111,33 @@ def generate_flow_requests(G,
         flows.append(f)
 
     return flows
+
+
+def load_topology_zoo(file=None, link_capacity=1000, flow_limit=1000):
+    """Load graphml from topology zoo
+    :param file: The path of file, default None
+    :param link_capacity: The link capacity in topology, here we consider all
+                          of them are same, equal to 1GB(1000MB)
+    :param flow_limit: The maximum number of flow entries, default 1000
+    :return: G
+    """
+    # Load the default graphml
+    if file is None:
+        file = os.path.dirname(os.path.dirname(__file__)) + \
+               '/topologyzoo/example.graphml'
+
+    G = nx.Graph(nx.read_graphml(file))
+
+    # Add edge attributes
+    # Add link capacity for all edges
+    nx.set_edge_attributes(G, link_capacity, 'link_capacity')
+    # Add residual bandwidth for all edges
+    nx.set_edge_attributes(G, link_capacity, 'residual_bandwidth')
+
+    # Add node attributes
+    # Add flow limit for all nodes
+    nx.set_node_attributes(G, flow_limit, 'flow_limit')
+    # Add residual flow entries for all nodes
+    nx.set_node_attributes(G, flow_limit, 'residual_flow_entries')
+
+    return G

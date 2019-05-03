@@ -18,3 +18,12 @@ def test_1():
         flows = generate_flow_requests(G)
 
         output_flows(flows)
+
+
+def test_2():
+    """Test the function load_topology_zoo
+    :return:
+    """
+    G = load_topology_zoo()
+    pos = graphviz_layout(G)
+    draw_topology(G, pos)
