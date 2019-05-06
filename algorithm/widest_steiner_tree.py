@@ -50,7 +50,7 @@ def generate_widest_steiner_trees(G, flows):
                 # Add path into allocated_T
                 allocated_T.add_path(path)
         # Update the information of graph
-        update_topo_info(G, allocated_T, f['size'])
+        update_topo_info(graph, allocated_T, f['size'])
 
     return graph, allocated_flows, widest_steiner_trees
 

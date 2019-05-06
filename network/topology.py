@@ -6,7 +6,6 @@
 @time: 2019-01-30 15:27:54
 @blog: https://jiahaoplus.com
 """
-from networkx.drawing.nx_agraph import graphviz_layout
 import warnings
 import random
 import networkx as nx
@@ -18,12 +17,10 @@ __all__ = [
     'generate_topology',
     'generate_flow_requests',
     'load_topology_zoo',
-    'graphviz_layout'
 ]
 
 
-def generate_topology(size=100,
-                      a=0.2, b=0.2,
+def generate_topology(size=100, a=0.2, b=0.2,
                       link_capacity=1000, flow_limit=1000):
     """Generate a randomly topology using Waxman Method
     B. M. Waxman, "Routing of multipoint connections,"
@@ -50,6 +47,9 @@ def generate_topology(size=100,
         # If tries over 500 times, raise error
         if cnt >= 500:
             raise RuntimeError('Please choose appropriate alpha and beta')
+
+    # Transfer to directed graph
+    G = G.to_directed()
 
     # Add edge attributes
     # Add link capacity for all edges
@@ -126,7 +126,7 @@ def load_topology_zoo(file=None, link_capacity=1000, flow_limit=1000):
         file = os.path.dirname(os.path.dirname(__file__)) + \
                '/topologyzoo/example.graphml'
 
-    G = nx.Graph(nx.read_graphml(file))
+    G = nx.DiGraph(nx.read_graphml(file))
 
     # Add edge attributes
     # Add link capacity for all edges

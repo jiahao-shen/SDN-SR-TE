@@ -96,8 +96,6 @@ def lab_1(datas, lock):
     Compute the performance of network
     :return:
     """
-    NETWORK_SIZE = 100
-
     spt = {}
     st = {}
     wspt = {}
@@ -115,7 +113,7 @@ def lab_1(datas, lock):
         bbsrt[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
         bbst[multi_group_size] = [0 for _ in range(len(PERFORMANCE))]
 
-    G = generate_topology(NETWORK_SIZE)
+    G = generate_topology()
 
     for multi_group_size in trange(10, 60, 10, desc='Lab 1'):
         flows = generate_flow_requests(G, 20, multi_group_size, 10, 300)
@@ -141,7 +139,7 @@ def lab_1(datas, lock):
 
         performance = network_performance(
             *generate_branch_aware_steiner_trees(G, flows, 5))
-        bst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
+        bst[multi_group_size] = [bst[multi_group_size][i] + performance[i]
                                  for i in range(len(PERFORMANCE))]
 
         performance = network_performance(

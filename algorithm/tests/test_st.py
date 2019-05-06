@@ -16,8 +16,8 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology(100)
-        flows = generate_flow_requests(G, 2, 10)
+        G = generate_topology()
+        flows = generate_flow_requests(G, 10, 40)
 
         graph, allocated_flows, trees = generate_steiner_trees(G, flows)
 

@@ -16,8 +16,8 @@ def test_1():
     """
     for _ in range(100):
         G = generate_topology()
-        flows = generate_flow_requests(G, 5, 20)
-        output_flows(flows)
+        flows = generate_flow_requests(G, 10, 40)
+
         graph, allocated_flows, trees = \
             generate_bandwidth_efficient_branch_aware_segment_routing_trees(
                 G, flows)

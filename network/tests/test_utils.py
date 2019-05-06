@@ -6,8 +6,7 @@
 @time: 2019-03-04 17:57:41
 @blog: https://jiahaoplus.com
 """
-from network.topology import *
-from network.utils import *
+from network import *
 from networkx.utils import pairwise
 from algorithm.shortest_path_tree import *
 import random
@@ -145,22 +144,8 @@ def test_6():
                 compute_path_cost(G, p2, 'weight')
 
 
-def test_7():
-    """Test function has_cycle
-    :return:
-    """
-    G = nx.Graph()
-    G.add_path([0, 1, 2, 3])
-
-    assert has_cycle(G, [0, 1, 4, 2]) is True
-    assert has_cycle(G, [0, 1, 4]) is False
-
-    G.add_path([2, 6])
-    assert has_cycle(G, [0, 1, 4, 6]) is True
-
-
 @count_time
-def test_8():
+def test_7():
     """Test decorator count_time
     :return:
     """
@@ -170,7 +155,7 @@ def test_8():
             cnt += i + j
 
 
-def test_9():
+def test_8():
     """Test function compute_acyclic_sub_path
     :return:
     """

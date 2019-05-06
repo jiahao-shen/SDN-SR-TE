@@ -31,7 +31,6 @@ __all__ = [
     'draw_result',
     'draw_degree_distribution',
     'generate_k_shortest_paths',
-    'has_cycle',
     'count_time',
     'compute_acyclic_sub_path'
 ]

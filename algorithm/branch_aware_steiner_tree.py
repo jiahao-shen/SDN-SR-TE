@@ -53,7 +53,7 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
                 # Add path into allocated_T
                 allocated_T.add_path(path)
         # Update the information of graph
-        update_topo_info(G, allocated_T, f['size'])
+        update_topo_info(graph, allocated_T, f['size'])
 
     return graph, allocated_flows, branch_aware_steiner_trees
 

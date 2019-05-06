@@ -7,7 +7,7 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from algorithm import *
+from algorithm.widest_steiner_tree import *
 
 
 @count_time

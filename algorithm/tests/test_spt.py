@@ -16,11 +16,10 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology(100)
-        flows = generate_flow_requests(G, 10, 10)
+        G = generate_topology()
+        flows = generate_flow_requests(G, 10, 40)
 
-        graph, allocated_flows, trees = \
-            generate_shortest_path_trees(G, flows)
+        graph, allocated_flows, trees = generate_shortest_path_trees(G, flows)
 
         for T in trees:
             assert len(nx.cycle_basis(T)) == 0

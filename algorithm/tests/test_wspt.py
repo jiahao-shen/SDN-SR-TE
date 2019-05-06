@@ -10,6 +10,7 @@ from network import *
 from algorithm.shortest_path_tree import *
 from algorithm.widest_shortest_path_tree import *
 import multiprocessing as mp
+import random
 
 
 @count_time
