@@ -50,7 +50,7 @@ def generate_shortest_path_trees(G, flows):
                 # Record the path
                 f['dst'][dst] = path
                 # Add path into allocated_T
-                allocated_T.add_path(path)
+                nx.add_path(allocated_T, path)
         # Update the information of graph
         update_topo_info(graph, allocated_T, f['size'])
 
@@ -75,6 +75,6 @@ def generate_shortest_path_tree(source, destinations, all_pair_paths):
         # Get the shortest path from source to dst
         path = all_pair_paths[source][dst]
         # Add path into T
-        T.add_path(path)
+        nx.add_path(T, path)
 
     return T

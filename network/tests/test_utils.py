@@ -46,29 +46,29 @@ def test_3():
     :return:
     """
     T = nx.Graph()
-    T.add_path([0, 1, 2, 3])
+    nx.add_path(T, [0, 1, 2, 3])
 
     multicast_trees = list([T])
     assert compute_num_branch_nodes(multicast_trees) == 0
 
-    T.add_path([0, 1, 4])
+    nx.add_path(T, [0, 1, 4])
     multicast_trees = list([T])
     assert compute_num_branch_nodes(multicast_trees) == 1
 
-    T.add_path([0, 1, 5])
+    nx.add_path(T, [0, 1, 5])
     multicast_trees = list([T])
     assert compute_num_branch_nodes(multicast_trees) == 1
 
-    T.add_path([0, 1, 2, 6])
+    nx.add_path(T, [0, 1, 2, 6])
     multicast_trees = list([T])
     assert compute_num_branch_nodes(multicast_trees) == 2
 
-    T.add_path([0, 1, 2, 6, 7])
+    nx.add_path(T, [0, 1, 2, 6, 7])
     multicast_trees = list([T])
     assert compute_num_branch_nodes(multicast_trees) == 2
 
-    T.add_path([0, 1, 4, 8])
-    T.add_path([0, 1, 4, 9])
+    nx.add_path(T, [0, 1, 4, 8])
+    nx.add_path(T, [0, 1, 4, 9])
     multicast_trees = list([T])
     assert compute_num_branch_nodes(multicast_trees) == 3
 
@@ -160,8 +160,8 @@ def test_8():
     :return:
     """
     T = nx.Graph()
-    T.add_path([0, 1, 2, 3])
-    T.add_path([0, 1, 2, 4])
+    nx.add_path(T, [0, 1, 2, 3])
+    nx.add_path(T, [0, 1, 2, 4])
 
     path = [0, 5, 2, 6]
     assert compute_acyclic_sub_path(T, path) == [2, 6]

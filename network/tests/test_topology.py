@@ -14,7 +14,7 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology(100)
+        G = generate_topology()
         flows = generate_flow_requests(G)
 
         output_flows(flows)

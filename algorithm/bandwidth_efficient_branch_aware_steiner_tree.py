@@ -67,7 +67,7 @@ def generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
                 # Record the path
                 f['dst'][dst] = path
                 # Add path into allocated_T
-                allocated_T.add_path(path)
+                nx.add_path(allocated_T, path)
         # Update the information of graph
         update_topo_info(graph, allocated_T, f['size'])
 
@@ -113,15 +113,15 @@ def generate_bandwidth_efficient_branch_aware_steiner_tree(G, source,
         path = None
         # Traverse all terminals
         for v in terminals:
-            # Get the weighted shortest path from v to constructed tree
-            p = weighted_shortest_path_to_tree(G, v, T, all_pair_paths, w1, w2)
+            # Get the weighted shortest path from constructed tree to v
+            p = weighted_shortest_path_from_tree(G, v, T, all_pair_paths, w1, w2)
             # Update path
             if path is None or \
                     (path is not None and compute_extra_cost(G, T, p, w1, w2) <
                      compute_extra_cost(G, T, path, w1, w2)):
                 path = p
         # Add path into T
-        T.add_path(path)
+        nx.add_path(T, path)
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
@@ -188,8 +188,8 @@ def generate_weighted_graph(G,
     return G
 
 
-def weighted_shortest_path_to_tree(G, target, tree, all_pair_paths, w1, w2):
-    """Compute the weighted shortest path from target to constructed tree
+def weighted_shortest_path_from_tree(G, target, tree, all_pair_paths, w1, w2):
+    """Compute the weighted shortest path from constructed tree to target
     :param G: The origin graph
     :param target: The target node needs to be added into the tree
     :param tree: The constructed tree

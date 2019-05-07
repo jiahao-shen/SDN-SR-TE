@@ -72,7 +72,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_trees(G, flows,
                 # Record the path
                 f['dst'][dst] = path
                 # Add path into allocated_T
-                allocated_T.add_path(path)
+                nx.add_path(allocated_T, path)
         # Update the information of graph
         update_topo_info(graph, allocated_T, f['size'])
 
@@ -145,7 +145,7 @@ def generate_bandwidth_efficient_branch_aware_segment_routing_tree(G, source, de
                     minimum_cost = extra_cost
                     path = sub_path
         # Add path into T
-        T.add_path(path)
+        nx.add_path(T, path)
 
     return T
 

@@ -11,7 +11,7 @@ from copy import deepcopy
 
 __all__ = [
     'generate_steiner_trees',
-    'shortest_path_to_tree'
+    'shortest_path_from_tree'
 ]
 
 
@@ -50,7 +50,7 @@ def generate_steiner_trees(G, flows):
                 # Record the path
                 f['dst'][dst] = path
                 # Add path into allocated_T
-                allocated_T.add_path(path)
+                nx.add_path(allocated_T, path)
         # Update the information of graph
         update_topo_info(graph, allocated_T, f['size'])
 
@@ -76,13 +76,13 @@ def generate_steiner_tree(source, destinations, all_pair_paths):
         path = None
         # Traverse all terminals
         for v in terminals:
-            # Get the shortest path from v to constructed tree
-            p = shortest_path_to_tree(v, T, all_pair_paths)
+            # Get the shortest path from constructed tree to v
+            p = shortest_path_from_tree(v, T, all_pair_paths)
             # Update path
             if path is None or (path is not None and len(p) < len(path)):
                 path = p
         # Add path into T
-        T.add_path(path)
+        nx.add_path(T, path)
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
@@ -96,8 +96,8 @@ def generate_steiner_tree(source, destinations, all_pair_paths):
     return T
 
 
-def shortest_path_to_tree(target, tree, all_pair_paths):
-    """Compute the shortest path from target to constructed tree
+def shortest_path_from_tree(target, tree, all_pair_paths):
+    """Compute the shortest path from constructed tree to target
     :param target: The target node needs to be added into the tree
     :param tree: The constructed tree
     :param all_pair_paths: Shortest paths between any two nodes

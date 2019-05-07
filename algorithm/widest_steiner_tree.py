@@ -48,7 +48,7 @@ def generate_widest_steiner_trees(G, flows):
                 # Record the path
                 f['dst'][dst] = path
                 # Add path into allocated_T
-                allocated_T.add_path(path)
+                nx.add_path(allocated_T, path)
         # Update the information of graph
         update_topo_info(graph, allocated_T, f['size'])
 
@@ -76,8 +76,8 @@ def generate_widest_steiner_tree(G, source, destinations):
         path = None
         # Traverse all terminals
         for v in terminals:
-            # Get the widest shortest path from v to constructed tree
-            p = widest_shortest_path_to_tree(G, v, T, all_pair_paths)
+            # Get the widest shortest path from constructed tree to v
+            p = widest_shortest_path_from_tree(v, T, all_pair_paths)
             # Update path
             if path is None or (path is not None and len(p) < len(path)) or \
                     (path is not None and len(p) == len(path) and
@@ -85,7 +85,7 @@ def generate_widest_steiner_tree(G, source, destinations):
                      compute_path_minimum_bandwidth(G, path)):
                 path = p
         # Add path into T
-        T.add_path(path)
+        nx.add_path(T, path)
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
@@ -99,9 +99,8 @@ def generate_widest_steiner_tree(G, source, destinations):
     return T
 
 
-def widest_shortest_path_to_tree(G, target, tree, all_pair_paths):
-    """Compute the widest shortest path from target to constructed tree
-    :param G: The origin graph
+def widest_shortest_path_from_tree(target, tree, all_pair_paths):
+    """Compute the widest shortest path from constructed tree to target
     :param target: The target node needs to be added into the tree
     :param tree: The constructed tree
     :param all_pair_paths: All pair widest shortest paths in graph

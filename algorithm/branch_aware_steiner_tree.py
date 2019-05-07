@@ -7,12 +7,13 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from algorithm.steiner_tree import shortest_path_to_tree
+from algorithm.steiner_tree import shortest_path_from_tree
 from collections import OrderedDict
 from copy import deepcopy
 
 __all__ = [
     'generate_branch_aware_steiner_trees',
+    'compute_objective_value'
 ]
 
 
@@ -51,7 +52,7 @@ def generate_branch_aware_steiner_trees(G, flows, w=1):
                 # Record the path
                 f['dst'][dst] = path
                 # Add path into allocated_T
-                allocated_T.add_path(path)
+                nx.add_path(allocated_T, path)
         # Update the information of graph
         update_topo_info(graph, allocated_T, f['size'])
 
@@ -98,8 +99,8 @@ def edge_optimization_phase(source, destinations, all_pair_paths):
         path = None
         # Traverse all terminals
         for v in terminals:
-            # Get the shortest path fro v to constructed tree
-            p = shortest_path_to_tree(v, T, all_pair_paths)
+            # Get the shortest path from constructed tree to v
+            p = shortest_path_from_tree(v, T, all_pair_paths)
             # Update path
             if path is None or \
                     (path is not None and len(p) < len(path)) or \
@@ -107,7 +108,7 @@ def edge_optimization_phase(source, destinations, all_pair_paths):
                      is_branch_node(T, p[0])):
                 path = p
         # Add path into T
-        T.add_path(path)
+        nx.add_path(T, path)
         # Remove the terminal node in current path
         terminals.remove(path[-1])
 
@@ -164,17 +165,14 @@ def branch_optimization_phase(source, destinations, tree, all_pair_paths, w):
                 # Update the shortest path from v
                 if path is None or (path is not None and len(p) < len(path)):
                     path = p
-            # If the path is None, then break
-            if path is None:
-                break
-            else:
-                # Else add path into tmp_tree
-                tmp_tree.add_path(path)
+            # Add the path
+            if path is not None:
+                nx.add_path(tmp_tree, path)
 
         # If tmp_tree is connected and the value of tmp_tree is less than the
         # old tree, then update the tree
         if nx.is_connected(tmp_tree) and \
-                nx.cycle_basis(tmp_tree) == 0 and \
+                len(nx.cycle_basis(tmp_tree)) == 0 and \
                 compute_objective_value(tmp_tree, w) < \
                 compute_objective_value(tree, w):
             tree = deepcopy(tmp_tree)
@@ -191,18 +189,18 @@ def branch_optimization_phase(source, destinations, tree, all_pair_paths, w):
             continue
         # Store all neighbor nodes of v_a
         neighbors = list(tree.neighbors(v_a))
-        # Copy tree as tmp_tree
-        tmp_tree = deepcopy(tree)
-        # Remove v_a from tmp_tree
-        tmp_tree.remove_node(v_a)
         # Try to move v_a to u
         for u in neighbors:
+            # Copy tree as tmp_tree
+            tmp_tree = deepcopy(tree)
+            # Remove v_a from tmp_tree
+            tmp_tree.remove_node(v_a)
             # Traverse all neighbor nodes for v_a
             for v in neighbors:
                 # Get the shortest path from v to u
                 path = all_pair_paths[v][u]
                 # Move path(v, v_a) to path(v, u)
-                tmp_tree.add_path(path)
+                nx.add_path(tmp_tree, path)
             # If tmp_tree is connected and the value of tmp_tree is less than
             # the old tree, then update the tree
             if nx.is_connected(tmp_tree) and \

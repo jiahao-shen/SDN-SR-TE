@@ -156,7 +156,7 @@ def is_path_valid(G, tree, path, flow_size):
     # Copy multicast tree as temp tree
     tmp_tree = deepcopy(tree)
     # Add path into temp tree
-    tmp_tree.add_path(path)
+    nx.add_path(tmp_tree, path)
     # Traverse nodes during the path except destination node
     for v, u in pairwise(path):
         # If the residual bandwidth less than flow_size
@@ -261,20 +261,6 @@ def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
     """
     return list(
         islice(nx.shortest_simple_paths(G, source, destination, weight), k))
-
-
-def has_cycle(tree, path):
-    """Check whether exists cycle if path is added into the multicast tree
-    :param tree: The multicast tree
-    :param path: The current path
-    :return: Boolean
-    """
-    # Copy tree as temp graph
-    tmp_graph = deepcopy(tree)
-    # Add path into the temp graph
-    tmp_graph.add_path(path)
-    # Return whether has cycle
-    return len(nx.cycle_basis(tmp_graph, path[0])) != 0
 
 
 def draw_topology(G, position,
