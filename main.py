@@ -16,9 +16,9 @@ PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate(%)',
 
 
 def main():
-    # run_task(lab_1, 'Multicast Group Size')
+    run_task(lab_1, 'Multicast Group Size')
     run_task(lab_2, 'Number of Requests')
-    # run_task(lab_3, 'Network Size')
+    run_task(lab_3, 'Network Size')
 
 
 def run_task(fnc, independent_variable, times=6):
@@ -138,7 +138,7 @@ def lab_1(datas, lock):
         wst[multi_group_size] = [wst[multi_group_size][i] + performance[i] for
                                  i in range(len(PERFORMANCE))]
 
-        res5 = BranchawareSteinerTree(G, flows)
+        res5 = BranchawareSteinerTree(G, flows, w=5)
         performance = res5.network_performance()
         bst[multi_group_size] = [bst[multi_group_size][i] + performance[i]
                                  for i in range(len(PERFORMANCE))]
@@ -157,8 +157,6 @@ def lab_1(datas, lock):
         performance = res7.network_performance()
         bbst[multi_group_size] = [bbst[multi_group_size][i] + performance[i]
                                   for i in range(len(PERFORMANCE))]
-
-    print()
 
     lock.acquire()
     datas.append({'SPT': spt, 'ST': st,
@@ -265,7 +263,7 @@ def lab_3(datas, lock):
         bbst[network_size] = [0 for _ in range(len(PERFORMANCE))]
 
     for network_size in trange(100, 500, 100, desc='Lab 3'):
-        G = NetworkTopo(network_size)
+        G = NetworkTopo(size=network_size)
         flows = MulticastFlows(G, network_size // 10,
                                network_size // 10, 100, 1000)
 

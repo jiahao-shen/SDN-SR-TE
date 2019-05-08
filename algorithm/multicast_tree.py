@@ -37,7 +37,6 @@ class MulticastTree(object):
         """
         pass
 
-
     def deploy(self, **kwargs):
         """Deploy the multicast tree in topology graph
         :param kwargs:
@@ -67,7 +66,6 @@ class MulticastTree(object):
                     nx.add_path(allocated_T, path)
             # Update the information of graph
             update_topo_info(self.graph, allocated_T, f['size'])
-
 
     def network_performance(self):
         """Compute performance of the network
