@@ -7,93 +7,65 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from copy import deepcopy
+from algorithm.multicast_tree import *
 
 __all__ = [
-    'generate_steiner_trees',
+    'SteinerTree',
     'shortest_path_from_tree'
 ]
 
 
-def generate_steiner_trees(G, flows):
-    """
-    :param G: The origin graph
-    :param flows: The flow request
-    :return: graph, allocated_flows, allocated_graph
-    """
-    graph = deepcopy(G)
-    allocated_flows = deepcopy(flows)
+class SteinerTree(MulticastTree):
 
-    # Generate all pair shortest path
-    all_pair_paths = nx.shortest_path(graph)
-    # Initialize steiner_trees
-    steiner_trees = []
+    def __init__(self, G, flows, **kwargs):
+        """
+        :param G:
+        :param flows:
+        :param kwargs:
+        """
+        super().__init__(G, flows, **kwargs)
 
-    # Traverse all flows
-    for f in allocated_flows:
-        # Compute the origin_T
-        origin_T = generate_steiner_tree(f['src'], f['dst'], all_pair_paths)
-        # Add origin_T into steiner_trees
-        steiner_trees.append(origin_T)
+        self.all_pair_paths = nx.shortest_path(self.graph)
 
-        # Compute all paths in origin_T
-        all_paths = nx.shortest_path(origin_T, f['src'])
-        # Initialize allocated_T
-        allocated_T = nx.Graph()
-        allocated_T.root = f['src']
-        # Traverse all destination nodes
-        for dst in f['dst']:
-            # Get the path from src to dst
-            path = all_paths[dst]
-            # Check whether the path valid
-            if is_path_valid(graph, allocated_T, path, f['size']):
-                # Record the path
-                f['dst'][dst] = path
-                # Add path into allocated_T
-                nx.add_path(allocated_T, path)
-        # Update the information of graph
-        update_topo_info(graph, allocated_T, f['size'])
+        self.deploy(**kwargs)
 
-    return graph, allocated_flows, steiner_trees
+    def compute(self, source, destinations, **kwargs):
+        """
+        :param source: The source node of flow request
+        :param destinations: The destinations of flow request
+        :param kwargs:
+        :return: Steiner Tree
+        """
+        # Initialize T
+        T = nx.DiGraph()
+        T.add_node(source)
+        T.root = source
+        # Initialize terminals
+        terminals = set(destinations)
+        # While terminals isn't empty
+        while terminals:
+            # Initialize path
+            path = None
+            # Traverse all terminals
+            for v in terminals:
+                # Get the shortest path from constructed tree to v
+                p = shortest_path_from_tree(v, T, self.all_pair_paths)
+                # Update path
+                if path is None or (path is not None and len(p) < len(path)):
+                    path = p
+            # Add path into T
+            nx.add_path(T, path)
+            # Remove the terminal node in current path
+            terminals.remove(path[-1])
 
+            # Remove the terminals already in T
+            v_d = set()
+            for v in terminals:
+                if v in T.nodes:
+                    v_d.add(v)
+            terminals = terminals - v_d
 
-def generate_steiner_tree(source, destinations, all_pair_paths):
-    """Generate Steiner Tree(ST)
-    :param source: The source node of flow request
-    :param destinations: The destinations of flow request
-    :param all_pair_paths: Shortest paths between any two nodes
-    :return: Steiner Tree
-    """
-    # Initialize T
-    T = nx.Graph()
-    T.add_node(source)
-    T.root = source
-    # Initialize terminals
-    terminals = set(destinations)
-    # While terminals isn't empty
-    while terminals:
-        # Initialize path
-        path = None
-        # Traverse all terminals
-        for v in terminals:
-            # Get the shortest path from constructed tree to v
-            p = shortest_path_from_tree(v, T, all_pair_paths)
-            # Update path
-            if path is None or (path is not None and len(p) < len(path)):
-                path = p
-        # Add path into T
-        nx.add_path(T, path)
-        # Remove the terminal node in current path
-        terminals.remove(path[-1])
-
-        # Remove the terminals already in T
-        v_d = set()
-        for v in terminals:
-            if v in T.nodes:
-                v_d.add(v)
-        terminals = terminals - v_d
-
-    return T
+        return T
 
 
 def shortest_path_from_tree(target, tree, all_pair_paths):

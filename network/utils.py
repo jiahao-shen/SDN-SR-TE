@@ -16,20 +16,13 @@ import networkx as nx
 import math
 
 __all__ = [
-    'network_performance',
-    'compute_num_branch_nodes',
-    'compute_average_rejection_rate',
-    'compute_throughput',
-    'compute_link_utilization',
     'compute_path_minimum_bandwidth',
     'compute_path_cost',
     'is_branch_node',
     'is_path_valid',
     'update_topo_info',
-    'output_flows',
-    'draw_topology',
     'draw_result',
-    'draw_degree_distribution',
+    'draw_topology',
     'generate_k_shortest_paths',
     'count_time',
     'compute_acyclic_sub_path'
@@ -38,110 +31,13 @@ __all__ = [
 logging.basicConfig(level=logging.DEBUG, format='(%(levelname)s)%(message)s')
 
 
-def network_performance(G, allocated_flows, trees):
-    """Compute performance of the network
-    Including number of branch nodes, average rejection rate, average network
-    throughput and link utilization
-    :param G: The allocated graph
-    :param allocated_flows: The allocated flows
-    :param trees: The origin generated multicast trees
-    :return: num_branch_nodes, average_rejection_rate,
-             throughput,link_utilization
-    """
-    return [compute_num_branch_nodes(trees),
-            compute_average_rejection_rate(allocated_flows),
-            compute_throughput(allocated_flows),
-            compute_link_utilization(G)]
-
-
-def compute_num_branch_nodes(trees):
-    """Compute the number of branch nodes
-    :param trees: The list of multicast tree
-    :return: num_branch_nodes
-    """
-    num_branch_nodes = 0
-    # Traverse all multicast trees
-    for T in trees:
-        for v in T.nodes:
-            if is_branch_node(T, v):
-                num_branch_nodes += 1
-
-    # Compute average number of branch nodes
-    num_branch_nodes /= len(trees)
-
-    return num_branch_nodes
-
-
 def is_branch_node(tree, node):
-    """According to the tree, check whether is branch node
+    """Check whether is branch node
     :param tree: The current multicast tree
     :param node: The node needs to check
     :return: Boolean
     """
-    # The degree of branch node is bigger than 3
-    # The root isn't  branch node
-    return node != tree.root and tree.degree(node) >= 3
-
-
-def compute_average_rejection_rate(allocated_flows):
-    """Compute the number of average rejection rate
-    :param allocated_flows:
-    :return: average_rejection_rate(%)
-    """
-    num_total_flows = 0
-    num_unallocated_flows = 0
-    # Traverse all allocated flows
-    for f in allocated_flows:
-        for dst in f['dst']:
-            # Compute the number of total flows
-            num_total_flows += 1
-            # If current flow is allocated
-            if f['dst'][dst] is None:
-                num_unallocated_flows += 1
-
-    # Compute the average rejection rate
-    average_rejection_rate = num_unallocated_flows / num_total_flows
-    # Transform to percentage
-    average_rejection_rate *= 100
-
-    return average_rejection_rate
-
-
-def compute_throughput(allocated_flows):
-    """Compute the network throughput
-    :param allocated_flows:
-    :return: throughput(MB)
-    """
-    throughput = 0
-    # Traverse all allocated flows
-    for f in allocated_flows:
-        for dst in f['dst']:
-            # If current flow is allocated
-            if f['dst'][dst] is not None:
-                # Sum the flow size
-                throughput += f['size']
-
-    return throughput
-
-
-def compute_link_utilization(G):
-    """Compute the link utilization
-    :param G:
-    :return: link_utilization
-    """
-    total_bandwidth = 0
-    total_residual_bandwidth = 0
-    # Traverse all edges in G
-    for e in G.edges(data=True):
-        total_bandwidth += e[2]['link_capacity']
-        total_residual_bandwidth += e[2]['residual_bandwidth']
-
-    # Compute the link utilization
-    link_utilization = 1 - total_residual_bandwidth / total_bandwidth
-    # Transform to percentage
-    link_utilization *= 100
-
-    return link_utilization
+    return tree.out_degree(node) >= 2
 
 
 def is_path_valid(G, tree, path, flow_size):
@@ -159,21 +55,13 @@ def is_path_valid(G, tree, path, flow_size):
     nx.add_path(tmp_tree, path)
     # Traverse nodes during the path except destination node
     for v, u in pairwise(path):
-        # If the residual bandwidth less than flow_size
-        # Then drop this flow
+        # If the residual bandwidth less than flow_size, then drop this flow
         if G[v][u]['residual_bandwidth'] < flow_size:
             return False
-        # If current node is root in multicast tree and the residual
-        # flow entries in G is less than the degree in temp tree
-        # Then drop this flow
-        if v == tree.root and \
-                G.nodes[v]['residual_flow_entries'] < tmp_tree.degree(v):
-            return False
-        # If current node is branch node in multicast tree and the residual
-        # flow entries in G is less than the (degree - 1) in temp tree
-        # Then drop this flow
-        elif is_branch_node(tmp_tree, v) and \
-                G.nodes[v]['residual_flow_entries'] < tmp_tree.degree(v) - 1:
+        # If the residual flow entries less than the out degree of root or
+        # branch nodes, then drop this flow
+        if (v == tmp_tree.root or is_branch_node(tmp_tree, v)) and \
+                G.nodes[v]['residual_flow_entries'] < tmp_tree.out_degree(v):
             return False
 
     return True
@@ -188,31 +76,13 @@ def update_topo_info(G, tree, flow_size):
     """
     # Traverse all nodes in multicast tree
     for v in tree.nodes:
-        # If current node is root
-        if v == tree.root:
-            # Residual flow entries minus degree
-            G.nodes[v]['residual_flow_entries'] -= tree.degree(v)
-        # If current node is branch node
-        elif is_branch_node(tree, v):
-            # Residual flow entries minus degree - 1
-            G.nodes[v]['residual_flow_entries'] -= (tree.degree(v) - 1)
+        # The root and branch nodes maintenance the flow entries
+        if v == tree.root or is_branch_node(tree, v):
+            G.nodes[v]['residual_flow_entries'] -= tree.out_degree(v)
 
     # The residual bandwidth of all edges in multicast tree minus flow size
     for e in tree.edges:
         G[e[0]][e[1]]['residual_bandwidth'] -= flow_size
-
-
-def output_flows(flows):
-    """Output flows
-    :param flows:
-    :return:
-    """
-    for f in flows:
-        for dst in f['dst']:
-            print(f['src'], '->', dst,
-                  ':', f['dst'][dst], ',',
-                  'size =', f['size'])
-        print('--------------------------')
 
 
 def compute_path_minimum_bandwidth(G, path):
@@ -266,13 +136,11 @@ def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
 def draw_topology(G, position,
                   node_attribute=None, edge_attribute=None,
                   title="Test"):
-    """Draw topology and save as png
-    :param G: The graph
+    """Draw topology
+    :param G: The topology graph
     :param position: The position of graph
-    :param node_attribute: The node attribute correspond the node label,
-     default None
-    :param edge_attribute: The edge attribute correspond the edge label,
-    default None
+    :param node_attribute: The node label, default None
+    :param edge_attribute: The edge label, default None
     :param title: The title of graph, default 'Test'
     :return:
     """
@@ -285,7 +153,7 @@ def draw_topology(G, position,
     nx.draw_networkx_labels(G, position,
                             labels=nx.get_node_attributes(G, node_attribute))
     # Show the edge labels
-    nx.draw_networkx_edge_labels(G, position,
+    nx.draw_networkx_edge_labels(G, position, label_pos=0.2,
                                  edge_labels=nx.get_edge_attributes(
                                      G, edge_attribute))
     # Figure show
@@ -348,33 +216,12 @@ def draw_result(result, x_label, y_label, type='line'):
     plt.show()
 
 
-def draw_degree_distribution(G, title=''):
-    """Draw the distribution of degree
-    :param G: The origin graph
-    :param title: The title of figure
-    :return:
-    """
-    cnt = {}
-    for v in G.nodes:
-        if G.degree(v) in cnt.keys():
-            cnt[G.degree(v)] += 1
-        else:
-            cnt[G.degree(v)] = 1
-    cnt = dict(sorted(cnt.items(), key=lambda t: t[0]))
-
-    x = cnt.keys()
-    y = cnt.values()
-
-    plt.title(title)
-    plt.scatter(x, y)
-    plt.show()
-
-
 def count_time(func):
     """Count the run time of function
     :param func:
     :return:
     """
+
     def wrapper(*args, **kwargs):
         start_time = time()
         res = func(*args, **kwargs)

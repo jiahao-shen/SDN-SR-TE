@@ -8,6 +8,7 @@
 """
 from network import *
 from algorithm.steiner_tree import *
+from networkx.exception import NetworkXNoCycle
 
 
 @count_time
@@ -16,10 +17,23 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology()
-        flows = generate_flow_requests(G, 10, 40)
+        G = NetworkTopo()
+        flows = MulticastFlows(G, 10, 40)
 
-        graph, allocated_flows, trees = generate_steiner_trees(G, flows)
+        st = SteinerTree(G, flows)
 
-        for T in trees:
-            assert len(nx.cycle_basis(T)) == 0
+        for T in st.multicast_trees:
+            try:
+                nx.find_cycle(T, orientation='ignore')
+                exit(-1)
+            except NetworkXNoCycle:
+                pass
+
+
+def test_2():
+    G = NetworkTopo()
+    flows = MulticastFlows(G, 10, 40, 100, 500)
+
+    st = SteinerTree(G, flows)
+    st.draw()
+    print(st.network_performance())

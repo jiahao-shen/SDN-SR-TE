@@ -8,6 +8,7 @@
 """
 from network import *
 from algorithm.shortest_path_tree import *
+from networkx.exception import NetworkXNoCycle
 
 
 @count_time
@@ -16,10 +17,26 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology()
-        flows = generate_flow_requests(G, 10, 40)
+        G = NetworkTopo()
+        flows = MulticastFlows(G, 10, 40)
 
-        graph, allocated_flows, trees = generate_shortest_path_trees(G, flows)
+        spt = ShortestPathTree(G, flows)
 
-        for T in trees:
-            assert len(nx.cycle_basis(T)) == 0
+        for T in spt.multicast_trees:
+            try:
+                nx.find_cycle(T, orientation='ignore')
+                exit(-1)
+            except NetworkXNoCycle:
+                pass
+
+
+def test_2():
+    """Test high performance
+    :return:
+    """
+    G = NetworkTopo()
+    flows = MulticastFlows(G, 10, 40, 100, 500)
+
+    spt = ShortestPathTree(G, flows)
+    spt.draw()
+    print(spt.network_performance())

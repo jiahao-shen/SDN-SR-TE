@@ -7,83 +7,52 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from copy import deepcopy
+from algorithm.multicast_tree import *
 import math
 
 __all__ = [
-    'generate_widest_shortest_path_trees',
-    'generate_widest_shortest_path'
+    'WidestShortestPathTree',
+    'widest_shortest_path'
 ]
 
 
-def generate_widest_shortest_path_trees(G, flows):
-    """
-    :param G: The origin graph
-    :param flows: The flow request
-    :return: graph, allocated_flows, allocated_graph
-    """
-    graph = deepcopy(G)
-    allocated_flows = deepcopy(flows)
+class WidestShortestPathTree(MulticastTree):
 
-    # Initialize widest_shortest_path_trees
-    widest_shortest_path_trees = []
+    def __init__(self, G, flows, **kwargs):
+        """
+        :param G:
+        :param flows:
+        :param kwargs:
+        """
+        super().__init__(G, flows, **kwargs)
 
-    # Traverse all flows
-    for f in allocated_flows:
-        # Compute the origin_T
-        origin_T = generate_widest_shortest_path_tree(graph,
-                                                      f['src'], f['dst'])
-        # Add origin_T into widest_shortest_path_trees
-        widest_shortest_path_trees.append(origin_T)
+        self.deploy(**kwargs)
 
-        # Compute all paths in origin_T
-        all_paths = nx.shortest_path(origin_T, f['src'])
-        # Initialize allocated_T
-        allocated_T = nx.Graph()
-        allocated_T.root = f['src']
-        # Traverse all destination nodes
-        for dst in f['dst']:
-            # Get the path from src to dst
-            path = all_paths[dst]
-            # Check whether the path valid
-            if is_path_valid(graph, allocated_T, path, f['size']):
-                # Record the path
-                f['dst'][dst] = path
-                # Add path into allocated_T
-                nx.add_path(allocated_T, path)
-        # Update the information of graph
-        update_topo_info(graph, allocated_T, f['size'])
+    def compute(self, source, destinations, **kwargs):
+        """
+        :param source: The source of flow request
+        :param destinations: The destinations of flow request
+        :return: Widest Shortest Path Tree
+        """
+        # Initialize T
+        T = nx.DiGraph()
+        T.root = source
+        # Generate all pair widest shortest paths
+        all_pair_paths = widest_shortest_path(self.graph, source)
+        # Traverse all destinations
+        for dst in destinations:
+            # If dst is already in T
+            if dst in T.nodes:
+                continue
+            # Get the widest shortest path from source to dst
+            path = all_pair_paths[dst]
+            # Add path into T
+            nx.add_path(T, path)
 
-    return graph, allocated_flows, widest_shortest_path_trees
+        return T
 
 
-def generate_widest_shortest_path_tree(G, source, destinations):
-    """Generate Widest Shortest Path Tree(WSPT)
-    :param G: The origin graph
-    :param source: The source of flow request
-    :param destinations: The destinations of flow request
-    :return: Widest Shortest Path Tree
-    """
-    # Initialize T
-    T = nx.Graph()
-    T.root = source
-    # Generate all pair widest shortest paths
-    all_pair_paths = generate_widest_shortest_path(G, source)
-    # Traverse all destinations
-    for dst in destinations:
-        # If dst is already in T
-        if dst in T.nodes:
-            continue
-        # Get the widest shortest path from source to dst
-        path = all_pair_paths[dst]
-        # Add path into T
-        nx.add_path(T, path)
-
-    return T
-
-
-def generate_widest_shortest_path(G, source,
-                                  widest_attribute='residual_bandwidth'):
+def widest_shortest_path(G, source, widest_attribute='residual_bandwidth'):
     """Compute all widest shortest path from source to other nodes in G
     Using Extension Dijkstra Algorithm
     :param G: The origin graph

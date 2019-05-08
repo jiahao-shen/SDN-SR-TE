@@ -10,20 +10,36 @@ from network import *
 
 
 def test_1():
-    """Test function generate_topology, generate_flow_requests
+    """Test class NetworkTopo
     :return:
     """
-    for _ in range(100):
-        G = generate_topology()
-        flows = generate_flow_requests(G)
+    G = NetworkTopo()
+    G.draw()
+    G.draw_degree_distribution()
 
-        output_flows(flows)
+    G = NetworkTopo(size=20, a=0.8, b=0.6)
+    G.draw()
+    G.draw_degree_distribution()
+
+    G = NetworkTopo(method='file')
+    G.draw()
+    G.draw_degree_distribution()
+
+    G = NetworkTopo(method='file',
+                    file='../../topologyzoo/sources/Colt.graphml')
+    G.draw()
+    G.draw_degree_distribution()
 
 
 def test_2():
-    """Test the function load_topology_zoo
+    """Test class MulticastFlows
     :return:
     """
-    G = load_topology_zoo()
-    pos = graphviz_layout(G)
-    draw_topology(G, pos)
+    G = NetworkTopo()
+    flows = MulticastFlows(G)
+    flows.output()
+
+    G = NetworkTopo(method='file',
+                    file='../../topologyzoo/sources/Colt.graphml')
+    flows = MulticastFlows(G, 2, 10)
+    flows.output()

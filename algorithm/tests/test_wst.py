@@ -16,10 +16,14 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology()
-        flows = generate_flow_requests(G, 10, 40)
+        pass
 
-        graph, allocated_flows, trees = generate_widest_steiner_trees(G, flows)
 
-        for T in trees:
-            assert len(nx.cycle_basis(T)) == 0
+def test_2():
+    G = NetworkTopo()
+    flows = MulticastFlows(G, 10, 40, 100, 500)
+
+    wst = WidestSteinerTree(G, flows)
+    wst.draw()
+    print(wst.network_performance())
+
