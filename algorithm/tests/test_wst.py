@@ -16,10 +16,19 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        pass
+        G = NetworkTopo()
+        flows = MulticastFlows(G, 10, 40)
+
+        wst = WidestSteinerTree(G, flows)
+
+        for T in wst.multicast_trees:
+            assert len(nx.cycle_basis(T)) == 0
 
 
 def test_2():
+    """
+    :return:
+    """
     G = NetworkTopo()
     flows = MulticastFlows(G, 10, 40, 100, 500)
 

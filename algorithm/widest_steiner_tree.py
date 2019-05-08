@@ -23,19 +23,19 @@ class WidestSteinerTree(MulticastTree):
         self.deploy()
 
     def compute(self, source, destinations, **kwargs):
-        """According to the source and destinations, generate Widest Steiner Tree
+        """WST
         :param source: The source of flow request
         :param destinations: The destinations of flow request
         :return: Widest Steiner Tree
         """
         # Initialize T
-        T = nx.DiGraph()
+        T = nx.Graph()
         T.add_node(source)
         T.root = source
         # Initialize terminals
         terminals = set(destinations)
         # Compute all pair widest shortest paths
-        all_pair_paths = all_pair_widest_shortest_paths(self.graph)
+        all_pair_paths = self.__all_pair_widest_shortest_paths()
         # While terminals isn't empty
         while terminals:
             # Initialize path
@@ -43,7 +43,7 @@ class WidestSteinerTree(MulticastTree):
             # Traverse all terminals
             for v in terminals:
                 # Get the widest shortest path from constructed tree to v
-                p = widest_shortest_path_from_tree(v, T, all_pair_paths)
+                p = self.__widest_shortest_path_from_tree(v, T, all_pair_paths)
                 # Update path
                 if path is None or (path is not None and len(p) < len(path)) or \
                         (path is not None and len(p) == len(path) and
@@ -64,36 +64,33 @@ class WidestSteinerTree(MulticastTree):
 
         return T
 
+    @classmethod
+    def __widest_shortest_path_from_tree(cls, target, tree, all_pair_paths):
+        """Compute the widest shortest path from constructed tree to target
+        :param target: The target node needs to be added into the tree
+        :param tree: The constructed tree
+        :param all_pair_paths: All pair widest shortest paths in graph
+        :return: path
+        """
+        # Initialize path
+        path = None
+        # Traverse all nodes in tree
+        for v in tree.nodes:
+            # Get the widest shortest path from v to target
+            p = all_pair_paths[v][target]
+            # Update path
+            if path is None or (path is not None and len(p) < len(path)):
+                path = p
 
+        return path
 
-def widest_shortest_path_from_tree(target, tree, all_pair_paths):
-    """Compute the widest shortest path from constructed tree to target
-    :param target: The target node needs to be added into the tree
-    :param tree: The constructed tree
-    :param all_pair_paths: All pair widest shortest paths in graph
-    :return: path
-    """
-    # Initialize path
-    path = None
-    # Traverse all nodes in tree
-    for v in tree.nodes:
-        # Get the widest shortest path from v to target
-        p = all_pair_paths[v][target]
-        # Update path
-        if path is None or (path is not None and len(p) < len(path)):
-            path = p
+    def __all_pair_widest_shortest_paths(self):
+        """Compute all pair widest shortest paths
+        :return: all_pair_paths
+        """
+        all_pair_paths = {}
 
-    return path
+        for v in self.graph.nodes:
+            all_pair_paths[v] = widest_shortest_path(self.graph, v)
 
-
-def all_pair_widest_shortest_paths(G):
-    """Compute all pair widest shortest paths
-    :param G: The origin graph
-    :return: all_pair_paths
-    """
-    all_pair_paths = {}
-
-    for v in G.nodes:
-        all_pair_paths[v] = widest_shortest_path(G, v)
-
-    return all_pair_paths
+        return all_pair_paths

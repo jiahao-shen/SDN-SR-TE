@@ -29,14 +29,14 @@ class ShortestPathTree(MulticastTree):
         self.deploy(**kwargs)
 
     def compute(self, source, destinations, **kwargs):
-        """
+        """SPT
         :param source: The source node of flow request
         :param destinations: The destinations of flow request
         :param kwargs:
         :return: Shortest Path Tree
         """
         # Initialize T
-        T = nx.DiGraph()
+        T = nx.Graph()
         T.root = source
         # Traverse all destinations
         for dst in destinations:
@@ -49,4 +49,3 @@ class ShortestPathTree(MulticastTree):
             nx.add_path(T, path)
 
         return T
-

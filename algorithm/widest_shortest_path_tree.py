@@ -6,9 +6,9 @@
 @time: 2019-03-01 14:34:41
 @blog: https://jiahaoplus.com
 """
+import math
 from network import *
 from algorithm.multicast_tree import *
-import math
 
 __all__ = [
     'WidestShortestPathTree',
@@ -29,13 +29,13 @@ class WidestShortestPathTree(MulticastTree):
         self.deploy(**kwargs)
 
     def compute(self, source, destinations, **kwargs):
-        """
+        """WSPT
         :param source: The source of flow request
         :param destinations: The destinations of flow request
         :return: Widest Shortest Path Tree
         """
         # Initialize T
-        T = nx.DiGraph()
+        T = nx.Graph()
         T.root = source
         # Generate all pair widest shortest paths
         all_pair_paths = widest_shortest_path(self.graph, source)

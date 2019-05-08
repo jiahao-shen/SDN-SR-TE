@@ -37,7 +37,10 @@ def is_branch_node(tree, node):
     :param node: The node needs to check
     :return: Boolean
     """
-    return tree.out_degree(node) >= 2
+    if node == tree.root:
+        return tree.degree(node) >= 2
+    else:
+        return tree.degree(node) >= 3
 
 
 def is_path_valid(G, tree, path, flow_size):
@@ -55,13 +58,13 @@ def is_path_valid(G, tree, path, flow_size):
     nx.add_path(tmp_tree, path)
     # Traverse nodes during the path except destination node
     for v, u in pairwise(path):
-        # If the residual bandwidth less than flow_size, then drop this flow
         if G[v][u]['residual_bandwidth'] < flow_size:
             return False
-        # If the residual flow entries less than the out degree of root or
-        # branch nodes, then drop this flow
-        if (v == tmp_tree.root or is_branch_node(tmp_tree, v)) and \
-                G.nodes[v]['residual_flow_entries'] < tmp_tree.out_degree(v):
+        if v == tmp_tree.root and \
+                G.nodes[v]['residual_flow_entries'] < tmp_tree.degree(v):
+            return False
+        elif is_branch_node(tmp_tree, v) and \
+                G.nodes[v]['residual_flow_entries'] < tmp_tree.degree(v) - 1:
             return False
 
     return True
@@ -76,9 +79,11 @@ def update_topo_info(G, tree, flow_size):
     """
     # Traverse all nodes in multicast tree
     for v in tree.nodes:
-        # The root and branch nodes maintenance the flow entries
-        if v == tree.root or is_branch_node(tree, v):
-            G.nodes[v]['residual_flow_entries'] -= tree.out_degree(v)
+        # Only root and branch nodes maintenance the flow entries
+        if v == tree.root:
+            G.nodes[v]['residual_flow_entries'] -= tree.degree(v)
+        elif is_branch_node(tree, v):
+            G.nodes[v]['residual_flow_entries'] -= (tree.degree(v) - 1)
 
     # The residual bandwidth of all edges in multicast tree minus flow size
     for e in tree.edges:

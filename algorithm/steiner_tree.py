@@ -30,14 +30,14 @@ class SteinerTree(MulticastTree):
         self.deploy(**kwargs)
 
     def compute(self, source, destinations, **kwargs):
-        """
+        """ST
         :param source: The source node of flow request
         :param destinations: The destinations of flow request
         :param kwargs:
         :return: Steiner Tree
         """
         # Initialize T
-        T = nx.DiGraph()
+        T = nx.Graph()
         T.add_node(source)
         T.root = source
         # Initialize terminals

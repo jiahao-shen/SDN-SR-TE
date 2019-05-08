@@ -7,222 +7,155 @@
 @blog: https://jiahaoplus.com
 """
 from network import *
-from copy import deepcopy
+from algorithm.multicast_tree import *
 
 __all__ = [
-    'generate_bandwidth_efficient_branch_aware_steiner_trees',
+    'BandwidthefficientBranchawareSteinerTree'
 ]
 
 
-def generate_bandwidth_efficient_branch_aware_steiner_trees(G, flows,
-                                                            alpha=0.5,
-                                                            beta=0.5,
-                                                            w1=1, w2=1):
-    """
-    :param G: The origin graph
-    :param flows: The current flow request
-    :param alpha: The weight parameter for edges, default 0.5
-    :param beta: The weight parameter for nodes, default 0.5
-    :param w1: The weight parameter for extra path, default 1
-    :param w2: The weight parameter for branch node, default 1
-    :return: graph, allocated_flows,
-    band_efficient_branch_aware_segment_routing_trees
-    """
-    graph = deepcopy(G)
-    allocated_flows = deepcopy(flows)
+class BandwidthefficientBranchawareSteinerTree(MulticastTree):
 
-    # Add node weight and edge weight
-    nx.set_edge_attributes(graph, 0, 'weight')
-    nx.set_node_attributes(graph, 0, 'weight')
+    def __init__(self, G, flows, **kwargs):
+        super().__init__(G, flows, **kwargs)
 
-    # The node betweenness centrality
-    nodes_betweenness_centrality = nx.betweenness_centrality(graph)
-    # The edge betweenness centrality
-    edges_betweenness_centrality = nx.edge_betweenness_centrality(graph)
-    # Initialize band_efficient_branch_aware_steiner_trees
-    band_efficient_branch_aware_steiner_trees = []
+        # Add node and edge weight
+        nx.set_edge_attributes(self.graph, 0, 'weight')
+        nx.set_node_attributes(self.graph, 0, 'weight')
 
-    # Traverse all flows
-    for f in allocated_flows:
-        # Compute the origin_T
-        origin_T = generate_bandwidth_efficient_branch_aware_steiner_tree(
-            graph, f['src'], f['dst'],
-            nodes_betweenness_centrality,
-            edges_betweenness_centrality,
-            alpha, beta, w1, w2)
-        # Add origin_T into band_efficient_branch_aware_segment_routing_trees
-        band_efficient_branch_aware_steiner_trees.append(origin_T)
+        self.node_bc = nx.betweenness_centrality(self.graph)
+        self.edge_bc = nx.edge_betweenness_centrality(self.graph)
 
-        # Compute all paths in origin_T
-        all_paths = nx.shortest_path(origin_T, f['src'])
-        # Initialize allocated_T
-        allocated_T = nx.Graph()
-        allocated_T.root = f['src']
-        # Traverse all destination nodes
-        for dst in f['dst']:
-            # Get the path from src to dst
-            path = all_paths[dst]
-            # Check whether path valid
-            if is_path_valid(graph, allocated_T, path, f['size']):
-                # Record the path
-                f['dst'][dst] = path
-                # Add path into allocated_T
-                nx.add_path(allocated_T, path)
-        # Update the information of graph
-        update_topo_info(graph, allocated_T, f['size'])
+        self.deploy()
 
-    return graph, allocated_flows, \
-        band_efficient_branch_aware_steiner_trees
+    def compute(self, source, destinations, **kwargs):
+        """BBST
+        :param source: The source of flow request
+        :param destinations: The destinations of request
+        :param kwargs:
+        :return:
+        """
+        alpha = kwargs.get('alpha', 0.5)
+        beta = kwargs.get('beta', 0.5)
+        w1 = kwargs.get('w1', 1)
+        w2 = kwargs.get('w2', 1)
 
+        # Add weight for nodes and edges
+        self.__generate_weighted_graph(alpha, beta)
+        # Initialize T
+        T = nx.Graph()
+        T.add_node(source)
+        T.root = source
+        # Initialize terminals
+        terminals = set(destinations)
+        # Compute all pair weighted shortest paths
+        all_pair_paths = self.__all_pair_weighted_shortest_paths()
 
-def generate_bandwidth_efficient_branch_aware_steiner_tree(G, source,
-                                                           destinations,
-                                                           nodes_betweenness_centrality,
-                                                           edges_betweenness_centrality,
-                                                           alpha, beta,
-                                                           w1, w2):
-    """
-    :param G: The origin graph
-    :param source: The source of flow request
-    :param destinations: The destinations of request
-    :param nodes_betweenness_centrality:
-    :param edges_betweenness_centrality:
-    :param alpha: The weight parameter for edges
-    :param beta: The weight parameter for nodes
-    :param w1: The weight parameter for extra path
-    :param w2: The weight parameter for branch node
-    :return: Branch-efficient Branch-aware Segment Routing Tree
-    """
-    # Add weight for nodes and edges
-    G = generate_weighted_graph(G,
-                                nodes_betweenness_centrality,
-                                edges_betweenness_centrality,
-                                alpha, beta)
-    # Initialize T
-    T = nx.Graph()
-    T.add_node(source)
-    T.root = source
-    # Initialize terminals
-    terminals = set(destinations)
-    # Compute all pair weighted shortest paths
-    all_pair_paths = all_pair_weighted_shortest_paths(G)
+        # While terminals isn't empty
+        while terminals:
+            # Initialize path
+            path = None
+            # Traverse all terminals
+            for v in terminals:
+                # Get the weighted shortest path from constructed tree to v
+                p = self.__weighted_shortest_path_from_tree(v, T, all_pair_paths,
+                                                            w1, w2)
+                # Update path
+                if path is None or \
+                        (path is not None and
+                         self.__compute_extra_cost(T, p, w1, w2) <
+                         self.__compute_extra_cost(T, path, w1, w2)):
+                    path = p
+            # Add path into T
+            nx.add_path(T, path)
+            # Remove the terminal node in current path
+            terminals.remove(path[-1])
 
-    # While terminals isn't empty
-    while terminals:
+            # Remove the terminal already in T
+            v_d = set()
+            for v in terminals:
+                if v in T.nodes:
+                    v_d.add(v)
+            terminals = terminals - v_d
+
+        return T
+
+    def __generate_weighted_graph(self, alpha, beta):
+        """Generate the weighted graph according to the paper
+        :param alpha: The parameter of edges for weight
+        :param beta: The parameter of nodes for weight
+        :return: weighted G
+        """
+        # Traverse the edges
+        for e in self.graph.edges(data=True):
+            # Compute the congestion for links
+            congestion_index = self.graph.link_capacity / e[2][
+                'residual_bandwidth'] - 1
+            # Compute the weight according to the equation 3
+            e[2]['weight'] = alpha * congestion_index + (
+                    1 - alpha) * self.edge_bc[(e[0], e[1])]
+        # Traverse the nodes
+        for v in self.graph.nodes(data=True):
+            # Compute the congestion for nodes
+            congestion_index = self.graph.flow_limit / v[1][
+                'residual_flow_entries'] - 1
+            # Compute the weight according to the equation 4
+            v[1]['weight'] = beta * congestion_index + (
+                    1 - beta) * self.node_bc[v[0]]
+
+    def __compute_extra_cost(self, tree, path, w1, w2):
+        """Compute the extra cost for path
+        :param tree: The multicast tree
+        :param path: The current path
+        :param w1: The first parameter of extra cost
+        :param w2: The second parameter of extra cost
+        :return: extra_cost
+        """
+        # Compute the path cost
+        extra_cost = w1 * compute_path_cost(self.graph, path, weight='weight')
+        # Get the intersection
+        intersection = path[0]
+        # If intersection is new branch node, add cost of new branch node
+        if (intersection == tree.root and tree.degree(intersection) == 1) or \
+                (intersection != tree.root and tree.degree(intersection) == 2):
+            extra_cost += w2 * self.graph.nodes[intersection]['weight']
+
+        return extra_cost
+
+    def __weighted_shortest_path_from_tree(self, target, tree, all_pair_paths,
+                                           w1, w2):
+        """Compute the weighted shortest path from constructed tree to target
+        :param target: The target node needs to be added into the tree
+        :param tree: The constructed tree
+        :param all_pair_paths: All pair minimum weighted paths in graph
+        :param w1: The weight parameter for extra path
+        :param w2:The weight parameter for branch node
+        :return: path
+        """
         # Initialize path
         path = None
-        # Traverse all terminals
-        for v in terminals:
-            # Get the weighted shortest path from constructed tree to v
-            p = weighted_shortest_path_from_tree(G, v, T, all_pair_paths, w1, w2)
+        # Traverse all nodes in tree
+        for v in tree.nodes:
+            # Get the weighted shortest path from v to target
+            p = all_pair_paths[v][target]
+            # Compute the sub path
+            sub_path = compute_acyclic_sub_path(tree, p)
             # Update path
-            if path is None or \
-                    (path is not None and compute_extra_cost(G, T, p, w1, w2) <
-                     compute_extra_cost(G, T, path, w1, w2)):
-                path = p
-        # Add path into T
-        nx.add_path(T, path)
-        # Remove the terminal node in current path
-        terminals.remove(path[-1])
+            if path is None or (path is not None and
+                                self.__compute_extra_cost(tree, sub_path, w1, w2) <
+                                self.__compute_extra_cost(tree, path, w1, w2)):
+                path = sub_path
 
-        # Remove the terminal already in T
-        v_d = set()
-        for v in terminals:
-            if v in T.nodes:
-                v_d.add(v)
-        terminals = terminals - v_d
+        return path
 
-    return T
+    def __all_pair_weighted_shortest_paths(self):
+        """Compute all pair weighted shortest paths
+        :return: all_pair_paths
+        """
+        all_pair_paths = {}
 
+        for v in self.graph.nodes:
+            all_pair_paths[v] = nx.shortest_path(self.graph, v, weight='weight')
 
-def compute_extra_cost(G, tree, path, w1, w2):
-    """Compute the extra cost for path
-    :param G: The origin graph
-    :param tree: The multicast tree
-    :param path: The path needs to add into the graph
-    :param w1: The weight parameter for extra path
-    :param w2: The weight parameter for branch node
-    :return: extra_cost
-    """
-    # Compute the path cost
-    extra_cost = w1 * compute_path_cost(G, path, weight='weight')
-    # Get the intersection node
-    intersection = path[0]
-    # If the intersection node of path is new branch node
-    if intersection != tree.root and tree.degree(intersection) == 2:
-        # Add the branch node cost
-        extra_cost += w2 * G.nodes[intersection]['weight']
+        return all_pair_paths
 
-    return extra_cost
-
-
-def generate_weighted_graph(G,
-                            nodes_betweenness_centrality,
-                            edges_betweenness_centrality,
-                            alpha, beta):
-    """Generate the weighted graph according to the paper
-    :param G: The origin graph
-    :param nodes_betweenness_centrality:
-    :param edges_betweenness_centrality:
-    :param alpha: The weight parameter for edges
-    :param beta: The weight parameter for nodes
-    :return: weighted G
-    """
-    # Traverse the edges
-    for e in G.edges(data=True):
-        # Compute the congestion for links
-        congestion_index = e[2]['link_capacity'] / e[2][
-            'residual_bandwidth'] - 1
-        # Compute the weight according to the equation 3
-        e[2]['weight'] = alpha * congestion_index + (
-            1 - alpha) * edges_betweenness_centrality[(e[0], e[1])]
-    # Traverse the nodes
-    for v in G.nodes(data=True):
-        # Compute the congestion for nodes
-        congestion_index = v[1]['flow_limit'] / v[1][
-            'residual_flow_entries'] - 1
-        # Compute the weight according to the equation 4
-        v[1]['weight'] = beta * congestion_index + (
-            1 - beta) * nodes_betweenness_centrality[v[0]]
-
-    return G
-
-
-def weighted_shortest_path_from_tree(G, target, tree, all_pair_paths, w1, w2):
-    """Compute the weighted shortest path from constructed tree to target
-    :param G: The origin graph
-    :param target: The target node needs to be added into the tree
-    :param tree: The constructed tree
-    :param all_pair_paths: All pair minimum weighted paths in graph
-    :param w1: The weight parameter for extra path
-    :param w2:The weight parameter for branch node
-    :return: path
-    """
-    # Initialize path
-    path = None
-    # Traverse all nodes in tree
-    for v in tree.nodes:
-        # Get the weighted shortest path from v to target
-        p = all_pair_paths[v][target]
-        # Compute the sub path
-        sub_path = compute_acyclic_sub_path(tree, p)
-        # Update path
-        if path is None or (path is not None and
-                            compute_extra_cost(G, tree, sub_path, w1, w2) <
-                            compute_extra_cost(G, tree, path, w1, w2)):
-            path = sub_path
-
-    return path
-
-
-def all_pair_weighted_shortest_paths(G):
-    """Compute all pair weighted shortest paths
-    :param G: The origin graph
-    :return: all_pair_paths
-    """
-    all_pair_paths = {}
-
-    for v in G.nodes:
-        all_pair_paths[v] = nx.shortest_path(G, v, weight='weight')
-
-    return all_pair_paths

@@ -15,12 +15,20 @@ def test_1():
     :return:
     """
     for _ in range(100):
-        G = generate_topology()
-        flows = generate_flow_requests(G, 10, 40)
+        G = NetworkTopo()
+        flows = MulticastFlows(G, 10, 40)
 
-        graph, allocated_flows, trees = \
-            generate_bandwidth_efficient_branch_aware_segment_routing_trees(
-                G, flows)
-
-        for T in trees:
+        bbsrt = BandwidthefficientBranchawareSegmentRoutingTree(G, flows)
+        for T in bbsrt.multicast_trees:
             assert len(nx.cycle_basis(T)) == 0
+
+
+def test_2():
+    """
+    :return:
+    """
+    G = NetworkTopo()
+    flows = MulticastFlows(G, 10, 40, 100, 500)
+
+    bbsrt = BandwidthefficientBranchawareSegmentRoutingTree(G, flows)
+    bbsrt.draw()

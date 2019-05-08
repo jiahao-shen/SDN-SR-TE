@@ -32,48 +32,14 @@ def test_2():
     """Test function compute_throughput
     :return:
     """
-    G = generate_topology(100)
-    flows = generate_flow_requests(G, 1, 5, 100, 100)
+    G = NetworkTopo(100)
+    flows = MulticastFlows(G, 1, 5, 100, 100)
 
-    graph, allocated_flows, multicast_trees = \
-        generate_shortest_path_trees(G, flows)
-
-    assert compute_throughput(allocated_flows) == 500
+    spt = ShortestPathTree(G, flows)
+    assert spt.compute_throughput() == 500
 
 
 def test_3():
-    """Test function compute_num_branch_nodes
-    :return:
-    """
-    T = nx.Graph()
-    nx.add_path(T, [0, 1, 2, 3])
-
-    multicast_trees = list([T])
-    assert compute_num_branch_nodes(multicast_trees) == 0
-
-    nx.add_path(T, [0, 1, 4])
-    multicast_trees = list([T])
-    assert compute_num_branch_nodes(multicast_trees) == 1
-
-    nx.add_path(T, [0, 1, 5])
-    multicast_trees = list([T])
-    assert compute_num_branch_nodes(multicast_trees) == 1
-
-    nx.add_path(T, [0, 1, 2, 6])
-    multicast_trees = list([T])
-    assert compute_num_branch_nodes(multicast_trees) == 2
-
-    nx.add_path(T, [0, 1, 2, 6, 7])
-    multicast_trees = list([T])
-    assert compute_num_branch_nodes(multicast_trees) == 2
-
-    nx.add_path(T, [0, 1, 4, 8])
-    nx.add_path(T, [0, 1, 4, 9])
-    multicast_trees = list([T])
-    assert compute_num_branch_nodes(multicast_trees) == 3
-
-
-def test_4():
     """Test function compute_path_minimum_bandwidth
     :return:
     """
@@ -99,7 +65,7 @@ def test_4():
     assert compute_path_minimum_bandwidth(G, [0, 1, 2, 6, 7]) == 1
 
 
-def test_5():
+def test_4():
     """Test function compute_path_cost
     :return:
     """
@@ -125,11 +91,11 @@ def test_5():
     assert compute_path_cost(G, [0, 1, 4, 8], 'weight') == 36
 
 
-def test_6():
+def test_5():
     """Test function generate_k_shortest_path
     :return:
     """
-    G = generate_topology(100)
+    G = NetworkTopo(100)
     nx.set_edge_attributes(G, 0, 'weight')
 
     for e in G.edges(data=True):
@@ -145,7 +111,7 @@ def test_6():
 
 
 @count_time
-def test_7():
+def test_6():
     """Test decorator count_time
     :return:
     """
@@ -155,7 +121,7 @@ def test_7():
             cnt += i + j
 
 
-def test_8():
+def test_7():
     """Test function compute_acyclic_sub_path
     :return:
     """

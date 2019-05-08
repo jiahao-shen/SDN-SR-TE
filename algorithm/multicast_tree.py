@@ -53,7 +53,7 @@ class MulticastTree(object):
             # Compute all paths in origin_T
             all_paths = nx.shortest_path(origin_T, f['src'])
             # Initialize allocated_T
-            allocated_T = nx.DiGraph()
+            allocated_T = nx.Graph()
             allocated_T.root = f['src']
             # Traverse all destination nodes
             for dst in f['dst']:
