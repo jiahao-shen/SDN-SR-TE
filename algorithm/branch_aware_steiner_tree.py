@@ -108,10 +108,10 @@ class BranchawareSteinerTree(MulticastTree):
                 continue
             # Store all neighbor nodes of v_d
             neighbors = list(tree.neighbors(v_d))
-            # Copy tree as tmp_tree
-            tmp_tree = deepcopy(tree)
-            # Remove v_d from tmp_tree
-            tmp_tree.remove_node(v_d)
+            # Copy tree as new_tree
+            new_tree = deepcopy(tree)
+            # Remove v_d from new_tree
+            new_tree.remove_node(v_d)
             # Traverse all neighbor nodes of v_d
             for v in neighbors:
                 # Initialize path
@@ -119,12 +119,12 @@ class BranchawareSteinerTree(MulticastTree):
                 # Traverse all branch nodes
                 for u in branch_nodes:
                     # If v == u
-                    # If u isn't in tmp_tree
+                    # If u isn't in new_tree
                     # If v and u are in the same connected components
                     # Then continue
                     if v == u or \
-                            u not in tmp_tree.nodes or \
-                            nx.node_connectivity(tmp_tree, v, u):
+                            u not in new_tree.nodes or \
+                            nx.node_connectivity(new_tree, v, u):
                         continue
                     # Get the shortest path from v to u
                     p = self.all_pair_paths[v][u]
@@ -134,15 +134,15 @@ class BranchawareSteinerTree(MulticastTree):
                         path = p
                 # Add the path
                 if path is not None:
-                    nx.add_path(tmp_tree, path)
+                    nx.add_path(new_tree, path)
 
-            # If tmp_tree is connected and the value of tmp_tree is less than
+            # If new_tree is connected and the value of new_tree is less than
             # the old tree, then update the tree
-            if nx.is_connected(tmp_tree) and \
-                len(nx.cycle_basis(tmp_tree)) == 0 and \
-                    self.__compute_objective_value(tmp_tree, w) < \
+            if nx.is_connected(new_tree) and \
+                len(nx.cycle_basis(new_tree)) == 0 and \
+                    self.__compute_objective_value(new_tree, w) < \
                     self.__compute_objective_value(tree, w):
-                tree = deepcopy(tmp_tree)
+                tree = deepcopy(new_tree)
 
         # Alternation Step
         # Get the branch nodes in the ascending order of degree
@@ -156,6 +156,8 @@ class BranchawareSteinerTree(MulticastTree):
                 continue
             # Store all neighbor nodes of v_a
             neighbors = list(tree.neighbors(v_a))
+            # Copy as new_tree
+            new_tree = deepcopy(tree)
             # Try to move v_a to u
             for u in neighbors:
                 # Copy tree as tmp_tree
@@ -169,12 +171,14 @@ class BranchawareSteinerTree(MulticastTree):
                     # Move path(v, v_a) to path(v, u)
                     nx.add_path(tmp_tree, path)
                 # If tmp_tree is connected and the value of tmp_tree is less
-                # than the old tree, then update the tree
+                # than the new_tree, then update the new_tree
                 if nx.is_connected(tmp_tree) and \
                     len(nx.cycle_basis(tmp_tree)) == 0 and \
                         self.__compute_objective_value(tmp_tree, w) < \
-                        self.__compute_objective_value(tree, w):
-                    tree = deepcopy(tmp_tree)
+                        self.__compute_objective_value(new_tree, w):
+                    new_tree = deepcopy(tmp_tree)
+            # Update the tree
+            tree = deepcopy(new_tree)
 
         return tree
 
