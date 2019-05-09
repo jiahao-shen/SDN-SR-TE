@@ -14,6 +14,8 @@ from algorithm.steiner_tree import shortest_path_from_tree
 
 __all__ = [
     'BranchawareSteinerTree',
+    'count_branch_nodes_degree',
+    'compute_objective_value'
 ]
 
 
@@ -99,7 +101,7 @@ class BranchawareSteinerTree(MulticastTree):
         """
         # Deletion Step
         # Get the branch nodes in the ascending order of degree
-        branch_nodes = self.__count_branch_nodes_degree(tree)
+        branch_nodes = count_branch_nodes_degree(tree)
         # Traverse all branch nodes
         for v_d in branch_nodes:
             # If v_d is source node or v_d in destination nodes
@@ -139,14 +141,14 @@ class BranchawareSteinerTree(MulticastTree):
             # If new_tree is connected and the value of new_tree is less than
             # the old tree, then update the tree
             if nx.is_connected(new_tree) and \
-                len(nx.cycle_basis(new_tree)) == 0 and \
-                    self.__compute_objective_value(new_tree, w) < \
-                    self.__compute_objective_value(tree, w):
+                    len(nx.cycle_basis(new_tree)) == 0 and \
+                    compute_objective_value(new_tree, w) < \
+                    compute_objective_value(tree, w):
                 tree = deepcopy(new_tree)
 
         # Alternation Step
         # Get the branch nodes in the ascending order of degree
-        branch_nodes = self.__count_branch_nodes_degree(tree)
+        branch_nodes = count_branch_nodes_degree(tree)
         # Traverse all branch nodes
         for v_a in branch_nodes:
             # If v_a is source node or v_a in destination nodes
@@ -173,51 +175,51 @@ class BranchawareSteinerTree(MulticastTree):
                 # If tmp_tree is connected and the value of tmp_tree is less
                 # than the new_tree, then update the new_tree
                 if nx.is_connected(tmp_tree) and \
-                    len(nx.cycle_basis(tmp_tree)) == 0 and \
-                        self.__compute_objective_value(tmp_tree, w) < \
-                        self.__compute_objective_value(new_tree, w):
+                        len(nx.cycle_basis(tmp_tree)) == 0 and \
+                        compute_objective_value(tmp_tree, w) < \
+                        compute_objective_value(new_tree, w):
                     new_tree = deepcopy(tmp_tree)
             # Update the tree
             tree = deepcopy(new_tree)
 
         return tree
 
-    @classmethod
-    def __compute_objective_value(cls, tree, w):
-        """Compute the objective value according to the paper
-        A(T) = c(T) + b(T) * w
-        :param tree: The constructed multicast tree
-        :param w: The weight of branch nodes
-        :return: value
-        """
-        # A(T) = c(T)
-        value = nx.number_of_edges(tree)
-        # Traverse all nodes in tree
-        for v in tree.nodes:
-            # If v is branch node
-            if is_branch_node(tree, v):
-                # Value add w
-                value += w
 
-        return value
+def compute_objective_value(tree, w):
+    """Compute the objective value according to the paper
+    A(T) = c(T) + b(T) * w
+    :param tree: The constructed multicast tree
+    :param w: The weight of branch nodes
+    :return: value
+    """
+    # A(T) = c(T)
+    value = nx.number_of_edges(tree)
+    # Traverse all nodes in tree
+    for v in tree.nodes:
+        # If v is branch node
+        if is_branch_node(tree, v):
+            # Value add w
+            value += w
 
-    @classmethod
-    def __count_branch_nodes_degree(cls, tree):
-        """Count the degree of branch nodes and sort them in the ascending order of
-        the degree in tree
-        :param tree: The constructed multicast tree
-        :return: The ordered branch nodes
-        """
-        # Initialize branch nodes
-        branch_nodes = {}
-        # Traverse all nodes in tree
-        for v in tree.nodes:
-            # If v is branch nodes
-            if is_branch_node(tree, v):
-                # Store the degree of node v
-                branch_nodes[v] = tree.degree(v)
-        # Sort all branch nodes in the ascending order of the degree in tree
-        branch_nodes = OrderedDict(sorted(branch_nodes.items(),
-                                          key=lambda x: x[1]))
+    return value
 
-        return branch_nodes
+
+def count_branch_nodes_degree(tree):
+    """Count the degree of branch nodes and sort them in the ascending order of
+    the degree in tree
+    :param tree: The constructed multicast tree
+    :return: The ordered branch nodes
+    """
+    # Initialize branch_nodes
+    branch_nodes = {}
+    # Traverse all nodes in tree
+    for v in tree.nodes:
+        # If v is branch nodes
+        if is_branch_node(tree, v):
+            # Store the degree of node v
+            branch_nodes[v] = tree.degree(v)
+    # Sort all branch nodes in the ascending order of the degree in tree
+    branch_nodes = OrderedDict(sorted(branch_nodes.items(),
+                                      key=lambda x: x[1]))
+
+    return branch_nodes

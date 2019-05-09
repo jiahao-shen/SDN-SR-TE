@@ -36,3 +36,28 @@ def test_2():
     wst.draw()
     print(wst.network_performance())
 
+
+def test_3():
+    """Test function compute_path_minimum_bandwidth
+    :return:
+    """
+    G = nx.Graph()
+    G.add_edge(0, 1, residual_bandwidth=10)
+    G.add_edge(1, 5, residual_bandwidth=5)
+    G.add_edge(1, 2, residual_bandwidth=3)
+    G.add_edge(1, 4, residual_bandwidth=6)
+    G.add_edge(2, 3, residual_bandwidth=7)
+    G.add_edge(2, 6, residual_bandwidth=1)
+    G.add_edge(6, 7, residual_bandwidth=8)
+    G.add_edge(4, 8, residual_bandwidth=20)
+    G.add_edge(4, 9, residual_bandwidth=9)
+
+    pos = graphviz_layout(G, prog='dot')
+    draw_topology(G, pos, edge_attribute='residual_bandwidth')
+
+    assert compute_path_minimum_bandwidth(G, [0, 1, 5]) == 5
+    assert compute_path_minimum_bandwidth(G, [0, 1, 4, 9]) == 6
+    assert compute_path_minimum_bandwidth(G, [0, 1, 4, 8]) == 6
+    assert compute_path_minimum_bandwidth(G, [0, 1, 2, 3]) == 3
+    assert compute_path_minimum_bandwidth(G, [0, 1, 2, 6]) == 1
+    assert compute_path_minimum_bandwidth(G, [0, 1, 2, 6, 7]) == 1

@@ -6,26 +6,22 @@
 @time: 2019-01-30 23:24:36
 @blog: https://jiahaoplus.com
 """
+import logging
+import networkx as nx
+import matplotlib.pyplot as plt
+from time import time
 from copy import deepcopy
 from networkx.utils import pairwise
-from itertools import islice
-from time import time
-import logging
-import matplotlib.pyplot as plt
-import networkx as nx
-import math
 
 __all__ = [
-    'compute_path_minimum_bandwidth',
-    'compute_path_cost',
     'is_branch_node',
     'is_path_valid',
     'update_topo_info',
+    'compute_path_cost',
     'draw_result',
     'draw_topology',
-    'generate_k_shortest_paths',
     'count_time',
-    'compute_acyclic_sub_path'
+    'acyclic_sub_path'
 ]
 
 logging.basicConfig(level=logging.DEBUG, format='(%(levelname)s)%(message)s')
@@ -90,20 +86,6 @@ def update_topo_info(G, tree, flow_size):
         G[e[0]][e[1]]['residual_bandwidth'] -= flow_size
 
 
-def compute_path_minimum_bandwidth(G, path):
-    """Compute the minimum bandwidth during the path
-    :param G: The origin path
-    :param path: The path in G
-    :return: minimum_bandwidth
-    """
-    minimum_bandwidth = math.inf
-    for v, u in pairwise(path):
-        minimum_bandwidth = min(minimum_bandwidth,
-                                G[v][u]['residual_bandwidth'])
-
-    return minimum_bandwidth
-
-
 def compute_path_cost(G, path, weight=None):
     """Compute the cost of path according to the parameter weight
     :param G: The origin graph
@@ -123,19 +105,6 @@ def compute_path_cost(G, path, weight=None):
             cost += G[v][u][weight]
 
     return cost
-
-
-def generate_k_shortest_paths(G, source, destination, k=2, weight=None):
-    """Generate the k shortest paths from source to destination in G
-    :param G: The origin graph
-    :param source: The source node
-    :param destination: The destination node
-    :param k: The parameter in k shortest path, default 2
-    :param weight: The weight value in shortest path algorithm, default None
-    :return: The list of k shortest paths
-    """
-    return list(
-        islice(nx.shortest_simple_paths(G, source, destination, weight), k))
 
 
 def draw_topology(G, position,
@@ -238,7 +207,7 @@ def count_time(func):
     return wrapper
 
 
-def compute_acyclic_sub_path(tree, path):
+def acyclic_sub_path(tree, path):
     """Compute the sub path without loop edges in tree
     :param tree: The multicast tree
     :param path: The current path

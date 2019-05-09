@@ -16,9 +16,10 @@ PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate(%)',
 
 
 def main():
-    run_task(lab_1, 'Multicast Group Size')
-    run_task(lab_2, 'Number of Requests')
-    run_task(lab_3, 'Network Size')
+    # run_task(lab_1, 'Multicast Group Size')
+    # run_task(lab_2, 'Number of Requests')
+    # run_task(lab_3, 'Network Size')
+    run_task(lab_4, 'Number of Requests', 1)
 
 
 def run_task(fnc, independent_variable, times=6):
@@ -64,7 +65,8 @@ def run_task(fnc, independent_variable, times=6):
                     if index in result[name].keys():
                         result[name][index] += data[name][index][i]
                     else:
-                        result[name][index] = 0
+                        result[name][index] = data[name][index][i]
+
         # Compute the average data
         for name in result:
             for index in result[name]:
@@ -305,6 +307,81 @@ def lab_3(datas, lock):
         performance = res7.network_performance()
         bbst[network_size] = [bbst[network_size][i] + performance[i] for i
                               in range(len(PERFORMANCE))]
+
+    lock.acquire()
+    datas.append({'SPT': spt, 'ST': st,
+                  'WSPT': wspt, 'WST': wst,
+                  'BST': bst, 'BBSRT': bbsrt,
+                  'BBST': bbst})
+    lock.release()
+
+
+def lab_4(datas, lock):
+    """The variable is the number of requests
+    Compute the performance of network
+    :return:
+    """
+    spt = {}
+    st = {}
+    wspt = {}
+    wst = {}
+    bst = {}
+    bbsrt = {}
+    bbst = {}
+
+    for num_requests in range(10, 80, 10):
+        spt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        st[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        wspt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        wst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        bst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        bbsrt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+        bbst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
+
+    G = NetworkTopo(method='file', file='topologyzoo/sources/Cogentco.graphml')
+
+    for num_requests in trange(10, 80, 10, desc='Lab 4'):
+        flows = MulticastFlows(G, num_requests, 10, 10, 300)
+
+        res1 = ShortestPathTree(G, flows)
+        performance = res1.network_performance()
+        spt[num_requests] = [spt[num_requests][i] + performance[i] for i in
+                             range(len(PERFORMANCE))]
+
+        res2 = SteinerTree(G, flows)
+        performance = res2.network_performance()
+        st[num_requests] = [st[num_requests][i] + performance[i] for i in
+                            range(len(PERFORMANCE))]
+
+        res3 = WidestShortestPathTree(G, flows)
+        performance = res3.network_performance()
+        wspt[num_requests] = [wspt[num_requests][i] + performance[i] for i in
+                              range(len(PERFORMANCE))]
+
+        res4 = WidestSteinerTree(G, flows)
+        performance = res4.network_performance()
+        wst[num_requests] = [wst[num_requests][i] + performance[i] for i in
+                             range(len(PERFORMANCE))]
+
+        res5 = BranchawareSteinerTree(G, flows, w=5)
+        performance = res5.network_performance()
+        bst[num_requests] = [bst[num_requests][i] + performance[i] for i in
+                             range(len(PERFORMANCE))]
+
+        res6 = BandwidthefficientBranchawareSegmentRoutingTree(G, flows, k=5,
+                                                               alpha=0.5, beta=0.5,
+                                                               w1=1, w2=5)
+
+        performance = res6.network_performance()
+        bbsrt[num_requests] = [bbsrt[num_requests][i] + performance[i] for i in
+                               range(len(PERFORMANCE))]
+
+        res7 = BandwidthefficientBranchawareSteinerTree(G, flows,
+                                                        alpha=0.5, beta=0.5,
+                                                        w1=1, w2=5)
+        performance = res7.network_performance()
+        bbst[num_requests] = [bbst[num_requests][i] + performance[i]
+                              for i in range(len(PERFORMANCE))]
 
     lock.acquire()
     datas.append({'SPT': spt, 'ST': st,

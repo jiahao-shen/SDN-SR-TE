@@ -7,12 +7,14 @@
 @blog: https://jiahaoplus.com
 """
 import math
-from network import *
+from itertools import islice
 from collections import OrderedDict
+from network import *
 from algorithm.multicast_tree import *
 
 __all__ = [
-    'BandwidthefficientBranchawareSegmentRoutingTree'
+    'BandwidthefficientBranchawareSegmentRoutingTree',
+    'k_shortest_paths'
 ]
 
 
@@ -58,8 +60,8 @@ class BandwidthefficientBranchawareSegmentRoutingTree(MulticastTree):
         # Traverse all destination nodes
         for dst in destinations:
             # Compute the k shortest path from source to dst
-            d_sorted[dst] = generate_k_shortest_paths(self.graph, source, dst,
-                                                      k, weight='weight')
+            d_sorted[dst] = k_shortest_paths(self.graph, source, dst,
+                                             k, weight='weight')
         # Sort the dict by value
         d_sorted = OrderedDict(sorted(d_sorted.items(),
                                       key=lambda x: compute_path_cost(
@@ -81,7 +83,7 @@ class BandwidthefficientBranchawareSegmentRoutingTree(MulticastTree):
                 # Traverse the k shortest path for dst_node
                 for p in d_sorted[dst]:
                     # Get the sub_path
-                    sub_path = compute_acyclic_sub_path(T, p)
+                    sub_path = acyclic_sub_path(T, p)
                     # Compute the extra cost according to the paper
                     extra_cost = self.__compute_extra_cost(T, sub_path, w1, w2)
                     # If extra cost less than minimum cost
@@ -135,3 +137,16 @@ class BandwidthefficientBranchawareSegmentRoutingTree(MulticastTree):
             extra_cost += w2 * self.graph.nodes[intersection]['weight']
 
         return extra_cost
+
+
+def k_shortest_paths(G, source, destination, k=2, weight=None):
+    """Generate the k shortest paths from source to destination in G
+    :param G: The origin graph
+    :param source: The source node
+    :param destination: The destination node
+    :param k: The parameter in k shortest path, default 2
+    :param weight: The weight value in shortest path algorithm, default None
+    :return: The list of k shortest paths
+    """
+    return list(
+        islice(nx.shortest_simple_paths(G, source, destination, weight), k))

@@ -139,7 +139,7 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
             # Get the weighted shortest path from v to target
             p = all_pair_paths[v][target]
             # Compute the sub path
-            sub_path = compute_acyclic_sub_path(tree, p)
+            sub_path = acyclic_sub_path(tree, p)
             # Update path
             if path is None or (path is not None and
                                 self.__compute_extra_cost(tree, sub_path, w1, w2) <

@@ -6,6 +6,8 @@
 @time: 2019-03-04 17:57:27
 @blog: https://jiahaoplus.com
 """
+import os
+import json
 from network import *
 
 
@@ -43,3 +45,35 @@ def test_2():
                     file='../../topologyzoo/sources/Colt.graphml')
     flows = MulticastFlows(G, 2, 10)
     flows.output()
+
+
+def test_3():
+    """Count the number of nodes in topologyzoo
+    :return:
+    """
+    path = '../../topologyzoo/sources/'
+    files = os.listdir(path)
+
+    result = {}
+
+    for f in files:
+        G = NetworkTopo(method='file', file=path+f)
+        result[f] = len(G)
+
+    result = dict(sorted(result.items(), key=lambda x: x[1], reverse=True))
+    with open('../../topologyzoo.json', 'w') as f:
+        json.dump(result, f)
+
+
+def test_4():
+    G = NetworkTopo(method='file',
+                    file='../../topologyzoo/sources/Kdl.graphml')
+
+    G.draw()
+    G.draw_degree_distribution()
+
+    G = NetworkTopo(method='file',
+                    file='../../topologyzoo/sources/Cogentco.graphml')
+
+    G.draw()
+    G.draw_degree_distribution()
