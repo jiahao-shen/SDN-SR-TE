@@ -77,3 +77,11 @@ def test_4():
 
     G.draw()
     G.draw_degree_distribution()
+
+
+def test_5():
+    G = NetworkTopo(method='ba', size=400)
+    G.draw_degree_distribution('')
+
+    G = NetworkTopo(method='waxman', size=400)
+    G.draw_degree_distribution()

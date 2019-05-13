@@ -47,6 +47,12 @@ class NetworkTopo(nx.DiGraph):
         elif method == 'file':
             file = kwargs.get('file')
             G = self.__load_topology_zoo(file)
+        elif method == 'ba':
+            size = kwargs.get('size', 100)
+            a = kwargs.get('a', 0.41)
+            b = kwargs.get('b', 0.54)
+            c = kwargs.get('c', 0.05)
+            G = self.__scale_free_graph(size, a, b, c)
 
         super().__init__(G, **kwargs)
 
@@ -102,6 +108,23 @@ class NetworkTopo(nx.DiGraph):
         G = nx.Graph(nx.read_graphml(file)).to_directed()
 
         return G
+
+    @classmethod
+    def __scale_free_graph(cls, size=100, a=0.41, b=0.54, c=0.05):
+        """Generate scale free graph
+        :param size: The number of nodes in topology, default 100
+        :param a: Alpha (0, 1] float, default 0.41
+        :param b: Beta (0, 1] float, default 0.54
+        :param c: Gamma (0, 1] float, default 0.05
+        :return: G
+        """
+        # a + b + c == 1
+        G = nx.Graph(nx.scale_free_graph(size, a, b, c))
+        # Transfer to directed graph
+        G = G.to_directed()
+
+        return G
+
 
     def draw(self):
         """Draw the topology
