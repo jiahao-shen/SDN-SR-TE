@@ -85,3 +85,9 @@ def test_5():
 
     G = NetworkTopo(method='waxman', size=400)
     G.draw_degree_distribution()
+
+
+def test_6():
+    G = nx.waxman_graph(20, 0.5, 0.6)
+    paths = dict(nx.all_pairs_dijkstra_path(G, weight=None))
+    print(paths)

@@ -49,7 +49,8 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
         # Initialize terminals
         terminals = set(destinations)
         # Compute all pair weighted shortest paths
-        all_pair_paths = self.__all_pair_weighted_shortest_paths()
+        all_pair_paths = dict(nx.all_pairs_dijkstra_path(self.graph,
+                                                         weight='weight'))
 
         # While terminals isn't empty
         while terminals:
@@ -147,15 +148,3 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
                 path = sub_path
 
         return path
-
-    def __all_pair_weighted_shortest_paths(self):
-        """Compute all pair weighted shortest paths
-        :return: all_pair_paths
-        """
-        all_pair_paths = {}
-
-        for v in self.graph.nodes:
-            all_pair_paths[v] = nx.shortest_path(self.graph, v, weight='weight')
-
-        return all_pair_paths
-
