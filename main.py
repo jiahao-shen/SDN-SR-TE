@@ -338,7 +338,8 @@ def lab_4(datas, lock):
         bbsrt[num_requests] = [0 for _ in range(len(PERFORMANCE))]
         bbst[num_requests] = [0 for _ in range(len(PERFORMANCE))]
 
-    G = NetworkTopo(method='file', file='topologyzoo/sources/Cogentco.graphml')
+    # G = NetworkTopo(method='file', file='topologyzoo/sources/Cogentco.graphml')
+    G = NetworkTopo(method='file', file='topologyzoo/sources/Kdl.graphml')
 
     for num_requests in trange(10, 80, 10, desc='Lab 4'):
         flows = MulticastFlows(G, num_requests, 10, 10, 300)

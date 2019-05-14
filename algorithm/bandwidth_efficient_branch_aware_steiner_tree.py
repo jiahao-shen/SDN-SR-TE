@@ -26,6 +26,8 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
         self.node_bc = nx.betweenness_centrality(self.graph)
         self.edge_bc = nx.edge_betweenness_centrality(self.graph)
 
+        self.all_pair_paths = None
+
         self.deploy()
 
     def compute(self, source, destinations, **kwargs):
@@ -49,7 +51,7 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
         # Initialize terminals
         terminals = set(destinations)
         # Compute all pair weighted shortest paths
-        all_pair_paths = dict(nx.all_pairs_dijkstra_path(self.graph,
+        self.all_pair_paths = dict(nx.all_pairs_dijkstra(self.graph,
                                                          weight='weight'))
 
         # While terminals isn't empty
@@ -59,8 +61,7 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
             # Traverse all terminals
             for v in terminals:
                 # Get the weighted shortest path from constructed tree to v
-                p = self.__weighted_shortest_path_from_tree(v, T, all_pair_paths,
-                                                            w1, w2)
+                p = self.__weighted_shortest_path_from_tree(v, T, w1, w2)
                 # Update path
                 if path is None or \
                         (path is not None and
@@ -113,7 +114,7 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
         :return: extra_cost
         """
         # Compute the path cost
-        extra_cost = w1 * compute_path_cost(self.graph, path, weight='weight')
+        extra_cost = w1 * self.all_pair_paths[path[0]][0][path[-1]]
         # Get the intersection
         intersection = path[0]
         # If intersection is new branch node, add cost of new branch node
@@ -123,12 +124,10 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
 
         return extra_cost
 
-    def __weighted_shortest_path_from_tree(self, target, tree, all_pair_paths,
-                                           w1, w2):
+    def __weighted_shortest_path_from_tree(self, target, tree, w1, w2):
         """Compute the weighted shortest path from constructed tree to target
         :param target: The target node needs to be added into the tree
         :param tree: The constructed tree
-        :param all_pair_paths: All pair minimum weighted paths in graph
         :param w1: The weight parameter for extra path
         :param w2:The weight parameter for branch node
         :return: path
@@ -138,7 +137,7 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
         # Traverse all nodes in tree
         for v in tree.nodes:
             # Get the weighted shortest path from v to target
-            p = all_pair_paths[v][target]
+            p = self.all_pair_paths[v][1][target]
             # Compute the sub path
             sub_path = acyclic_sub_path(tree, p)
             # Update path
