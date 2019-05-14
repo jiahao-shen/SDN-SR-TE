@@ -16,9 +16,9 @@ PERFORMANCE = ['Number of Branch Nodes', 'Average Rejection Rate(%)',
 
 
 def main():
-    # run_task(lab_1, 'Multicast Group Size')
-    # run_task(lab_2, 'Number of Requests')
-    # run_task(lab_3, 'Network Size')
+    run_task(lab_1, 'Multicast Group Size')
+    run_task(lab_2, 'Number of Requests')
+    run_task(lab_3, 'Network Size')
     run_task(lab_4, 'Number of Requests', 1)
 
 
