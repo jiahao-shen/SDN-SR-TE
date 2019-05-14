@@ -19,7 +19,7 @@ def main():
     run_task(lab_1, 'Multicast Group Size')
     run_task(lab_2, 'Number of Requests')
     run_task(lab_3, 'Network Size')
-    run_task(lab_4, 'Number of Requests', 1)
+    run_task(lab_4, 'Number of Requests')
 
 
 def run_task(fnc, independent_variable, times=6):

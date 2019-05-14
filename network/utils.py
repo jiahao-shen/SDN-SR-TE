@@ -184,8 +184,8 @@ def draw_result(result, x_label, y_label, type='line'):
     # Set the legend
     plt.legend(bbox_to_anchor=(1.05, 0.4), loc=3, borderaxespad=0)
     # Set x and y labels
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
+    plt.xlabel(x_label, fontsize=20)
+    plt.ylabel(y_label, fontsize=20)
     # Show the figure
     plt.show()
 
