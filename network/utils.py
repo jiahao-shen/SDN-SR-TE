@@ -7,6 +7,7 @@
 @blog: https://jiahaoplus.com
 """
 import logging
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from time import time
@@ -21,7 +22,8 @@ __all__ = [
     'draw_result',
     'draw_topology',
     'count_time',
-    'acyclic_sub_path'
+    'acyclic_sub_path',
+    'entropy'
 ]
 
 logging.basicConfig(level=logging.DEBUG, format='(%(levelname)s)%(message)s')
@@ -216,3 +218,19 @@ def acyclic_sub_path(tree, path):
     for u, v in pairwise(reversed(path)):
         if v in tree.nodes and u not in tree.nodes:
             return path[path.index(v):]
+
+
+def entropy(data):
+    """The entropy weighting function
+    :param data:
+    :return:
+    """
+    n, m = np.shape(data)
+    data = np.tanh(data)
+    data = data / np.sum(data, axis=0)
+    a = data * 1.0
+    a[np.where(data == 0)] = 0.000001
+
+    e = (-1.0 / np.log(n)) * np.sum(data * np.log(a), axis=0)
+    w = (1 - e) / np.sum(1 - e)
+    return w

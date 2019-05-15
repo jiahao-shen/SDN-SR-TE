@@ -88,22 +88,37 @@ class BandwidthefficientBranchawareSteinerTree(MulticastTree):
         :param beta: The parameter of nodes for weight
         :return: weighted G
         """
-        # Traverse the edges
+        edges_data = []
         for e in self.graph.edges(data=True):
             # Compute the congestion for links
             congestion_index = self.graph.link_capacity / e[2][
-                'residual_bandwidth'] - 1
-            # Compute the weight according to the equation 3
-            e[2]['weight'] = alpha * congestion_index + (
-                    1 - alpha) * self.edge_bc[(e[0], e[1])]
+                'residual_bandwidth']
+            edges_data.append([congestion_index, self.edge_bc[(e[0], e[1])]])
+        we = entropy(edges_data)
+
+        for e in self.graph.edges(data=True):
+            congestion_index = self.graph.link_capacity / e[2][
+                'residual_bandwidth']
+            e[2]['weight'] = (we[0] + alpha) * congestion_index + \
+                             (we[1] + (1 - alpha)) * self.edge_bc[(e[0], e[1])]
+
         # Traverse the nodes
+        nodes_data = []
+        for v in self.graph.nodes(data=True):
+            # Compute the congestion for nodes
+            congestion_index = self.graph.flow_limit / v[1][
+                'residual_flow_entries']
+            nodes_data.append([congestion_index, self.node_bc[v[0]]])
+        wv = entropy(nodes_data)
+
         for v in self.graph.nodes(data=True):
             # Compute the congestion for nodes
             congestion_index = self.graph.flow_limit / v[1][
                 'residual_flow_entries'] - 1
             # Compute the weight according to the equation 4
-            v[1]['weight'] = beta * congestion_index + (
-                    1 - beta) * self.node_bc[v[0]]
+            v[1]['weight'] = (wv[0] + beta) * congestion_index + \
+                             (wv[1] + (1 - beta)) * self.node_bc[v[0]]
+
 
     def __compute_extra_cost(self, tree, path, w1, w2):
         """Compute the extra cost for path
