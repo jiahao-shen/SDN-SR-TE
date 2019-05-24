@@ -155,6 +155,7 @@ def draw_result(result, x_label, y_label, type='line'):
                    'BBST': '#70acf6'}
     # The figure size
     plt.figure(figsize=(9, 6))
+    plt.rcParams['font.sans-serif'] = 'SimSun'
     # Check the figure type
     if type == 'line':
         # Draw the line figure
@@ -185,6 +186,9 @@ def draw_result(result, x_label, y_label, type='line'):
     plt.grid(axis='y')
     # Set the legend
     plt.legend(bbox_to_anchor=(1.05, 0.4), loc=3, borderaxespad=0)
+    # Set x and y ticks
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     # Set x and y labels
     plt.xlabel(x_label, fontsize=20)
     plt.ylabel(y_label, fontsize=20)

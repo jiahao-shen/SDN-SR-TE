@@ -150,8 +150,13 @@ class NetworkTopo(nx.DiGraph):
         x = cnt.keys()
         y = cnt.values()
 
+        plt.rcParams['font.sans-serif'] = 'SimSun'
         plt.title(title)
         plt.scatter(x, y)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        plt.xlabel('节点度', fontsize=20)
+        plt.ylabel('个数', fontsize=20)
         plt.show()
 
 
