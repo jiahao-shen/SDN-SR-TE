@@ -122,6 +122,7 @@ def draw_topology(G, position,
     """
     # Set the figure size
     plt.figure(figsize=(15, 15))
+    plt.rcParams['font.sans-serif'] = 'SimSun'
     plt.title(title)
     # Draw the graph according to the position with labels
     nx.draw(G, position, with_labels=True)

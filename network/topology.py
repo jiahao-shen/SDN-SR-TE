@@ -126,12 +126,13 @@ class NetworkTopo(nx.DiGraph):
         return G
 
 
-    def draw(self):
+    def draw(self, title='Test'):
         """Draw the topology
+        :param title: The title of figure
         :return:
         """
         pos = graphviz_layout(self)
-        draw_topology(self, pos)
+        draw_topology(self, pos, title=title)
 
 
     def draw_degree_distribution(self, title=''):
